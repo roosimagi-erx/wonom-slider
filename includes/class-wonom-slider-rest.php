@@ -151,8 +151,13 @@ class Wonom_Slider_Rest {
 	}
 
 	public static function state() {
-		$slides = Wonom_Slider_Data::get_slides();
+		$slides   = Wonom_Slider_Data::get_slides();
+		$settings = Wonom_Slider_Data::get_settings();
 		foreach ( $slides as $k => $slide ) {
+			// Live miniature for the slide list: the exact front-end markup of this slide alone.
+			$slides[ $k ]['preview'] = Wonom_Slider_Data::slide_has_content( $slide )
+				? Wonom_Slider_Frontend::render( array( 'slides' => array( $slide ), 'settings' => $settings ) )
+				: '';
 			// Map-like fields must reach JavaScript as objects, never as [] (empty PHP arrays).
 			$slides[ $k ]['i18n'] = (object) ( is_array( $slide['i18n'] ) ? $slide['i18n'] : array() );
 			$slides[ $k ]['typo'] = (object) ( is_array( $slide['typo'] ) ? $slide['typo'] : array() );

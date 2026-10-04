@@ -155,6 +155,18 @@ body.wonom-app .button-link.is-danger { color: var(--w-danger); }
 .wonom-order { width: 22px; height: 22px; border-radius: 50%; background: var(--w-bg); color: var(--w-muted); font-size: 11px; font-weight: 700; display: grid; place-items: center; flex: 0 0 auto; }
 .wonom-thumb { width: 128px; height: 56px; border-radius: 8px; background: var(--w-bg); overflow: hidden; display: grid; place-items: center; color: var(--w-faint); cursor: pointer; flex: 0 0 auto; }
 .wonom-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Live miniature: real slide markup rendered at 480px and scaled to 160px. */
+.wonom-thumb--live { width: 160px; height: 56px; position: relative; overflow: hidden; background: #e9e9e9; cursor: pointer; }
+.wonom-thumb__scale { position: absolute; left: 0; top: 0; width: 480px; transform: scale(0.3333); transform-origin: 0 0; pointer-events: none; }
+.wonom-thumb__scale .wonom-slider { margin: 0; max-width: none; }
+.wonom-thumb__scale .wonom-slider__arrow,
+.wonom-thumb__scale .wonom-slider__dots,
+.wonom-thumb__scale .wonom-slider__progress { display: none !important; }
+.wonom-thumb__scale .wonom-slide__badge,
+.wonom-thumb__scale .wonom-slide__eyebrow,
+.wonom-thumb__scale .wonom-slide__heading,
+.wonom-thumb__scale .wonom-slide__text,
+.wonom-thumb__scale .wonom-slide__actions { animation: none !important; opacity: 1 !important; transform: none !important; transition: none !important; }
 .wonom-thumb-text { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 4px 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; text-align: center; overflow: hidden; }
 .wonom-slide-meta { flex: 1; min-width: 0; cursor: pointer; }
 .wonom-slide-title { font-size: 14px; display: flex; align-items: center; gap: 8px; }

@@ -71,6 +71,12 @@ class Wonom_Slider_Admin {
 		wp_enqueue_media();
 		wp_enqueue_script( 'jquery-ui-sortable' );
 		wp_enqueue_style( 'wonom-slider-admin', WONOM_SLIDER_URL . 'assets/admin/admin.css', array(), WONOM_SLIDER_VERSION );
+		// Front-end styles + web fonts for the live miniatures in the slide list.
+		wp_enqueue_style( 'wonom-slider', WONOM_SLIDER_URL . 'assets/public/slider.css', array(), WONOM_SLIDER_VERSION );
+		$fonts = Wonom_Slider_Data::font_stylesheet_url( Wonom_Slider_Data::get_settings() );
+		if ( $fonts ) {
+			wp_enqueue_style( 'wonom-slider-fonts', $fonts, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+		}
 		wp_enqueue_script( 'wonom-slider-admin', WONOM_SLIDER_URL . 'assets/admin/admin.js', array( 'jquery', 'jquery-ui-sortable', 'wp-api-fetch' ), WONOM_SLIDER_VERSION, true );
 
 		$preview = add_query_arg(

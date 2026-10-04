@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.2 - 2026-10-04
+
+- Uus: slaidide nimekirja pisipilt on elav – näitab täpselt sama väljundit, mis esilehel (taust, pilt või kollaaž, tekstid, nupp), vähendatult. Uueneb salvestamisel.
+
 ## 1.5.1 - 2026-10-04
 
 - Parandus: slaidide nimekiri näitas ainult tekstiga slaidi ja kollaažslaidi olekuna „Tühi”, kuigi need olid eetris. Nimekiri kasutab nüüd sama sisu-loogikat mis server. Pildita slaidil on pisipildi asemel tema taustavärv ja pealkiri.

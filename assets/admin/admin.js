@@ -286,8 +286,18 @@
 		h += '<div class="wonom-slide-head">';
 		h += '<span class="wonom-drag" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span></span>';
 		h += '<span class="wonom-order">' + ( i + 1 ) + '</span>';
-		var thumbInner = thumb ? '<img src="' + esc( thumb ) + '" alt="">' : ( hasContent( s ) ? '<span class="wonom-thumb-text" style="background:' + esc( s.bg_color || '#1d2433' ) + ';color:' + esc( s.text_color || '#fff' ) + '">' + esc( ( s.heading || s.text || s.eyebrow || 'Aa' ).slice( 0, 14 ) ) + '</span>' : '<span class="dashicons dashicons-format-image"></span>' );
-		h += '<div class="wonom-thumb" data-action="open">' + thumbInner + '</div>';
+		var thumbInner;
+		if ( s.preview ) {
+			// Exact front-end markup, scaled down (480px virtual width → 160px).
+			thumbInner = '<div class="wonom-thumb__scale">' + s.preview + '</div>';
+		} else if ( thumb ) {
+			thumbInner = '<img src="' + esc( thumb ) + '" alt="">';
+		} else if ( hasContent( s ) ) {
+			thumbInner = '<span class="wonom-thumb-text" style="background:' + esc( s.bg_color || '#1d2433' ) + ';color:' + esc( s.text_color || '#fff' ) + '">' + esc( ( s.heading || s.text || s.eyebrow || 'Aa' ).slice( 0, 14 ) ) + '</span>';
+		} else {
+			thumbInner = '<span class="dashicons dashicons-format-image"></span>';
+		}
+		h += '<div class="wonom-thumb' + ( s.preview ? ' wonom-thumb--live' : '' ) + '" data-action="open">' + thumbInner + '</div>';
 		h += '<div class="wonom-slide-meta" data-action="open">';
 		h += '<div class="wonom-slide-title"><strong class="js-name">' + esc( s.name || s.heading || I.untitled ) + '</strong>';
 		if ( s.type === 'campaign' ) { h += ' <span class="wonom-tag wonom-tag--campaign">' + esc( I.typeCampaign ) + '</span>'; }
@@ -570,7 +580,21 @@
 		} catch ( e ) { /* cross-origin – keep default height */ }
 	}
 
+	// Live miniatures: fit the scaled slide vertically and keep image requests small.
+	function fitThumbs() {
+		[].forEach.call( app.querySelectorAll( '.wonom-thumb--live' ), function ( box ) {
+			var sc = box.querySelector( '.wonom-thumb__scale' ), sl = sc && sc.querySelector( '.wonom-slider' );
+			if ( ! sl ) { return; }
+			[].forEach.call( sc.querySelectorAll( 'img' ), function ( img ) { img.setAttribute( 'sizes', '480px' ); img.loading = 'lazy'; } );
+			var scale = 160 / 480;
+			sc.style.transform = 'scale(' + scale + ')';
+			// offsetHeight is the untransformed layout height of the 480px-wide slide.
+			box.style.height = Math.max( 44, Math.min( 90, Math.round( sl.offsetHeight * scale ) ) ) + 'px';
+		} );
+	}
+
 	function afterSlidesRender() {
+		fitThumbs();
 		var pf = document.getElementById( 'wonom-preview-frame' );
 		if ( pf ) { pf.addEventListener( 'load', fitPreview ); }
 		var list = document.getElementById( 'wonom-list' );
