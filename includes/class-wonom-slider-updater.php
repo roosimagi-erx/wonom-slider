@@ -310,7 +310,15 @@ class Wonom_Slider_Updater {
 			'published' => $release ? $release['published'] : '',
 			'has_update' => $release ? version_compare( $release['version'], WONOM_SLIDER_VERSION, '>' ) : false,
 			'ok'        => (bool) $release,
-			'update_url' => wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' . rawurlencode( WONOM_SLIDER_BASENAME ) ), 'upgrade-plugin_' . WONOM_SLIDER_BASENAME ),
+			// Raw URL (no &amp; entities) – it is used from JavaScript.
+			'update_url' => add_query_arg(
+				array(
+					'action'   => 'upgrade-plugin',
+					'plugin'   => rawurlencode( WONOM_SLIDER_BASENAME ),
+					'_wpnonce' => wp_create_nonce( 'upgrade-plugin_' . WONOM_SLIDER_BASENAME ),
+				),
+				self_admin_url( 'update.php' )
+			),
 		);
 		if ( $force && $release ) {
 			wp_update_plugins();
