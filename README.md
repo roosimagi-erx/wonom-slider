@@ -40,6 +40,14 @@ Keeled tuvastatakse Polylangist/WPML-ist; ilma nendeta kirjuta seadetes `et,en`.
 **Mobiil:** eraldi mobiilipilt (nt püstine 800×1000), külgede suhe, pealkirja/teksti suurus, külgvahe, joondus
 ja „ainult pilt“ – kõik seaded on vaikimisi „sama mis arvutis“. Fookuspunkt määratakse pildil klõpsates.
 
+**Lava ja tekstiploki asukoht:** iga avatud slaidi kohal on lava, kus slaid kuvatakse täpselt nagu esilehel (arvuti või mobiil). Tekstiplokki saab laval lohistada, nooleklahvidega nihutada (1 %, Shift 5 %) ja sinisest pidemest laiust muuta. Kujundus-plokis saab valida „Ruudustik” (joondusnupud) või „Vaba” (täpne X/Y/laius protsentides). Mobiilile saab anda eraldi asukoha.
+
+**Taustavärv:** slaidi taustavärv on näha pildi taga ja üksinda, kui pilti polegi – ainult tekstiga slaid.
+
+**Fondid:** Seaded → Tüpograafia: pealkirja ning teksti/nupu font eraldi (saidi vaikefont, kureeritud veebifondid Bunny Fontsist või oma CSS-väärtus), pealkirja paksus, suurtähed, tähevahe.
+
+**Vahemälu:** Seaded → Lehe vahemälu: tühjendatakse automaatselt salvestamisel, ajastatud alguse/lõpu hetkel ja pärast plugina uuendust (FlyingPress, WP Rocket, LiteSpeed, W3TC jt; Cloudflare API võtmega). Nupp „Tühjenda vahemälu kohe”.
+
 **Eelvaade:** nupp *Eelvaade* avab salvestatud slaideri arvuti/tahvli/mobiili laiuses otse redaktoris.
 
 ## Seaded
