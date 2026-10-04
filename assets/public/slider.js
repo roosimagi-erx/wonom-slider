@@ -2,7 +2,9 @@
 ( function () {
 	'use strict';
 
-	var REDUCED = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+	// Real hover-capable pointer (mouse/trackpad). Touch devices emit synthetic mouseenter on tap,
+	// which would otherwise pause autoplay forever.
+	var HOVER = window.matchMedia && window.matchMedia( '(hover: hover) and (pointer: fine)' ).matches;
 
 	function Slider( root ) {
 		if ( root.__wonom ) {
@@ -19,7 +21,7 @@
 
 		this.root = root;
 		this.cfg = {
-			autoplay: !! cfg.autoplay && ! REDUCED,
+			autoplay: !! cfg.autoplay,
 			interval: Math.max( 1000, parseInt( cfg.interval, 10 ) || 6000 ),
 			speed: Math.max( 100, parseInt( cfg.speed, 10 ) || 800 ),
 			transition: cfg.transition === 'slide' ? 'slide' : 'fade',
@@ -65,11 +67,19 @@
 			} );
 		} );
 
-		if ( this.cfg.pauseOnHover ) {
+		if ( this.cfg.pauseOnHover && HOVER ) {
 			root.addEventListener( 'mouseenter', function () { self.pause(); } );
 			root.addEventListener( 'mouseleave', function () { self.resume(); } );
 		}
-		root.addEventListener( 'focusin', function () { self.pause(); } );
+		// Pause only for keyboard focus (accessibility); taps and clicks also move focus but must not stop autoplay.
+		var pointerFocus = false;
+		root.addEventListener( 'pointerdown', function () { pointerFocus = true; }, true );
+		root.addEventListener( 'touchstart', function () { pointerFocus = true; }, { capture: true, passive: true } );
+		root.addEventListener( 'keydown', function () { pointerFocus = false; }, true );
+		root.addEventListener( 'focusin', function () {
+			if ( ! pointerFocus ) { self.pause(); }
+			pointerFocus = false;
+		} );
 		root.addEventListener( 'focusout', function ( e ) {
 			if ( ! root.contains( e.relatedTarget ) ) {
 				self.resume();

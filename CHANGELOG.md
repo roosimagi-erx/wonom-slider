@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.3 - 2026-10-04
+
+- Parandus: mobiilis jäi automaatne vahetus pärast esimest puudutust seisma (puudutus tekitas „hiir on peal” pausi ja fookuse, mis ei lõppenud). Hover-paus töötab nüüd ainult hiirega seadmetel, puute- ja klõpsufookus esitust ei peata; ainult klaviatuurifookus peatab. Reduce Motion ei lülita enam autoplay’d välja.
+
 ## 1.5.2 - 2026-10-04
 
 - Uus: slaidide nimekirja pisipilt on elav – näitab täpselt sama väljundit, mis esilehel (taust, pilt või kollaaž, tekstid, nupp), vähendatult. Uueneb salvestamisel.
