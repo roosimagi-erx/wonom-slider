@@ -200,7 +200,7 @@ class Wonom_Slider_Rest {
 			array(
 				'html'  => $html,
 				'css'   => add_query_arg( 'ver', WONOM_SLIDER_VERSION, WONOM_SLIDER_URL . 'assets/public/slider.css' ),
-				'fonts' => Wonom_Slider_Data::font_stylesheet_url( $settings ),
+				'fonts' => Wonom_Slider_Data::font_stylesheet_url( $settings, array( $slide ) ),
 				'custom_css' => $settings['custom_css'],
 			)
 		);

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2 - 2026-10-04
+
+- Parandus: lava laadib veebifondi ka siis, kui slaidi font on alles valitud ja salvestamata.
+
 ## 1.2.1 - 2026-10-04
 
 - Parandus: tühjad tõlke- ja tüpograafiaväljad jõudsid redaktorisse massiivina (`[]`), mistõttu uue slaidi esimene tõlge või tüpograafiamuudatus läks salvestamisel kaotsi. Nüüd alati objektid.
