@@ -111,6 +111,9 @@ class Wonom_Slider_Data {
 			'show_arrows'         => true,
 			'show_dots'           => true,
 			'show_progress'       => false,
+			'dots_position'       => 'center', // left | center | right
+			'dots_mobile'         => 'same',   // same | left | center | right | hidden
+			'arrows_mobile'       => 'show',   // show | hide
 			'ken_burns'           => false,
 			'ratio_desktop'       => 'auto', // auto | "1920x660"
 			'ratio_mobile'        => 'auto',
@@ -445,6 +448,10 @@ class Wonom_Slider_Data {
 		$out['speed']    = isset( $in['speed'] ) ? max( 100, min( 5000, absint( $in['speed'] ) ) ) : $d['speed'];
 
 		$out['transition'] = ( isset( $in['transition'] ) && in_array( $in['transition'], array( 'fade', 'slide' ), true ) ) ? $in['transition'] : $d['transition'];
+
+		$out['dots_position'] = ( isset( $in['dots_position'] ) && in_array( $in['dots_position'], array( 'left', 'center', 'right' ), true ) ) ? $in['dots_position'] : $d['dots_position'];
+		$out['dots_mobile']   = ( isset( $in['dots_mobile'] ) && in_array( $in['dots_mobile'], array( 'same', 'left', 'center', 'right', 'hidden' ), true ) ) ? $in['dots_mobile'] : $d['dots_mobile'];
+		$out['arrows_mobile'] = ( isset( $in['arrows_mobile'] ) && 'hide' === $in['arrows_mobile'] ) ? 'hide' : 'show';
 
 		$out['ratio_desktop'] = self::sanitize_ratio( isset( $in['ratio_desktop'] ) ? $in['ratio_desktop'] : $d['ratio_desktop'] );
 		$out['ratio_mobile']  = self::sanitize_ratio( isset( $in['ratio_mobile'] ) ? $in['ratio_mobile'] : $d['ratio_mobile'] );

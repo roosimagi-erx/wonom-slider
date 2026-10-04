@@ -151,6 +151,11 @@ class Wonom_Slider_Frontend {
 		if ( ! empty( $settings['ken_burns'] ) ) {
 			$classes[] = 'has-ken-burns';
 		}
+		$classes[] = 'dots-' . $settings['dots_position'];
+		$classes[] = 'm-dots-' . ( 'same' === $settings['dots_mobile'] ? $settings['dots_position'] : $settings['dots_mobile'] );
+		if ( 'hide' === $settings['arrows_mobile'] ) {
+			$classes[] = 'm-arrows-hide';
+		}
 		if ( 1 === $count ) {
 			$classes[] = 'is-single';
 		}
@@ -534,6 +539,11 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slider__arrow{width:38px!important;height:38px!important;opacity:1;background:rgba(255,255,255,.7)!important}"
 			. "{$s} .wonom-slider__arrow--prev{left:8px!important}{$s} .wonom-slider__arrow--next{right:8px!important}"
 			. "{$s} .wonom-slider__dots{bottom:10px!important}"
+			. "{$s}.m-dots-left .wonom-slider__dots{justify-content:flex-start;padding-left:14px}"
+			. "{$s}.m-dots-right .wonom-slider__dots{justify-content:flex-end;padding-right:14px}"
+			. "{$s}.m-dots-center .wonom-slider__dots{justify-content:center;padding:0}"
+			. "{$s}.m-dots-hidden .wonom-slider__dots{display:none!important}"
+			. "{$s}.m-arrows-hide .wonom-slider__arrow{display:none!important}"
 			. '}';
 		// Neutralise the stylesheet's default 767px block when the custom breakpoint is larger/smaller.
 		if ( $bp > 768 ) {

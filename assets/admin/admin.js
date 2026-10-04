@@ -944,7 +944,12 @@
 			'</div>' );
 
 		h += group( I.gNavigation, 'leftright',
-			toggleRow( 'show_arrows', I.showArrows ) + toggleRow( 'show_dots', I.showDots ) + toggleRow( 'show_progress', I.showProgress ) );
+			toggleRow( 'show_arrows', I.showArrows ) + toggleRow( 'show_dots', I.showDots ) + toggleRow( 'show_progress', I.showProgress ) +
+			'<div class="wonom-grid wonom-grid--3" style="margin-top:12px">' +
+			field( I.dotsPosition, sSelect( 'dots_position', [ [ 'center', I.center ], [ 'left', I.left ], [ 'right', I.right ] ] ) ) +
+			field( I.dotsMobile, sSelect( 'dots_mobile', [ [ 'same', I.optSame ], [ 'left', I.left ], [ 'center', I.center ], [ 'right', I.right ], [ 'hidden', I.optHidden ] ] ) ) +
+			field( I.arrowsMobile, sSelect( 'arrows_mobile', [ [ 'show', I.optShow ], [ 'hide', I.optHidden ] ] ) ) +
+			'</div><p class="wonom-hint">' + esc( I.dotsHint ) + '</p>' );
 
 		h += group( I.gLayout, 'align-wide',
 			'<div class="wonom-grid wonom-grid--2">' + ratioField( 'ratio_desktop', I.ratioDesktop ) + ratioField( 'ratio_mobile', I.ratioMobile ) + '</div>' +

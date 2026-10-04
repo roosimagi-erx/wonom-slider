@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.5 - 2026-10-04
+
+- Uus: Seaded → Navigeerimine: punktide asukoht (keskel / vasakul / paremal), eraldi valik mobiilile (sh „peidetud”) ja noolte peitmine mobiilis.
+
 ## 1.5.4 - 2026-10-04
 
 - Parandus: kõrguse arvutus reageerib ainult laiuse muutusele ja väljaspool ResizeObserveri tagasikutset; kaob brauseri konsooli hoiatus „ResizeObserver loop”.
