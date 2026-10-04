@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3 - 2026-10-04
+
+- Muudatus: eelvaade on slaidide lehel vaikimisi avatud; „Peida eelvaade” jääb brauseris meelde. Eelvaate kõrgus järgib slaiderit, tühja ala alla ei jää.
+
 ## 1.2.2 - 2026-10-04
 
 - Parandus: lava laadib veebifondi ka siis, kui slaidi font on alles valitud ja salvestamata.

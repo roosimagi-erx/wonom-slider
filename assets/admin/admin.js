@@ -13,7 +13,8 @@
 	var langTab = {}; // slideId -> language slug
 	var tab = ( location.hash || '#slides' ).replace( '#', '' );
 	if ( [ 'slides', 'calendar', 'settings' ].indexOf( tab ) < 0 ) { tab = 'slides'; }
-	var preview = { open: false, device: 'desktop', all: true, lang: '' };
+	var preview = { open: true, device: 'desktop', all: true, lang: '' };
+	try { preview.open = window.localStorage.getItem( 'wonom_slider_preview' ) !== '0'; } catch ( e ) { /* private mode */ }
 	var calView = null;
 	var saveBtn = document.getElementById( 'wonom-save' );
 	var dirtyEl = document.getElementById( 'wonom-dirty' );
@@ -222,7 +223,7 @@
 		h += '<button type="button" class="button button-primary" data-action="add" data-type="regular">+ ' + esc( I.addSlide ) + '</button>';
 		h += '<button type="button" class="button" data-action="add" data-type="campaign">+ ' + esc( I.addCampaign ) + '</button>';
 		h += '<span class="wonom-spacer"></span>';
-		h += '<button type="button" class="button' + ( preview.open ? ' is-on' : '' ) + '" data-action="toggle-preview"><span class="dashicons dashicons-visibility"></span> ' + esc( I.preview ) + '</button>';
+		h += '<button type="button" class="button' + ( preview.open ? ' is-on' : '' ) + '" data-action="toggle-preview"><span class="dashicons dashicons-' + ( preview.open ? 'hidden' : 'visibility' ) + '"></span> ' + esc( preview.open ? I.hidePreview : I.preview ) + '</button>';
 		h += '</div>';
 
 		if ( preview.open ) { h += renderPreview(); }
@@ -509,7 +510,22 @@
 		return h;
 	}
 
+	// Same-origin preview iframe: size it to the slider so no empty area remains below.
+	function fitPreview() {
+		var f = document.getElementById( 'wonom-preview-frame' );
+		if ( ! f ) { return; }
+		try {
+			var d = f.contentDocument, sl = d && d.querySelector( '.wonom-slider' );
+			if ( sl ) {
+				f.style.height = Math.max( 120, Math.ceil( sl.getBoundingClientRect().height ) ) + 'px';
+				[].forEach.call( d.images, function ( img ) { if ( ! img.complete ) { img.addEventListener( 'load', fitPreview ); } } );
+			}
+		} catch ( e ) { /* cross-origin – keep default height */ }
+	}
+
 	function afterSlidesRender() {
+		var pf = document.getElementById( 'wonom-preview-frame' );
+		if ( pf ) { pf.addEventListener( 'load', fitPreview ); }
 		var list = document.getElementById( 'wonom-list' );
 		if ( list && $.fn.sortable ) {
 			$( list ).sortable( {
@@ -989,7 +1005,10 @@
 			case 'translate': translateSlide( s, btn.getAttribute( 'data-lang' ), btn ); break;
 			case 'cal': openCalendarPopup( s, btn.getAttribute( 'data-date' ), btn ); break;
 			case 'preset': applyPreset( s, btn.getAttribute( 'data-date' ), btn.getAttribute( 'data-preset' ) ); break;
-			case 'toggle-preview': preview.open = ! preview.open; render(); break;
+			case 'toggle-preview':
+				preview.open = ! preview.open;
+				try { window.localStorage.setItem( 'wonom_slider_preview', preview.open ? '1' : '0' ); } catch ( e2 ) { /* ignore */ }
+				render(); break;
 			case 'preview-device': preview.device = btn.getAttribute( 'data-device' ); render(); break;
 			case 'preview-lang': preview.lang = btn.getAttribute( 'data-lang' ); render(); break;
 			case 'preview-refresh': refreshPreview(); break;

@@ -59,6 +59,7 @@ return array(
 		'Saving failed'                      => 'Salvestamine ebaõnnestus',
 		'You have unsaved changes.'          => 'Sul on salvestamata muudatusi.',
 		'Preview'                            => 'Eelvaade',
+		'Hide preview'                       => 'Peida eelvaade',
 		'Preview shows the saved version. Save to refresh.' => 'Eelvaade näitab salvestatud versiooni. Värskendamiseks salvesta.',
 		'Include scheduled and disabled slides' => 'Näita ka ajastatud ja väljalülitatud slaide',
 		'Desktop'                            => 'Arvuti',

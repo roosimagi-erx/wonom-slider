@@ -118,6 +118,7 @@ class Wonom_Slider_Admin {
 			'saveFailed'       => __( 'Saving failed', 'wonom-slider' ),
 			'leaveConfirm'     => __( 'You have unsaved changes.', 'wonom-slider' ),
 			'preview'          => __( 'Preview', 'wonom-slider' ),
+			'hidePreview'      => __( 'Hide preview', 'wonom-slider' ),
 			'previewHint'      => __( 'Preview shows the saved version. Save to refresh.', 'wonom-slider' ),
 			'previewAll'       => __( 'Include scheduled and disabled slides', 'wonom-slider' ),
 			'desktop'          => __( 'Desktop', 'wonom-slider' ),
