@@ -183,7 +183,15 @@
 		}
 		apply();
 		if ( 'ResizeObserver' in window ) {
-			new ResizeObserver( apply ).observe( this.root );
+			// React to width changes only, and outside the observer callback, to avoid
+			// "ResizeObserver loop" warnings (setting the height resizes the observed box).
+			var lastW = self.root.clientWidth;
+			new ResizeObserver( function () {
+				var w = self.root.clientWidth;
+				if ( w === lastW ) { return; }
+				lastW = w;
+				requestAnimationFrame( apply );
+			} ).observe( this.root );
 		} else {
 			window.addEventListener( 'resize', apply );
 		}
