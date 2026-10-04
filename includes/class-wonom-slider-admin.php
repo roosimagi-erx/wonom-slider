@@ -170,6 +170,26 @@ class Wonom_Slider_Admin {
 			'frameRadius'      => __( 'Frame: corner radius (px)', 'wonom-slider' ),
 			'frameHint'        => __( 'The background colour shows around the frame; 0 = no frame. On mobile the distance is halved.', 'wonom-slider' ),
 
+			// Two-column content editor.
+			'colContent'       => __( 'Content', 'wonom-slider' ),
+			'colTypo'          => __( 'Look of this row', 'wonom-slider' ),
+			'tFont'            => __( 'Font', 'wonom-slider' ),
+			'tSize'            => __( 'Size (px)', 'wonom-slider' ),
+			'tSizeMobile'      => __( 'Mobile (px)', 'wonom-slider' ),
+			'tWeight'          => __( 'Weight', 'wonom-slider' ),
+			'tUpper'           => __( 'Uppercase', 'wonom-slider' ),
+			'tSpacing'         => __( 'Letter spacing', 'wonom-slider' ),
+			'tGapBelow'        => __( 'Space below (px)', 'wonom-slider' ),
+			'tGapAbove'        => __( 'Space above (px)', 'wonom-slider' ),
+			'tRadius'          => __( 'Corners (px)', 'wonom-slider' ),
+			'tColor'           => __( 'Colour', 'wonom-slider' ),
+			'tBg'              => __( 'Background', 'wonom-slider' ),
+			'tTextColorHint'   => __( 'Text colour applies to all texts of the slide.', 'wonom-slider' ),
+			'badgeTypoHint'    => __( 'Uses the button colours.', 'wonom-slider' ),
+			'eyebrowTypoHint'  => __( 'Uses the text font.', 'wonom-slider' ),
+			'button2TypoHint'  => __( 'Same style as the first button, transparent background.', 'wonom-slider' ),
+			'gapHint'          => __( 'Space below applies between all text rows.', 'wonom-slider' ),
+
 			// Per-slide typography.
 			'secTypo'          => __( 'Typography', 'wonom-slider' ),
 			'typoIntro'        => __( 'Empty = default (shown as placeholder). Everything here applies to this slide only; the preview updates immediately.', 'wonom-slider' ),

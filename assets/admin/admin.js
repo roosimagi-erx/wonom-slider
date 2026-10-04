@@ -416,45 +416,8 @@
 			h += '</div>';
 		}
 		var L = cur === defaultLang() ? '' : cur;
-		h += '<div class="wonom-grid wonom-grid--2">';
-		h += field( I.eyebrow, input( s, 'eyebrow', { lang: L } ) );
-		h += field( I.badge, input( s, 'badge', { lang: L } ) );
-		h += '</div>';
-		h += field( I.heading, input( s, 'heading', { lang: L, attrs: ' class="wonom-big"' } ) );
-		h += field( I.text, input( s, 'text', { lang: L, textarea: true } ) );
-		h += '<div class="wonom-grid wonom-grid--2">';
-		h += field( I.buttonText, input( s, 'button_text', { lang: L } ) );
-		h += field( I.buttonUrl, input( s, 'button_url', { lang: L, type: 'url', placeholder: L ? ( s.button_url || CFG.homeUrl ) : CFG.homeUrl } ) );
-		h += field( I.button2Text, input( s, 'button2_text', { lang: L } ) );
-		h += field( I.button2Url, input( s, 'button2_url', { lang: L, type: 'url' } ) );
-		h += '</div>';
-		h += field( I.alt, input( s, 'alt', { lang: L } ) );
-		if ( L ) { h += '<p class="wonom-hint">' + esc( I.fallbackHint ) + '</p>'; }
-		h += '</section>';
 
-		/* Design */
-		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-art"></span> ' + esc( I.secDesign ) + '</h3>';
-		h += '<div class="wonom-grid wonom-grid--2">';
-		h += field( I.align, segmented( 'align', s.align, [ [ 'left', I.left, 'editor-alignleft' ], [ 'center', I.center, 'editor-aligncenter' ], [ 'right', I.right, 'editor-alignright' ] ] ) );
-		h += field( I.valign, segmented( 'valign', s.valign, [ [ 'top', I.top, 'arrow-up-alt' ], [ 'middle', I.middle, 'minus' ], [ 'bottom', I.bottom, 'arrow-down-alt' ] ] ) );
-		h += '</div>';
-		h += '<div class="wonom-grid wonom-grid--3">';
-		h += field( I.textColor, color( s, 'text_color' ) );
-		h += field( I.buttonBg, color( s, 'button_bg' ) );
-		h += field( I.buttonColor, color( s, 'button_color' ) );
-		h += '</div>';
-		h += '<div class="wonom-grid wonom-grid--3">';
-		h += field( I.overlay, '<span class="wonom-range"><input type="range" min="0" max="90" step="5" data-field="overlay" value="' + ( s.overlay | 0 ) + '"><output>' + ( s.overlay | 0 ) + '%</output></span>', esc( I.overlayHint ) );
-		h += field( I.overlayColor, color( s, 'overlay_color' ) );
-		h += field( I.bgColor, color( s, 'bg_color' ), esc( I.bgHint ) );
-		h += '</div>';
-		h += field( I.posMode, segmented( 'pos_mode', s.pos_mode, [ [ 'grid', I.posGrid ], [ 'free', I.posFree ] ] ), esc( I.posHint ) );
-		h += '<div class="wonom-grid wonom-grid--3 wonom-posrow js-pos-free" data-for="desktop"' + ( s.pos_mode === 'free' ? '' : ' hidden' ) + '>';
-		h += field( I.posX, numInput( s, 'pos_x', 0, 100 ) ) + field( I.posY, numInput( s, 'pos_y', 0, 100 ) ) + field( I.posW, numInput( s, 'pos_w', 10, 100 ) );
-		h += '</div>';
-		h += '</section>';
-
-		/* Typography for this slide (overrides the global settings) */
+		/* Two columns: content on the left, the look of that same row on the right. */
 		var T = s.typo || {}, G = state.settings;
 		function typoFont( key, label ) {
 			var v = T[ key ] == null ? '' : T[ key ], isCustom = String( v ).indexOf( 'custom:' ) === 0;
@@ -475,20 +438,69 @@
 			options.forEach( function ( o ) { h2 += '<option value="' + esc( o[ 0 ] ) + '"' + ( v === String( o[ 0 ] ) ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } );
 			return field( label, h2 + '</select>' );
 		}
-		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-editor-paragraph"></span> ' + esc( I.secTypo ) + '</h3>';
-		h += '<p class="wonom-hint">' + esc( I.typoIntro ) + '</p>';
-		h += '<div class="wonom-grid wonom-grid--2">' + typoFont( 'font_heading', I.fontHeading ) + typoFont( 'font_text', I.fontText ) + '</div>';
-		h += '<div class="wonom-grid wonom-grid--3">';
-		h += typoNum( 'heading_size', I.headingSize, 12, 160, G.heading_size ) + typoNum( 'heading_size_mobile', I.headingSizeMobile, 12, 100, G.heading_size_mobile );
-		h += typoSelect( 'heading_weight', I.headingWeight, [ [ 300, '300' ], [ 400, '400' ], [ 500, '500' ], [ 600, '600' ], [ 700, '700' ], [ 800, '800' ] ] );
-		h += typoNum( 'text_size', I.textSize, 10, 60, G.text_size ) + typoNum( 'text_size_mobile', I.textSizeMobile, 10, 40, G.text_size_mobile );
-		h += typoSelect( 'heading_uppercase', I.headingUppercase, [ [ 1, I.yes ], [ 0, I.no ] ] );
-		h += typoNum( 'heading_spacing', I.headingSpacing, -10, 60, G.heading_spacing );
-		h += typoNum( 'gap', I.gap, 0, 80, 14 ) + typoNum( 'gap_button', I.gapButton, 0, 100, 22 );
-		h += typoNum( 'button_radius', I.buttonRadius, 0, 100, G.button_radius );
+		function pair( left, right ) {
+			return '<div class="wonom-pair"><div class="wonom-pair__main">' + left + '</div><div class="wonom-pair__look">' + right + '</div></div>';
+		}
+		function look() { return '<div class="wonom-look">' + [].slice.call( arguments ).join( '' ) + '</div>'; }
+		function lookHint( t ) { return '<p class="wonom-hint wonom-look-hint">' + esc( t ) + '</p>'; }
+
+		h += '<div class="wonom-pairs">';
+		h += '<div class="wonom-pair wonom-pair--head"><div>' + esc( I.colContent ) + '</div><div>' + esc( I.colTypo ) + '</div></div>';
+
+		h += pair(
+			field( I.badge, input( s, 'badge', { lang: L } ) ),
+			lookHint( I.badgeTypoHint )
+		);
+		h += pair(
+			field( I.eyebrow, input( s, 'eyebrow', { lang: L } ) ),
+			look( typoNum( 'eyebrow_size', I.tSize, 8, 40, 14 ), typoNum( 'eyebrow_size_mobile', I.tSizeMobile, 8, 30, 12 ) ) + lookHint( I.eyebrowTypoHint )
+		);
+		h += pair(
+			field( I.heading, input( s, 'heading', { lang: L, attrs: ' class="wonom-big"' } ) ),
+			look(
+				typoFont( 'font_heading', I.tFont ),
+				typoNum( 'heading_size', I.tSize, 12, 160, G.heading_size ),
+				typoNum( 'heading_size_mobile', I.tSizeMobile, 12, 100, G.heading_size_mobile ),
+				typoSelect( 'heading_weight', I.tWeight, [ [ 300, '300' ], [ 400, '400' ], [ 500, '500' ], [ 600, '600' ], [ 700, '700' ], [ 800, '800' ] ] ),
+				typoSelect( 'heading_uppercase', I.tUpper, [ [ 1, I.yes ], [ 0, I.no ] ] ),
+				typoNum( 'heading_spacing', I.tSpacing, -10, 60, G.heading_spacing ),
+				field( I.tColor, color( s, 'text_color' ) ),
+				typoNum( 'gap', I.tGapBelow, 0, 80, 14 )
+			) + lookHint( I.tTextColorHint + ' ' + I.gapHint )
+		);
+		h += pair(
+			field( I.text, input( s, 'text', { lang: L, textarea: true } ) ),
+			look( typoFont( 'font_text', I.tFont ), typoNum( 'text_size', I.tSize, 10, 60, G.text_size ), typoNum( 'text_size_mobile', I.tSizeMobile, 10, 40, G.text_size_mobile ) )
+		);
+		h += pair(
+			field( I.buttonText, input( s, 'button_text', { lang: L } ) ) + field( I.buttonUrl, input( s, 'button_url', { lang: L, type: 'url', placeholder: L ? ( s.button_url || CFG.homeUrl ) : CFG.homeUrl } ) ),
+			look( field( I.tBg, color( s, 'button_bg' ) ), field( I.tColor, color( s, 'button_color' ) ), typoNum( 'button_radius', I.tRadius, 0, 100, G.button_radius ), typoNum( 'gap_button', I.tGapAbove, 0, 100, 22 ) )
+		);
+		h += pair(
+			field( I.button2Text, input( s, 'button2_text', { lang: L } ) ) + field( I.button2Url, input( s, 'button2_url', { lang: L, type: 'url' } ) ),
+			lookHint( I.button2TypoHint )
+		);
+		h += pair( field( I.alt, input( s, 'alt', { lang: L } ) ), '' );
 		h += '</div>';
-		h += '<p class="wonom-hint">' + esc( I.fontsHint ) + '</p>';
-		h += '<button type="button" class="button-link" data-action="typo-reset">' + esc( I.typoReset ) + '</button>';
+		if ( L ) { h += '<p class="wonom-hint">' + esc( I.fallbackHint ) + '</p>'; }
+		h += '<p class="wonom-hint">' + esc( I.typoIntro ) + ' ' + esc( I.fontsHint ) + ' <button type="button" class="button-link" data-action="typo-reset">' + esc( I.typoReset ) + '</button></p>';
+		h += '</section>';
+
+		/* Design */
+		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-art"></span> ' + esc( I.secDesign ) + '</h3>';
+		h += '<div class="wonom-grid wonom-grid--2">';
+		h += field( I.align, segmented( 'align', s.align, [ [ 'left', I.left, 'editor-alignleft' ], [ 'center', I.center, 'editor-aligncenter' ], [ 'right', I.right, 'editor-alignright' ] ] ) );
+		h += field( I.valign, segmented( 'valign', s.valign, [ [ 'top', I.top, 'arrow-up-alt' ], [ 'middle', I.middle, 'minus' ], [ 'bottom', I.bottom, 'arrow-down-alt' ] ] ) );
+		h += '</div>';
+		h += '<div class="wonom-grid wonom-grid--3">';
+		h += field( I.overlay, '<span class="wonom-range"><input type="range" min="0" max="90" step="5" data-field="overlay" value="' + ( s.overlay | 0 ) + '"><output>' + ( s.overlay | 0 ) + '%</output></span>', esc( I.overlayHint ) );
+		h += field( I.overlayColor, color( s, 'overlay_color' ) );
+		h += field( I.bgColor, color( s, 'bg_color' ), esc( I.bgHint ) );
+		h += '</div>';
+		h += field( I.posMode, segmented( 'pos_mode', s.pos_mode, [ [ 'grid', I.posGrid ], [ 'free', I.posFree ] ] ), esc( I.posHint ) );
+		h += '<div class="wonom-grid wonom-grid--3 wonom-posrow js-pos-free" data-for="desktop"' + ( s.pos_mode === 'free' ? '' : ' hidden' ) + '>';
+		h += field( I.posX, numInput( s, 'pos_x', 0, 100 ) ) + field( I.posY, numInput( s, 'pos_y', 0, 100 ) ) + field( I.posW, numInput( s, 'pos_w', 10, 100 ) );
+		h += '</div>';
 		h += '</section>';
 
 		/* Mobile */
@@ -742,7 +754,7 @@
 	/**
 	 * Per-slide typography → CSS custom property on the stage's slide element.
 	 */
-	var TYPO_VARS = { font_heading: '--ws-font-h', font_text: '--ws-font-t', heading_size: '--ws-h-size', heading_size_mobile: '--ws-h-size-mobile', text_size: '--ws-t-size', text_size_mobile: '--ws-t-size-mobile', heading_weight: '--ws-h-weight', heading_uppercase: '--ws-h-transform', heading_spacing: '--ws-h-spacing', gap: '--ws-gap', gap_button: '--ws-gap-btn', button_radius: '--ws-btn-radius' };
+	var TYPO_VARS = { font_heading: '--ws-font-h', font_text: '--ws-font-t', heading_size: '--ws-h-size', heading_size_mobile: '--ws-h-size-mobile', text_size: '--ws-t-size', text_size_mobile: '--ws-t-size-mobile', heading_weight: '--ws-h-weight', heading_uppercase: '--ws-h-transform', heading_spacing: '--ws-h-spacing', gap: '--ws-gap', gap_button: '--ws-gap-btn', button_radius: '--ws-btn-radius', eyebrow_size: '--ws-e-size', eyebrow_size_mobile: '--ws-e-size-mobile' };
 	var SERIF = [ 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display' ];
 	function fontCss( v ) {
 		if ( ! v || v === 'inherit' ) { return 'inherit'; }

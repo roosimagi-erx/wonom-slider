@@ -413,6 +413,8 @@ class Wonom_Slider_Frontend {
 			'gap'                 => array( '--ws-gap', 'px' ),
 			'gap_button'          => array( '--ws-gap-btn', 'px' ),
 			'button_radius'       => array( '--ws-btn-radius', 'px' ),
+			'eyebrow_size'        => array( '--ws-e-size', 'px' ),
+			'eyebrow_size_mobile' => array( '--ws-e-size-mobile', 'px' ),
 		);
 		$out = '';
 		foreach ( $map as $k => $def ) {
@@ -508,7 +510,7 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide__content{padding:var(--ws-pad-mobile)}"
 			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size-mobile);letter-spacing:calc(var(--ws-h-spacing,.14em)*.75)}"
 			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size-mobile)}"
-			. "{$s} .wonom-slide__eyebrow{font-size:12px}"
+			. "{$s} .wonom-slide__eyebrow{font-size:var(--ws-e-size-mobile,12px)}"
 			. "{$s} .wonom-slide__button{padding:10px 20px;font-size:12px}"
 			. "{$s} .wonom-slide.m-align-left .wonom-slide__content{justify-content:flex-start;text-align:left}"
 			. "{$s} .wonom-slide.m-align-center .wonom-slide__content{justify-content:center;text-align:center}"

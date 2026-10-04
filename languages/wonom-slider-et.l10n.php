@@ -111,6 +111,25 @@ return array(
 		'Frame: corner radius (px)'          => 'Raam: nurga raadius (px)',
 		'The background colour shows around the frame; 0 = no frame. On mobile the distance is halved.' => 'Raami ümber paistab taustavärv; 0 = raami pole. Mobiilis on kaugus poole väiksem.',
 
+		// Two-column content editor.
+		'Content'                            => 'Sisu',
+		'Look of this row'                   => 'Selle rea kujundus',
+		'Font'                               => 'Font',
+		'Size (px)'                          => 'Suurus (px)',
+		'Mobile (px)'                        => 'Mobiilis (px)',
+		'Weight'                             => 'Paksus',
+		'Uppercase'                          => 'Suurtähed',
+		'Letter spacing'                     => 'Tähevahe',
+		'Space below (px)'                   => 'Vahe alla (px)',
+		'Space above (px)'                   => 'Vahe ette (px)',
+		'Corners (px)'                       => 'Nurgad (px)',
+		'Colour'                             => 'Värv',
+		'Text colour applies to all texts of the slide.' => 'Teksti värv kehtib slaidi kõigile tekstidele.',
+		'Uses the button colours.'           => 'Kasutab nupu värve.',
+		'Uses the text font.'                => 'Kasutab teksti fonti.',
+		'Same style as the first button, transparent background.' => 'Sama stiil mis esimesel nupul, läbipaistev taust.',
+		'Space below applies between all text rows.' => 'Vahe alla kehtib kõigi tekstiridade vahel.',
+
 		// Per-slide typography.
 		'Empty = default (shown as placeholder). Everything here applies to this slide only; the preview updates immediately.' => 'Tühi = vaikeväärtus (näha kohatäitena). Kõik siinne kehtib ainult sellele slaidile; eelvaade uueneb kohe.',
 		'Default'                            => 'Vaikimisi',

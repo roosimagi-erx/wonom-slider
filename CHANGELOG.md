@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 - 2026-10-04
+
+- Muudatus: „Tekstid ja nupp” on nüüd kahes veerus – vasakul sisu (silt, väike rida, pealkiri, tekst, nupud, alt-tekst), paremal sama rea kujundus ja tüpograafia (font, suurus arvutis/mobiilis, paksus, suurtähed, tähevahe, värvid, vahed, nupu nurgad). Eraldi Tüpograafia plokk kadus, nupu ja teksti värvid liikusid oma rea juurde.
+- Uus: väikese rea (eyebrow) suurus arvutis ja mobiilis.
+
 ## 1.4.1 - 2026-10-04
 
 - Parandus: slaideri külgede suhe võetakse esimeselt slaidilt, millel on pilt või kollaaž, mitte lihtsalt esimeselt slaidilt. Kui esimene slaid oli ainult tekstiga, jäi slaider mobiilis liiga madalaks ja tekst läks üle serva. Kui ühelgi slaidil pilti pole, on mobiilis suhe 4:3.

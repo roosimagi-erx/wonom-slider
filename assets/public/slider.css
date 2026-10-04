@@ -295,7 +295,7 @@
 
 .wonom-slide__eyebrow {
 	margin: 0 0 var(--ws-gap);
-	font-size: 14px;
+	font-size: var(--ws-e-size, 14px);
 	letter-spacing: 0.22em;
 	text-transform: uppercase;
 	opacity: 0.9;
@@ -545,7 +545,7 @@
 	.wonom-slide__content { padding: var(--ws-pad-mobile); }
 	.wonom-slide__heading { font-size: var(--ws-h-size-mobile); letter-spacing: calc(var(--ws-h-spacing, 0.14em) * 0.75); }
 	.wonom-slide__text { font-size: var(--ws-t-size-mobile); }
-	.wonom-slide__eyebrow { font-size: 12px; }
+	.wonom-slide__eyebrow { font-size: var(--ws-e-size-mobile, 12px); }
 	.wonom-slide__button { padding: 10px 20px; font-size: 12px; }
 
 	.wonom-slide.m-align-left .wonom-slide__content { justify-content: flex-start; text-align: left; }

@@ -211,6 +211,26 @@ body.wonom-app .wonom-field .wonom-color-hex { width: 110px; font-family: ui-mon
 
 .wonom-langbar { display: flex; align-items: center; gap: 10px; margin: 8px 0 14px; }
 
+/* content ↔ look pairs (two columns) */
+.wonom-pairs { border: 1px solid var(--w-border); border-radius: var(--w-radius-sm); overflow: hidden; margin-top: 6px; }
+.wonom-pair { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0; }
+.wonom-pair + .wonom-pair { border-top: 1px solid var(--w-border); }
+.wonom-pair__main, .wonom-pair__look { padding: 12px 14px; min-width: 0; }
+.wonom-pair__look { background: var(--w-bg); border-left: 1px solid var(--w-border); }
+.wonom-pair__main .wonom-field:last-child, .wonom-pair__look .wonom-field:last-child { margin-bottom: 0; }
+.wonom-pair--head > div { padding: 7px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--w-muted); background: var(--w-card); }
+.wonom-pair--head > div + div { background: var(--w-bg); border-left: 1px solid var(--w-border); }
+.wonom-look { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px 10px; }
+.wonom-look .wonom-field { margin: 0; }
+.wonom-look .wonom-field > label { font-size: 11px; color: var(--w-muted); font-weight: 600; }
+body.wonom-app .wonom-look .wonom-field input,
+body.wonom-app .wonom-look .wonom-field select { min-height: 32px; font-size: 12px; }
+.wonom-look .wonom-color input[type="color"] { width: 32px; height: 32px; }
+body.wonom-app .wonom-look .wonom-field .wonom-color-hex { width: 76px; font-size: 11px; }
+.wonom-look-hint { margin: 6px 0 0; font-size: 11px; }
+.wonom-pair__look:empty { background: var(--w-bg); }
+@media (max-width: 1100px) { .wonom-pair { grid-template-columns: 1fr; } .wonom-pair__look { border-left: 0; border-top: 1px dashed var(--w-border); } }
+
 /* images */
 .wonom-imgbox { padding: 12px; border: 1px solid var(--w-border); border-radius: var(--w-radius-sm); background: var(--w-bg); }
 .wonom-imgwrap { position: relative; border-radius: 6px; overflow: hidden; background: #ddd; cursor: crosshair; line-height: 0; }

@@ -327,6 +327,8 @@ class Wonom_Slider_Data {
 			'gap'                 => array( 'int', 0, 80 ),  // space between heading, eyebrow and text
 			'gap_button'          => array( 'int', 0, 100 ), // space above the buttons
 			'button_radius'       => array( 'int', 0, 100 ),
+			'eyebrow_size'        => array( 'int', 8, 40 ),
+			'eyebrow_size_mobile' => array( 'int', 8, 30 ),
 		);
 	}
 
