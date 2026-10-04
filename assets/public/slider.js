@@ -6,6 +6,33 @@
 	// which would otherwise pause autoplay forever.
 	var HOVER = window.matchMedia && window.matchMedia( '(hover: hover) and (pointer: fine)' ).matches;
 
+	/**
+	 * Resolve third-party lazy-load placeholders (data-src / data-srcset / data-lazy-src…) on a slide.
+	 * Themes and optimisers rewrite <img> tags; if their script is absent or late (editor preview,
+	 * delayed JS), the slide would stay blank. Harmless when the attributes are not present.
+	 */
+	function hydrate( slide ) {
+		if ( ! slide ) { return; }
+		[].forEach.call( slide.querySelectorAll( 'img' ), function ( img ) {
+			var src = img.getAttribute( 'data-src' ) || img.getAttribute( 'data-lazy-src' ) || img.getAttribute( 'data-original' );
+			var set = img.getAttribute( 'data-srcset' ) || img.getAttribute( 'data-lazy-srcset' );
+			if ( src && ( ! img.getAttribute( 'src' ) || /lazy|placeholder|blank|data:image\/(svg|gif)/i.test( img.getAttribute( 'src' ) ) ) ) {
+				img.setAttribute( 'src', src );
+				img.removeAttribute( 'data-src' ); img.removeAttribute( 'data-lazy-src' ); img.removeAttribute( 'data-original' );
+			}
+			if ( set && ! img.getAttribute( 'srcset' ) ) {
+				img.setAttribute( 'srcset', set );
+				img.removeAttribute( 'data-srcset' ); img.removeAttribute( 'data-lazy-srcset' );
+			}
+			img.classList.remove( 'wd-lazy-fade', 'lazyload', 'lazy' );
+			img.classList.add( 'wd-lazy-loaded' );
+		} );
+		[].forEach.call( slide.querySelectorAll( 'source[data-srcset]' ), function ( s ) {
+			s.setAttribute( 'srcset', s.getAttribute( 'data-srcset' ) );
+			s.removeAttribute( 'data-srcset' );
+		} );
+	}
+
 	function Slider( root ) {
 		if ( root.__wonom ) {
 			return root.__wonom;
@@ -41,6 +68,7 @@
 		this.count = this.slides.length;
 
 		this.sizeTrack();
+		hydrate( this.slides[ 0 ] );
 
 		if ( this.count < 2 ) {
 			root.classList.add( 'is-single' );
@@ -246,6 +274,8 @@
 		var upcoming = this.slides[ ( index + 1 ) % this.count ];
 		var img = upcoming && upcoming.querySelector( 'img[loading="lazy"]' );
 		if ( img ) { img.loading = 'eager'; }
+		hydrate( this.slides[ index ] );
+		if ( upcoming ) { hydrate( upcoming ); }
 
 		if ( ! instant ) {
 			this.animating = true;

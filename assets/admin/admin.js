@@ -264,17 +264,25 @@
 		h += '<span class="wonom-hint">' + esc( I.previewHint ) + '</span>';
 		h += '<button type="button" class="button" data-action="preview-refresh"><span class="dashicons dashicons-update"></span> ' + esc( I.refresh ) + '</button>';
 		h += '</div>';
-		h += '<div class="wonom-preview-stage is-' + preview.device + '"><iframe id="wonom-preview-frame" src="' + esc( previewSrc() ) + '" title="' + esc( I.preview ) + '"></iframe></div>';
+		h += '<div class="wonom-preview-stage is-' + preview.device + '"><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"></iframe></div>';
 		h += '</div>';
 		return h;
 	}
-	function previewSrc() {
-		var u = CFG.previewUrl + ( preview.all ? '&all=1' : '' ) + ( preview.lang ? '&lang=' + encodeURIComponent( preview.lang ) : '' ) + '&t=' + Date.now();
-		return u;
-	}
+	// The preview is fetched through REST and shown via srcdoc, so page optimisers
+	// (lazy-load placeholders, delayed JavaScript) cannot interfere with it.
+	var previewReq = 0;
 	function refreshPreview() {
 		var f = document.getElementById( 'wonom-preview-frame' );
-		if ( f ) { f.src = previewSrc(); }
+		if ( ! f ) { return; }
+		var req = ++previewReq;
+		api( '/preview?all=' + ( preview.all ? 1 : 0 ) + ( preview.lang ? '&lang=' + encodeURIComponent( preview.lang ) : '' ) + '&t=' + Date.now() ).then( function ( res ) {
+			if ( req !== previewReq || ! document.getElementById( 'wonom-preview-frame' ) ) { return; }
+			var body = res.html || '<p style="font:14px/1.5 system-ui,sans-serif;color:#555;padding:40px;text-align:center">' + esc( I.stageEmpty ) + '</p>';
+			f.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">' + ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
+				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6}' + ( res.custom_css || '' ) + '</style></head><body>' + body
+				+ '<script src="' + esc( res.js ) + '"><\/script></body></html>';
+		} ).catch( function ( e ) { toast( e && e.message ? e.message : 'Preview error', 'err' ); } );
 	}
 
 	function renderCard( s, i ) {
@@ -299,7 +307,12 @@
 		}
 		h += '<div class="wonom-thumb' + ( s.preview ? ' wonom-thumb--live' : '' ) + '" data-action="open">' + thumbInner + '</div>';
 		h += '<div class="wonom-slide-meta" data-action="open">';
-		h += '<div class="wonom-slide-title"><strong class="js-name">' + esc( s.name || s.heading || I.untitled ) + '</strong>';
+		h += '<div class="wonom-slide-title">';
+		if ( open ) {
+			h += '<input type="text" class="wonom-name-inline js-name" data-field="name" value="' + esc( s.name ) + '" placeholder="' + esc( s.heading || I.untitled ) + '" title="' + esc( I.nameHint ) + '">';
+		} else {
+			h += '<strong class="js-name">' + esc( s.name || s.heading || I.untitled ) + '</strong>';
+		}
 		if ( s.type === 'campaign' ) { h += ' <span class="wonom-tag wonom-tag--campaign">' + esc( I.typeCampaign ) + '</span>'; }
 		h += '</div>';
 		h += '<div class="wonom-slide-sub"><span class="wonom-pill wonom-pill--' + st + ' js-status">' + esc( statusLabel( st ) ) + '</span> <span class="js-sched">' + esc( scheduleSummary( s ) ) + '</span></div>';
@@ -417,7 +430,6 @@
 
 		/* Content with language tabs */
 		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-editor-textcolor"></span> ' + esc( I.secContent ) + '</h3>';
-		h += field( I.name, input( s, 'name' ), esc( I.nameHint ) );
 		var cur = langTab[ s.id ] || defaultLang();
 		if ( state.languages.length > 1 ) {
 			h += '<div class="wonom-langbar"><div class="wonom-switch" role="group">';
@@ -585,7 +597,15 @@
 		[].forEach.call( app.querySelectorAll( '.wonom-thumb--live' ), function ( box ) {
 			var sc = box.querySelector( '.wonom-thumb__scale' ), sl = sc && sc.querySelector( '.wonom-slider' );
 			if ( ! sl ) { return; }
-			[].forEach.call( sc.querySelectorAll( 'img' ), function ( img ) { img.setAttribute( 'sizes', '480px' ); img.loading = 'lazy'; } );
+			[].forEach.call( sc.querySelectorAll( 'img' ), function ( img ) {
+				// Resolve theme lazy-load placeholders (no theme JS runs in the admin).
+				var ds = img.getAttribute( 'data-src' ), dss = img.getAttribute( 'data-srcset' );
+				if ( ds ) { img.setAttribute( 'src', ds ); img.removeAttribute( 'data-src' ); }
+				if ( dss ) { img.setAttribute( 'srcset', dss ); img.removeAttribute( 'data-srcset' ); }
+				img.classList.remove( 'wd-lazy-fade' );
+				img.setAttribute( 'sizes', '480px' ); img.loading = 'lazy';
+			} );
+			[].forEach.call( sc.querySelectorAll( 'source[data-srcset]' ), function ( so ) { so.setAttribute( 'srcset', so.getAttribute( 'data-srcset' ) ); so.removeAttribute( 'data-srcset' ); } );
 			var scale = 160 / 480;
 			sc.style.transform = 'scale(' + scale + ')';
 			// offsetHeight is the untransformed layout height of the 480px-wide slide.
@@ -596,7 +616,7 @@
 	function afterSlidesRender() {
 		fitThumbs();
 		var pf = document.getElementById( 'wonom-preview-frame' );
-		if ( pf ) { pf.addEventListener( 'load', fitPreview ); }
+		if ( pf ) { pf.addEventListener( 'load', fitPreview ); refreshPreview(); }
 		var list = document.getElementById( 'wonom-list' );
 		if ( list && $.fn.sortable ) {
 			$( list ).sortable( {
@@ -968,6 +988,7 @@
 		if ( C.wp_cron_off ) { cacheInner += '<p class="wonom-warn">' + esc( I.cronOff ) + '</p>'; }
 		cacheInner += '<div class="wonom-grid wonom-grid--2">' + field( I.cfZone, '<input type="text" data-adv="cf_zone" value="' + esc( A.cf_zone || '' ) + '" autocomplete="off">' ) + field( I.cfToken, '<input type="text" data-adv="cf_token" value="' + esc( A.cf_token || '' ) + '" autocomplete="off">', esc( I.cfHint ) ) + '</div>';
 		cacheInner += '<div class="wonom-row"><button type="button" class="button" data-action="purge">' + esc( I.purgeNow ) + '</button></div>';
+		cacheInner += '<p class="wonom-hint">' + esc( I.delayJsHint ) + '</p><p class="wonom-codeline"><code>wonom-slider</code><button type="button" class="button" data-action="copy" data-copy="wonom-slider">' + esc( I.copy ) + '</button></p>';
 		h += group( I.gCache, 'performance', cacheInner );
 
 		var langInner = '';
@@ -1036,7 +1057,7 @@
 		switch ( action ) {
 			case 'add': addSlide( btn.getAttribute( 'data-type' ) ); break;
 			case 'open':
-				if ( e.target.closest( 'input, label' ) ) { return; }
+				if ( e.target.closest( 'input, label, .wonom-name-inline' ) ) { return; }
 				openId = openId === s.id ? null : s.id; render();
 				if ( openId ) { var c = app.querySelector( '.wonom-slide-card.is-open' ); if ( c ) { c.scrollIntoView( { behavior: 'smooth', block: 'start' } ); } }
 				break;
@@ -1217,7 +1238,9 @@
 
 	function updateCardHeader( card, s ) {
 		var st = slideStatus( s );
-		var n = card.querySelector( '.js-name' ); if ( n ) { n.textContent = s.name || s.heading || I.untitled; }
+		var n = card.querySelector( '.js-name' );
+		if ( n && n.tagName !== 'INPUT' ) { n.textContent = s.name || s.heading || I.untitled; }
+		else if ( n ) { n.placeholder = s.heading || I.untitled; }
 		var p = card.querySelector( '.js-status' ); if ( p ) { p.className = 'wonom-pill wonom-pill--' + st + ' js-status'; p.textContent = statusLabel( st ); }
 		var sc = card.querySelector( '.js-sched' ); if ( sc ) { sc.textContent = scheduleSummary( s ); }
 	}

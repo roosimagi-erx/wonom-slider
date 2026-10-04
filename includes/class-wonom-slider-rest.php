@@ -117,6 +117,17 @@ class Wonom_Slider_Rest {
 		);
 		register_rest_route(
 			self::NS,
+			'/preview',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'preview' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
 			'/render',
 			array(
 				array(
@@ -181,6 +192,32 @@ class Wonom_Slider_Rest {
 			'languages' => Wonom_Slider_Data::get_languages(),
 			'now'       => wp_date( 'Y-m-d\TH:i' ),
 			'timezone'  => wp_timezone_string(),
+		);
+	}
+
+	/**
+	 * Full slider preview (saved data) for the admin preview panel. Served through REST, so
+	 * front-end optimisers (lazy-load placeholders, delayed JavaScript) cannot interfere.
+	 */
+	public static function preview( WP_REST_Request $req ) {
+		$all  = Wonom_Slider_Data::to_bool( $req->get_param( 'all' ) );
+		$lang = sanitize_key( (string) $req->get_param( 'lang' ) );
+		$args = array();
+		if ( $all ) {
+			$args['slides'] = array_values( array_filter( Wonom_Slider_Data::get_slides(), array( 'Wonom_Slider_Data', 'slide_has_content' ) ) );
+		}
+		if ( $lang ) {
+			$args['lang'] = $lang;
+		}
+		$settings = Wonom_Slider_Data::get_settings();
+		return rest_ensure_response(
+			array(
+				'html'       => Wonom_Slider_Frontend::render( $args ),
+				'css'        => add_query_arg( 'ver', WONOM_SLIDER_VERSION, WONOM_SLIDER_URL . 'assets/public/slider.css' ),
+				'js'         => add_query_arg( 'ver', WONOM_SLIDER_VERSION, WONOM_SLIDER_URL . 'assets/public/slider.js' ),
+				'fonts'      => Wonom_Slider_Data::font_stylesheet_url( $settings ),
+				'custom_css' => $settings['custom_css'],
+			)
 		);
 	}
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.6 - 2026-10-04
+
+- Muudatus: slaidi nime saab muuta otse kaardi päises (avatud kaardil on nimi sisestusväli). Eraldi „Sisemine nimi” väli kadus.
+- Parandus: slaidide lehe eelvaade tuleb nüüd REST-i kaudu (srcdoc), mitte esilehe päringuna; kiirendusplugina (FlyingPress) laisk pildilaadimine ja viivitatud JavaScript ei jäta eelvaates pilte enam näitamata.
+- Uus: Seaded → Lehe vahemälu juhis, kuidas lisada „wonom-slider” kiirendusplugina Delay-JS väljajätmistesse, et slaider käivituks esilehel kohe.
+- Parandus: WoodMart-teema laisk pildilaadimine (lazy.svg + data-src) on slaideri piltidel välja lülitatud – esimene pilt (LCP) laadib kohe ja eelvaade näitab pilte. Slaideri JS vahetab igaks juhuks ka teiste laiskade laadijate `data-src` ise sisse.
+- Parandus: slaideri skript on märgitud kiirenduspluginatele „ära viivita / ära muuda” (data-no-delay jt).
+
 ## 1.5.5 - 2026-10-04
 
 - Uus: Seaded → Navigeerimine: punktide asukoht (keskel / vasakul / paremal), eraldi valik mobiilile (sh „peidetud”) ja noolte peitmine mobiilis.

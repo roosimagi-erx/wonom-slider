@@ -21,6 +21,18 @@ class Wonom_Slider_Frontend {
 		add_action( 'wp_footer', array( __CLASS__, 'maybe_print_assets' ), 1 );
 		add_action( 'init', array( __CLASS__, 'register_block' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_render_preview' ) );
+		add_filter( 'script_loader_tag', array( __CLASS__, 'script_tag' ), 10, 2 );
+	}
+
+	/**
+	 * Ask speed plugins (FlyingPress, WP Rocket, Cloudflare Rocket Loader…) not to delay or
+	 * rewrite the slider script, otherwise autoplay waits for the first user interaction.
+	 */
+	public static function script_tag( $tag, $handle ) {
+		if ( 'wonom-slider' === $handle && false === strpos( $tag, 'data-no-delay' ) ) {
+			$tag = str_replace( '<script ', '<script data-no-optimize="1" data-no-defer="1" data-no-delay="1" data-cfasync="false" data-no-minify="1" ', $tag );
+		}
+		return $tag;
 	}
 
 	/**
@@ -136,6 +148,14 @@ class Wonom_Slider_Frontend {
 		self::$fonts_slides = $slides;
 		self::enqueue_assets();
 
+		// WoodMart swaps every attachment image for a lazy placeholder (lazy.svg + data-src) that only its
+		// own JavaScript resolves. The hero image is the LCP element and the editor preview has no theme JS,
+		// so lazy loading is switched off for the slider markup (native loading="lazy" is kept).
+		$wd_lazy = function_exists( 'woodmart_lazy_loading_deinit' ) && function_exists( 'woodmart_lazy_loading_init' );
+		if ( $wd_lazy ) {
+			woodmart_lazy_loading_deinit( true );
+		}
+
 		$count   = count( $slides );
 		$uid     = 'wonom-slider-' . wp_unique_id();
 		$classes = array( 'wonom-slider', 'is-' . $settings['transition'] );
@@ -216,6 +236,10 @@ class Wonom_Slider_Frontend {
 		</section>
 		<?php
 		$html = ob_get_clean();
+
+		if ( $wd_lazy ) {
+			woodmart_lazy_loading_init();
+		}
 
 		/**
 		 * Filter final slider markup.

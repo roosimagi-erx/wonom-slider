@@ -158,6 +158,7 @@ return array(
 		'Cloudflare Zone ID'                 => 'Cloudflare’i Zone ID',
 		'Cloudflare API token (Cache Purge permission)' => 'Cloudflare’i API võti (õigus Cache Purge)',
 		'Only needed when Cloudflare caches HTML (APO or “Cache Everything”).' => 'Vaja ainult siis, kui Cloudflare hoiab HTML-i vahemälus (APO või „Cache Everything”).',
+		'If your speed plugin delays JavaScript until the first interaction (FlyingPress “Delay JavaScript”, WP Rocket “Delay JS”), add this keyword to its exclusions so the slider starts and autoplays immediately:' => 'Kui kiirendusplugin viivitab JavaScripti kuni esimese tegevuseni (FlyingPress „Delay JavaScript”, WP Rocket „Delay JS”), lisa selle väljajätmistesse see märksõna, et slaider käivituks ja vahetuks kohe:',
 		'Purge cache now'                    => 'Tühjenda vahemälu kohe',
 		'Purging…'                           => 'Tühjendan…',
 		'Purged: %s'                         => 'Tühjendatud: %s',

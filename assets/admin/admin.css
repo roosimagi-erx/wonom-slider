@@ -171,6 +171,9 @@ body.wonom-app .button-link.is-danger { color: var(--w-danger); }
 .wonom-slide-meta { flex: 1; min-width: 0; cursor: pointer; }
 .wonom-slide-title { font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .wonom-slide-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.wonom-app .wonom-name-inline { width: 100%; max-width: 420px; min-height: 32px; font-size: 14px; font-weight: 700; border: 1px solid transparent; border-radius: 6px; padding: 0 8px; margin-left: -8px; background: transparent; box-shadow: none; }
+body.wonom-app .wonom-name-inline:hover { border-color: var(--w-border-strong); background: var(--w-card); }
+body.wonom-app .wonom-name-inline:focus { border-color: var(--w-primary); background: var(--w-card); box-shadow: var(--w-ring); outline: 0; }
 .wonom-slide-sub { margin-top: 4px; font-size: 12px; color: var(--w-muted); display: flex; align-items: center; gap: 8px; }
 .wonom-slide-actions { display: flex; align-items: center; gap: 4px; }
 .wonom-slide-actions .button { margin-left: 6px; }

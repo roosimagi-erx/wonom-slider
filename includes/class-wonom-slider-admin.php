@@ -225,6 +225,7 @@ class Wonom_Slider_Admin {
 			'cfZone'           => __( 'Cloudflare Zone ID', 'wonom-slider' ),
 			'cfToken'          => __( 'Cloudflare API token (Cache Purge permission)', 'wonom-slider' ),
 			'cfHint'           => __( 'Only needed when Cloudflare caches HTML (APO or “Cache Everything”).', 'wonom-slider' ),
+			'delayJsHint'      => __( 'If your speed plugin delays JavaScript until the first interaction (FlyingPress “Delay JavaScript”, WP Rocket “Delay JS”), add this keyword to its exclusions so the slider starts and autoplays immediately:', 'wonom-slider' ),
 			'purgeNow'         => __( 'Purge cache now', 'wonom-slider' ),
 			'purging'          => __( 'Purging…', 'wonom-slider' ),
 			'purged'           => __( 'Purged: %s', 'wonom-slider' ),
