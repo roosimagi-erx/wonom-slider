@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 - 2026-10-04
+
+- Parandus: tühjad tõlke- ja tüpograafiaväljad jõudsid redaktorisse massiivina (`[]`), mistõttu uue slaidi esimene tõlge või tüpograafiamuudatus läks salvestamisel kaotsi. Nüüd alati objektid.
+
 ## 1.2.0 - 2026-10-04
 
 - Uus: tüpograafia slaidi kaupa – pealkirja ja teksti font, suurused (arvuti/mobiil), paksus, suurtähed, tähevahe ning kaks vahet: ridade vahe (silt/väike rida/pealkiri/tekst) ja vahe nupu ees. Tühi väli = nagu üldseadetes. Lava uueneb kohe.

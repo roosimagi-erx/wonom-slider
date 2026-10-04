@@ -153,6 +153,9 @@ class Wonom_Slider_Rest {
 	public static function state() {
 		$slides = Wonom_Slider_Data::get_slides();
 		foreach ( $slides as $k => $slide ) {
+			// Map-like fields must reach JavaScript as objects, never as [] (empty PHP arrays).
+			$slides[ $k ]['i18n'] = (object) ( is_array( $slide['i18n'] ) ? $slide['i18n'] : array() );
+			$slides[ $k ]['typo'] = (object) ( is_array( $slide['typo'] ) ? $slide['typo'] : array() );
 			$slides[ $k ]['status'] = Wonom_Slider_Data::slide_status( $slide );
 			$slides[ $k ]['thumb']  = $slide['image_id'] ? wp_get_attachment_image_url( $slide['image_id'], 'medium' ) : $slide['image_url'];
 			$slides[ $k ]['mobile_thumb'] = $slide['mobile_image_id'] ? wp_get_attachment_image_url( $slide['mobile_image_id'], 'medium' ) : $slide['mobile_image_url'];

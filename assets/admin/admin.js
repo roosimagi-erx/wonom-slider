@@ -157,9 +157,21 @@
 		} );
 	}
 
+	// PHP encodes empty associative arrays as [] – make sure map-like fields are real objects.
+	function normalizeSlides( slides ) {
+		( slides || [] ).forEach( function ( s ) {
+			[ 'i18n', 'typo' ].forEach( function ( k ) {
+				if ( ! s[ k ] || Array.isArray( s[ k ] ) || typeof s[ k ] !== 'object' ) { s[ k ] = {}; }
+			} );
+			if ( s.i18n ) { Object.keys( s.i18n ).forEach( function ( l ) { if ( ! s.i18n[ l ] || Array.isArray( s.i18n[ l ] ) ) { s.i18n[ l ] = {}; } } ); }
+		} );
+		return slides;
+	}
+	normalizeSlides( state.slides );
+
 	function applyState( res ) {
 		var newOpen = openId;
-		state.slides = res.slides;
+		state.slides = normalizeSlides( res.slides );
 		state.settings = res.settings;
 		state.advanced = res.advanced || state.advanced;
 		state.cache = res.cache || state.cache;
