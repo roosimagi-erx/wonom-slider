@@ -44,7 +44,7 @@ ja „ainult pilt“ – kõik seaded on vaikimisi „sama mis arvutis“. Fooku
 
 **Taustavärv:** slaidi taustavärv on näha pildi taga ja üksinda, kui pilti polegi – ainult tekstiga slaid.
 
-**Fondid:** Seaded → Tüpograafia: pealkirja ning teksti/nupu font eraldi (saidi vaikefont, kureeritud veebifondid Bunny Fontsist või oma CSS-väärtus), pealkirja paksus, suurtähed, tähevahe.
+**Fondid:** Seaded → Tüpograafia annab vaikimisi stiili kogu slaiderile: pealkirja ning teksti/nupu font eraldi (saidi vaikefont, kureeritud veebifondid Bunny Fontsist või oma CSS-väärtus), pealkirja paksus, suurtähed, tähevahe. Iga slaidi plokis **Tüpograafia (see slaid)** saab need slaidi kaupa üle kirjutada ning lisaks muuta ridade vahet ja vahet nupu ees; tühi väli = nagu seadetes.
 
 **Vahemälu:** Seaded → Lehe vahemälu: tühjendatakse automaatselt salvestamisel, ajastatud alguse/lõpu hetkel ja pärast plugina uuendust (FlyingPress, WP Rocket, LiteSpeed, W3TC jt; Cloudflare API võtmega). Nupp „Tühjenda vahemälu kohe”.
 
