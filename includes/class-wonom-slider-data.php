@@ -27,6 +27,9 @@ class Wonom_Slider_Data {
 				'update_token'        => '',
 				'deepl_key'           => '',
 				'delete_on_uninstall' => false,
+				'auto_purge'          => true,
+				'cf_zone'             => '',
+				'cf_token'            => '',
 			)
 		);
 	}
@@ -48,7 +51,13 @@ class Wonom_Slider_Data {
 			$repo = preg_replace( '#\.git$#i', '', $repo );
 			$out['update_repo'] = preg_match( '#^[\w.-]+/[\w.-]+$#', $repo ) ? $repo : '';
 		}
-		foreach ( array( 'update_token', 'deepl_key' ) as $secret ) {
+		if ( isset( $in['auto_purge'] ) ) {
+			$out['auto_purge'] = self::to_bool( $in['auto_purge'] );
+		}
+		if ( isset( $in['cf_zone'] ) ) {
+			$out['cf_zone'] = preg_replace( '/[^a-f0-9]/', '', strtolower( (string) $in['cf_zone'] ) );
+		}
+		foreach ( array( 'update_token', 'deepl_key', 'cf_token' ) as $secret ) {
 			if ( isset( $in[ $secret ] ) ) {
 				$v = trim( (string) $in[ $secret ] );
 				if ( '__clear__' === $v ) {
@@ -80,6 +89,9 @@ class Wonom_Slider_Data {
 			'update_token_const'  => defined( 'WONOM_SLIDER_GITHUB_TOKEN' ) && WONOM_SLIDER_GITHUB_TOKEN,
 			'deepl_key'           => $a['deepl_key'] ? '••••••••' . substr( $a['deepl_key'], -4 ) : '',
 			'delete_on_uninstall' => (bool) $a['delete_on_uninstall'],
+			'auto_purge'          => (bool) $a['auto_purge'],
+			'cf_zone'             => $a['cf_zone'],
+			'cf_token'            => $a['cf_token'] ? '••••••••' . substr( $a['cf_token'], -4 ) : '',
 		);
 	}
 
@@ -114,8 +126,94 @@ class Wonom_Slider_Data {
 			'text_size_mobile'    => 15,
 			'padding_mobile'      => 20,
 			'languages'           => '', // comma list, e.g. "et,en". Empty = auto-detect (Polylang/WPML) or single language.
+			'font_heading'        => 'inherit', // inherit | <family from fonts()> | custom:<css value>
+			'font_text'           => 'inherit',
+			'heading_weight'      => 400,
+			'heading_uppercase'   => true,
+			'heading_spacing'     => 14, // letter-spacing in 1/100 em
 			'custom_css'          => '',
 		);
+	}
+
+	/**
+	 * Curated web fonts (served from Bunny Fonts – a GDPR-friendly Google Fonts mirror).
+	 * key = family name as shown, value = Bunny slug.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function fonts() {
+		return apply_filters(
+			'wonom_slider_fonts',
+			array(
+				'Lato'               => 'lato',
+				'Montserrat'         => 'montserrat',
+				'Poppins'            => 'poppins',
+				'Inter'              => 'inter',
+				'Raleway'            => 'raleway',
+				'Playfair Display'   => 'playfair-display',
+				'Cormorant Garamond' => 'cormorant-garamond',
+				'DM Serif Display'   => 'dm-serif-display',
+				'Oswald'             => 'oswald',
+				'Josefin Sans'       => 'josefin-sans',
+				'Nunito'             => 'nunito',
+				'Quicksand'          => 'quicksand',
+			)
+		);
+	}
+
+	/**
+	 * Normalise a font setting: 'inherit', a curated family, or 'custom:<css>'.
+	 */
+	public static function sanitize_font( $v, $default = 'inherit' ) {
+		$v = trim( (string) $v );
+		if ( '' === $v || 'inherit' === $v ) {
+			return 'inherit';
+		}
+		if ( isset( self::fonts()[ $v ] ) ) {
+			return $v;
+		}
+		if ( 0 === strpos( $v, 'custom:' ) ) {
+			$css = sanitize_text_field( substr( $v, 7 ) );
+			$css = str_replace( array( ';', '{', '}', '<', '>' ), '', $css );
+			return '' !== trim( $css ) ? 'custom:' . trim( $css ) : 'inherit';
+		}
+		return $default;
+	}
+
+	/**
+	 * CSS font-family value for a font setting.
+	 */
+	public static function font_css( $setting ) {
+		if ( 'inherit' === $setting || '' === $setting ) {
+			return 'inherit';
+		}
+		if ( 0 === strpos( $setting, 'custom:' ) ) {
+			return substr( $setting, 7 );
+		}
+		$serif = in_array( $setting, array( 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display' ), true );
+		return '"' . $setting . '", ' . ( $serif ? 'Georgia, serif' : 'system-ui, sans-serif' );
+	}
+
+	/**
+	 * Stylesheet URL for the selected web fonts, or '' when only inherit/custom fonts are used.
+	 */
+	public static function font_stylesheet_url( $settings ) {
+		$fams = array();
+		foreach ( array( 'font_heading' => '400,500,600,700', 'font_text' => '400,500,700' ) as $key => $weights ) {
+			$f = isset( $settings[ $key ] ) ? $settings[ $key ] : 'inherit';
+			if ( isset( self::fonts()[ $f ] ) ) {
+				$slug = self::fonts()[ $f ];
+				$fams[ $slug ] = isset( $fams[ $slug ] ) ? '400,500,600,700' : $weights;
+			}
+		}
+		if ( empty( $fams ) ) {
+			return '';
+		}
+		$parts = array();
+		foreach ( $fams as $slug => $w ) {
+			$parts[] = $slug . ':' . $w;
+		}
+		return 'https://fonts.bunny.net/css?family=' . implode( '|', $parts ) . '&display=swap';
 	}
 
 	/**
@@ -163,6 +261,7 @@ class Wonom_Slider_Data {
 			'button_color'        => '#ffffff',
 			'overlay'             => 20,
 			'overlay_color'       => '#000000',
+			'bg_color'            => '#1d2433', // shown behind the image and for image-less slides
 			'badge'               => '',
 			'start'               => '',
 			'end'                 => '',
@@ -173,6 +272,14 @@ class Wonom_Slider_Data {
 			'mobile_align'        => '', // '' = same as desktop
 			'mobile_valign'       => '',
 			'mobile_hide_text'    => false,
+			'pos_mode'            => 'grid', // grid (align/valign) | free (pos_x/pos_y/pos_w in %)
+			'pos_x'               => 50,
+			'pos_y'               => 50,
+			'pos_w'               => 60,
+			'mobile_pos_mode'     => '', // '' = same as desktop | grid | free
+			'mobile_pos_x'        => 50,
+			'mobile_pos_y'        => 50,
+			'mobile_pos_w'        => 90,
 			'i18n'                => array(), // lang => array( field => value )
 		);
 	}
@@ -294,6 +401,12 @@ class Wonom_Slider_Data {
 			$out['font_family'] = 'inherit';
 		}
 
+		$out['font_heading']      = self::sanitize_font( isset( $in['font_heading'] ) ? $in['font_heading'] : $d['font_heading'] );
+		$out['font_text']         = self::sanitize_font( isset( $in['font_text'] ) ? $in['font_text'] : $d['font_text'] );
+		$out['heading_weight']    = ( isset( $in['heading_weight'] ) && in_array( (int) $in['heading_weight'], array( 300, 400, 500, 600, 700, 800 ), true ) ) ? (int) $in['heading_weight'] : $d['heading_weight'];
+		$out['heading_uppercase'] = isset( $in['heading_uppercase'] ) ? self::to_bool( $in['heading_uppercase'] ) : $d['heading_uppercase'];
+		$out['heading_spacing']   = isset( $in['heading_spacing'] ) ? max( -10, min( 60, (int) $in['heading_spacing'] ) ) : $d['heading_spacing'];
+
 		$out['custom_css'] = isset( $in['custom_css'] ) ? self::sanitize_css( $in['custom_css'] ) : '';
 
 		return $out;
@@ -360,7 +473,7 @@ class Wonom_Slider_Data {
 		$out['align']  = ( isset( $in['align'] ) && in_array( $in['align'], array( 'left', 'center', 'right' ), true ) ) ? $in['align'] : $d['align'];
 		$out['valign'] = ( isset( $in['valign'] ) && in_array( $in['valign'], array( 'top', 'middle', 'bottom' ), true ) ) ? $in['valign'] : $d['valign'];
 
-		foreach ( array( 'text_color', 'button_bg', 'button_color', 'overlay_color' ) as $k ) {
+		foreach ( array( 'text_color', 'button_bg', 'button_color', 'overlay_color', 'bg_color' ) as $k ) {
 			$c         = isset( $in[ $k ] ) ? sanitize_hex_color( $in[ $k ] ) : null;
 			$out[ $k ] = $c ? $c : $d[ $k ];
 		}
@@ -374,6 +487,18 @@ class Wonom_Slider_Data {
 		$out['mobile_align']     = ( isset( $in['mobile_align'] ) && in_array( $in['mobile_align'], array( 'left', 'center', 'right' ), true ) ) ? $in['mobile_align'] : '';
 		$out['mobile_valign']    = ( isset( $in['mobile_valign'] ) && in_array( $in['mobile_valign'], array( 'top', 'middle', 'bottom' ), true ) ) ? $in['mobile_valign'] : '';
 		$out['mobile_hide_text'] = isset( $in['mobile_hide_text'] ) ? self::to_bool( $in['mobile_hide_text'] ) : false;
+
+		$pct = function ( $v, $def, $min = 0, $max = 100 ) {
+			return is_numeric( $v ) ? max( $min, min( $max, round( (float) $v, 1 ) ) ) : $def;
+		};
+		$out['pos_mode']        = ( isset( $in['pos_mode'] ) && 'free' === $in['pos_mode'] ) ? 'free' : 'grid';
+		$out['pos_x']           = $pct( isset( $in['pos_x'] ) ? $in['pos_x'] : null, $d['pos_x'] );
+		$out['pos_y']           = $pct( isset( $in['pos_y'] ) ? $in['pos_y'] : null, $d['pos_y'] );
+		$out['pos_w']           = $pct( isset( $in['pos_w'] ) ? $in['pos_w'] : null, $d['pos_w'], 10, 100 );
+		$out['mobile_pos_mode'] = ( isset( $in['mobile_pos_mode'] ) && in_array( $in['mobile_pos_mode'], array( 'grid', 'free' ), true ) ) ? $in['mobile_pos_mode'] : '';
+		$out['mobile_pos_x']    = $pct( isset( $in['mobile_pos_x'] ) ? $in['mobile_pos_x'] : null, $d['mobile_pos_x'] );
+		$out['mobile_pos_y']    = $pct( isset( $in['mobile_pos_y'] ) ? $in['mobile_pos_y'] : null, $d['mobile_pos_y'] );
+		$out['mobile_pos_w']    = $pct( isset( $in['mobile_pos_w'] ) ? $in['mobile_pos_w'] : null, $d['mobile_pos_w'], 10, 100 );
 
 		$out['start'] = isset( $in['start'] ) ? self::sanitize_datetime( $in['start'] ) : '';
 		$out['end']   = isset( $in['end'] ) ? self::sanitize_datetime( $in['end'] ) : '';
@@ -556,12 +681,24 @@ class Wonom_Slider_Data {
 	 * @param array $slide Slide.
 	 * @return string
 	 */
+	/**
+	 * A slide can be shown when it has an image or at least some text.
+	 */
+	public static function slide_has_content( $slide ) {
+		foreach ( array( 'image_url', 'heading', 'text', 'eyebrow', 'button_text' ) as $k ) {
+			if ( ! empty( $slide[ $k ] ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static function slide_status( $slide ) {
 		$now = self::now();
 		if ( empty( $slide['enabled'] ) ) {
 			return 'disabled';
 		}
-		if ( empty( $slide['image_url'] ) ) {
+		if ( ! self::slide_has_content( $slide ) ) {
 			return 'noimage';
 		}
 		if ( '' !== $slide['start'] && strtotime( $slide['start'] ) > $now ) {
@@ -581,7 +718,7 @@ class Wonom_Slider_Data {
 	 * @return bool
 	 */
 	public static function is_slide_visible( $slide, $now ) {
-		if ( empty( $slide['enabled'] ) || empty( $slide['image_url'] ) ) {
+		if ( empty( $slide['enabled'] ) || ! self::slide_has_content( $slide ) ) {
 			return false;
 		}
 		if ( '' !== $slide['start'] && strtotime( $slide['start'] ) > $now ) {

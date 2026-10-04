@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 - 2026-10-04
+
+- Uus: slaidi redaktoris on lava – slaid kuvatakse täpselt nii nagu esilehel (sama server-render), arvuti- ja mobiilivaates, tekstid otse pildi peal.
+- Uus: tekstiploki vaba paigutus – lohista laval, nooleklahvid (1 %, Shift 5 %), laiuse pide; eraldi asukoht mobiilile. Ruudustik-joondus jääb kiirvalikuna alles.
+- Uus: taustavärv slaidi kohta; slaid võib olla ka ilma pildita, ainult tekstiga.
+- Uus: fondid – pealkirja ning teksti/nupu font eraldi (saidi vaikefont, kureeritud veebifondid Bunny Fontsist või oma CSS), pealkirja paksus, suurtähed ja tähevahe.
+- Uus: lehe vahemälu tühjendamine Kampaaniariba eeskujul – FlyingPress, WP Rocket, LiteSpeed, W3TC, Super Cache, Fastest Cache, Cache Enabler, SiteGround, Breeze, Autoptimize, Elementor; Cloudflare API; käsitsi nupp; automaatselt salvestamisel, ajastatud hetkedel ja pärast plugina uuendust.
+
 ## 1.0.2 - 2026-10-04
 
 - Parandus: mobiilis (Elementori veergsuunaline konteiner) ei andnud ainult külgede suhtest tulenev kõrgus vidinale mõõtu ja järgmine sektsioon joonistus bänneri peale. Slaideri rada saab nüüd JS-iga täpse pikslikõrguse (ResizeObserver).

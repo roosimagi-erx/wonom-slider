@@ -112,7 +112,7 @@ class Wonom_Slider_Elementor_Widget extends \Elementor\Widget_Base {
 				array_filter(
 					Wonom_Slider_Data::get_slides(),
 					function ( $s ) {
-						return ! empty( $s['image_url'] );
+						return Wonom_Slider_Data::slide_has_content( $s );
 					}
 				)
 			);

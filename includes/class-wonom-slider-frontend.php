@@ -43,6 +43,10 @@ class Wonom_Slider_Frontend {
 		if ( ! empty( $settings['custom_css'] ) ) {
 			wp_add_inline_style( 'wonom-slider', $settings['custom_css'] );
 		}
+		$fonts = Wonom_Slider_Data::font_stylesheet_url( $settings );
+		if ( $fonts ) {
+			wp_enqueue_style( 'wonom-slider-fonts', $fonts, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+		}
 	}
 
 	public static function maybe_print_assets() {
@@ -214,8 +218,14 @@ class Wonom_Slider_Frontend {
 			$tag = 'h2'; // Never output more than one H1.
 		}
 
+		// Text block position: grid (align/valign) or free (% coordinates); mobile may inherit or override.
+		$m_mode = $slide['mobile_pos_mode'] ? $slide['mobile_pos_mode'] : $slide['pos_mode'];
+		$m_x    = $slide['mobile_pos_mode'] ? $slide['mobile_pos_x'] : $slide['pos_x'];
+		$m_y    = $slide['mobile_pos_mode'] ? $slide['mobile_pos_y'] : $slide['pos_y'];
+		$m_w    = $slide['mobile_pos_mode'] ? $slide['mobile_pos_w'] : $slide['pos_w'];
+
 		$slide_style = sprintf(
-			'--ws-text:%1$s;--ws-btn-bg:%2$s;--ws-btn-color:%3$s;--ws-overlay:%4$s;--ws-overlay-color:%5$s;--ws-focal:%6$d%% %7$d%%;--ws-focal-m:%8$d%% %9$d%%;',
+			'--ws-text:%1$s;--ws-btn-bg:%2$s;--ws-btn-color:%3$s;--ws-overlay:%4$s;--ws-overlay-color:%5$s;--ws-focal:%6$d%% %7$d%%;--ws-focal-m:%8$d%% %9$d%%;--ws-x:%10$s%%;--ws-y:%11$s%%;--ws-w:%12$s%%;--ws-mx:%13$s%%;--ws-my:%14$s%%;--ws-mw:%15$s%%;--ws-bg:%16$s;',
 			esc_attr( $slide['text_color'] ),
 			esc_attr( $slide['button_bg'] ),
 			esc_attr( $slide['button_color'] ),
@@ -224,7 +234,14 @@ class Wonom_Slider_Frontend {
 			(int) $slide['focal_x'],
 			(int) $slide['focal_y'],
 			(int) $slide['mobile_focal_x'],
-			(int) $slide['mobile_focal_y']
+			(int) $slide['mobile_focal_y'],
+			(float) $slide['pos_x'],
+			(float) $slide['pos_y'],
+			(float) $slide['pos_w'],
+			(float) $m_x,
+			(float) $m_y,
+			(float) $m_w,
+			esc_attr( $slide['bg_color'] ? $slide['bg_color'] : 'transparent' )
 		);
 
 		$classes = array(
@@ -233,6 +250,8 @@ class Wonom_Slider_Frontend {
 			'valign-' . $slide['valign'],
 			'm-align-' . ( $slide['mobile_align'] ? $slide['mobile_align'] : $slide['align'] ),
 			'm-valign-' . ( $slide['mobile_valign'] ? $slide['mobile_valign'] : $slide['valign'] ),
+			'pos-' . $slide['pos_mode'],
+			'm-pos-' . $m_mode,
 			'type-' . $slide['type'],
 		);
 		if ( ! empty( $slide['mobile_hide_text'] ) ) {
@@ -250,6 +269,7 @@ class Wonom_Slider_Frontend {
 			<?php if ( $has_link ) : ?>
 				<a class="wonom-slide__link" href="<?php echo esc_url( $slide['button_url'] ); ?>"<?php echo $target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> aria-label="<?php echo esc_attr( $slide['heading'] ? $slide['heading'] : $slide['name'] ); ?>"></a>
 			<?php endif; ?>
+			<?php if ( ! empty( $slide['image_url'] ) ) : ?>
 			<picture class="wonom-slide__media">
 				<?php if ( ! empty( $slide['mobile_image_url'] ) ) : ?>
 					<source media="(max-width: <?php echo (int) $bp; ?>px)" srcset="<?php echo esc_url( $slide['mobile_image_url'] ); ?>"<?php echo $slide['mobile_image_width'] ? ' width="' . (int) $slide['mobile_image_width'] . '" height="' . (int) $slide['mobile_image_height'] . '"' : ''; ?>>
@@ -279,6 +299,7 @@ class Wonom_Slider_Frontend {
 				?>
 			</picture>
 			<div class="wonom-slide__overlay" aria-hidden="true"></div>
+			<?php endif; ?>
 			<?php if ( $has_content ) : ?>
 				<div class="wonom-slide__content">
 					<div class="wonom-slide__inner">
@@ -337,6 +358,11 @@ class Wonom_Slider_Frontend {
 			'--ws-t-size-mobile'  => (int) $settings['text_size_mobile'] . 'px',
 			'--ws-pad-mobile'     => (int) $settings['padding_mobile'] . 'px',
 			'--ws-font'           => $settings['font_family'],
+			'--ws-font-h'         => Wonom_Slider_Data::font_css( $settings['font_heading'] ),
+			'--ws-font-t'         => Wonom_Slider_Data::font_css( $settings['font_text'] ),
+			'--ws-h-weight'       => (int) $settings['heading_weight'],
+			'--ws-h-transform'    => $settings['heading_uppercase'] ? 'uppercase' : 'none',
+			'--ws-h-spacing'      => ( (int) $settings['heading_spacing'] / 100 ) . 'em',
 			'--ws-btn-radius'     => (int) $settings['button_radius'] . 'px',
 			'--ws-bp'             => (int) $settings['mobile_breakpoint'] . 'px',
 		);
@@ -375,6 +401,11 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide.m-align-center .wonom-slide__actions{justify-content:center}"
 			. "{$s} .wonom-slide.m-align-right .wonom-slide__actions{justify-content:flex-end}"
 			. "{$s} .wonom-slide.m-hide-text .wonom-slide__content{display:none}"
+			. "{$s} .wonom-slide.m-pos-free .wonom-slide__content{display:block;padding:0}"
+			. "{$s} .wonom-slide.m-pos-free .wonom-slide__inner{position:absolute;left:var(--ws-mx);top:var(--ws-my);width:var(--ws-mw);max-width:none;transform:translate(-50%,-50%)}"
+			. "{$s} .wonom-slide.m-pos-grid .wonom-slide__content{display:flex;padding:var(--ws-pad-mobile)}"
+			. "{$s} .wonom-slide.m-pos-grid .wonom-slide__inner{position:static;width:auto;max-width:var(--ws-content-width);transform:none}"
+			. "{$s} .wonom-slide.m-hide-text.m-pos-free .wonom-slide__content{display:none}"
 			. "{$s} .wonom-slider__arrow{width:38px!important;height:38px!important;opacity:1;background:rgba(255,255,255,.7)!important}"
 			. "{$s} .wonom-slider__arrow--prev{left:8px!important}{$s} .wonom-slider__arrow--next{right:8px!important}"
 			. "{$s} .wonom-slider__dots{bottom:10px!important}"
@@ -390,6 +421,10 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size);letter-spacing:.14em}"
 			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size);margin-bottom:22px}"
 			. "{$s} .wonom-slide.m-hide-text .wonom-slide__content{display:flex}"
+			. "{$s} .wonom-slide.pos-free .wonom-slide__content{display:block;padding:0}"
+			. "{$s} .wonom-slide.pos-free .wonom-slide__inner{position:absolute;left:var(--ws-x);top:var(--ws-y);width:var(--ws-w);max-width:none;transform:translate(-50%,-50%)}"
+			. "{$s} .wonom-slide.pos-grid .wonom-slide__content{display:flex;padding:clamp(24px,5vw,72px)}"
+			. "{$s} .wonom-slide.pos-grid .wonom-slide__inner{position:static;width:auto;max-width:var(--ws-content-width);transform:none}"
 			. '}';
 		return $css;
 	}
@@ -424,7 +459,7 @@ class Wonom_Slider_Frontend {
 			$slides = array_filter(
 				Wonom_Slider_Data::get_slides(),
 				function ( $s ) {
-					return ! empty( $s['image_url'] );
+					return Wonom_Slider_Data::slide_has_content( $s );
 				}
 			);
 			$args['slides'] = array_values( $slides );
@@ -437,7 +472,7 @@ class Wonom_Slider_Frontend {
 			$slides = array_filter(
 				Wonom_Slider_Data::get_slides(),
 				function ( $s ) use ( $id ) {
-					return $s['id'] === $id && ! empty( $s['image_url'] );
+					return $s['id'] === $id && Wonom_Slider_Data::slide_has_content( $s );
 				}
 			);
 			$args['slides'] = array_values( $slides );

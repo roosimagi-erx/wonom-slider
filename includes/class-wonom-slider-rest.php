@@ -106,6 +106,28 @@ class Wonom_Slider_Rest {
 		);
 		register_rest_route(
 			self::NS,
+			'/purge',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'purge' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
+			'/render',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'render_slide' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
 			'/import',
 			array(
 				array(
@@ -139,9 +161,55 @@ class Wonom_Slider_Rest {
 			'slides'    => $slides,
 			'settings'  => Wonom_Slider_Data::get_settings(),
 			'advanced'  => Wonom_Slider_Data::get_advanced_public(),
+			'cache'     => Wonom_Slider_Cache::status(),
+			'fonts'     => array_keys( Wonom_Slider_Data::fonts() ),
 			'languages' => Wonom_Slider_Data::get_languages(),
 			'now'       => wp_date( 'Y-m-d\TH:i' ),
 			'timezone'  => wp_timezone_string(),
+		);
+	}
+
+	/**
+	 * Render one (unsaved) slide with (unsaved) settings for the editor stage.
+	 * Returns the slider HTML plus the stylesheet URLs the stage iframe needs.
+	 */
+	public static function render_slide( WP_REST_Request $req ) {
+		$slide    = $req->get_param( 'slide' );
+		$settings = $req->get_param( 'settings' );
+		$lang     = sanitize_key( (string) $req->get_param( 'lang' ) );
+		if ( ! is_array( $slide ) ) {
+			return new WP_Error( 'wonom_invalid', __( 'Invalid payload.', 'wonom-slider' ), array( 'status' => 400 ) );
+		}
+		$slide    = wp_parse_args( Wonom_Slider_Data::sanitize_slide( $slide ), Wonom_Slider_Data::default_slide() );
+		$settings = is_array( $settings ) ? Wonom_Slider_Data::sanitize_settings( $settings ) : Wonom_Slider_Data::get_settings();
+
+		$html = '';
+		if ( Wonom_Slider_Data::slide_has_content( $slide ) ) {
+			$html = Wonom_Slider_Frontend::render(
+				array(
+					'slides'   => array( $slide ),
+					'settings' => $settings,
+					'lang'     => $lang ? $lang : null,
+				)
+			);
+		}
+		return rest_ensure_response(
+			array(
+				'html'  => $html,
+				'css'   => add_query_arg( 'ver', WONOM_SLIDER_VERSION, WONOM_SLIDER_URL . 'assets/public/slider.css' ),
+				'fonts' => Wonom_Slider_Data::font_stylesheet_url( $settings ),
+				'custom_css' => $settings['custom_css'],
+			)
+		);
+	}
+
+	public static function purge() {
+		$done = Wonom_Slider_Cache::purge( true );
+		return rest_ensure_response(
+			array(
+				'done'   => $done,
+				'errors' => Wonom_Slider_Cache::last_errors(),
+			)
 		);
 	}
 

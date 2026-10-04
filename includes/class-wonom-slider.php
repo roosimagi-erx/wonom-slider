@@ -22,10 +22,7 @@ final class Wonom_Slider {
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ), 1 );
 		add_action( 'plugins_loaded', array( $this, 'boot' ), 5 );
 		register_activation_hook( WONOM_SLIDER_FILE, array( __CLASS__, 'activate' ) );
-		add_action( 'wonom_slider_saved', array( __CLASS__, 'flush_caches' ) );
-		add_action( 'wonom_slider_saved', array( __CLASS__, 'schedule_next_change' ) );
-		add_action( 'wonom_slider_schedule_tick', array( __CLASS__, 'flush_caches' ) );
-		add_action( 'wonom_slider_schedule_tick', array( __CLASS__, 'schedule_next_change' ) );
+		register_deactivation_hook( WONOM_SLIDER_FILE, array( __CLASS__, 'deactivate' ) );
 	}
 
 	public function load_textdomain() {
@@ -36,6 +33,7 @@ final class Wonom_Slider {
 		Wonom_Slider_Frontend::init();
 		Wonom_Slider_Rest::init();
 		Wonom_Slider_Updater::init();
+		Wonom_Slider_Cache::init();
 
 		if ( is_admin() ) {
 			Wonom_Slider_Admin::init();
@@ -65,59 +63,7 @@ final class Wonom_Slider {
 		set_transient( 'wonom_slider_activated', 1, 60 );
 	}
 
-	/**
-	 * Best-effort purge of page caches so scheduled campaign slides appear on time.
-	 */
-	public static function flush_caches() {
-		// WP Rocket.
-		if ( function_exists( 'rocket_clean_home' ) ) {
-			rocket_clean_home();
-		}
-		// LiteSpeed Cache.
-		do_action( 'litespeed_purge_all' );
-		// W3 Total Cache.
-		if ( function_exists( 'w3tc_flush_posts' ) ) {
-			w3tc_flush_posts();
-		}
-		// WP Super Cache.
-		if ( function_exists( 'wp_cache_clear_cache' ) ) {
-			wp_cache_clear_cache();
-		}
-		// WP Fastest Cache.
-		if ( function_exists( 'wpfc_clear_all_cache' ) ) {
-			wpfc_clear_all_cache();
-		}
-		// SG Optimizer.
-		if ( function_exists( 'sg_cachepress_purge_cache' ) ) {
-			sg_cachepress_purge_cache();
-		}
-		// Autoptimize.
-		if ( class_exists( 'autoptimizeCache' ) && method_exists( 'autoptimizeCache', 'clearall' ) ) {
-			autoptimizeCache::clearall();
-		}
-		// Cloudflare / other plugins may hook here.
-		do_action( 'wonom_slider_flush_caches' );
-	}
-
-	/**
-	 * Schedule a one-off cron event at the next start/end moment so caches get purged automatically.
-	 */
-	public static function schedule_next_change() {
-		wp_clear_scheduled_hook( 'wonom_slider_schedule_tick' );
-		$next_local = Wonom_Slider_Data::next_change_timestamp();
-		if ( ! $next_local ) {
-			return;
-		}
-		// Convert site-local timestamp to UTC for wp_schedule_single_event.
-		$offset = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
-		$tz     = wp_timezone();
-		try {
-			$dt     = new DateTime( '@' . $next_local );
-			$local  = new DateTime( $dt->format( 'Y-m-d H:i:s' ), $tz );
-			$utc_ts = $local->getTimestamp();
-		} catch ( Exception $e ) {
-			$utc_ts = $next_local - $offset;
-		}
-		wp_schedule_single_event( $utc_ts + 30, 'wonom_slider_schedule_tick' );
+	public static function deactivate() {
+		wp_clear_scheduled_hook( Wonom_Slider_Cache::CRON_HOOK );
 	}
 }

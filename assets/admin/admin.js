@@ -162,6 +162,8 @@
 		state.slides = res.slides;
 		state.settings = res.settings;
 		state.advanced = res.advanced || state.advanced;
+		state.cache = res.cache || state.cache;
+		state.fonts = res.fonts || state.fonts;
 		state.languages = res.languages || state.languages;
 		state.now = res.now || state.now;
 		loadedAt = Date.now();
@@ -331,8 +333,22 @@
 		return h;
 	}
 
+	function numInput( s, key, min, max, step ) {
+		return '<input type="number" data-field="' + key + '" value="' + esc( s[ key ] ) + '" min="' + min + '" max="' + max + '" step="' + ( step || 0.5 ) + '">';
+	}
+
 	function renderEditor( s ) {
 		var h = '<div class="wonom-editor">';
+
+		/* Stage – live preview with draggable text block */
+		h += '<section class="wonom-sec wonom-sec--stage"><h3><span class="dashicons dashicons-welcome-view-site"></span> ' + esc( I.stageTitle ) + '</h3>';
+		h += '<div class="wonom-stage-tools"><div class="wonom-switch" role="group">';
+		[ [ 'desktop', I.desktop, 'desktop' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
+			h += '<button type="button" data-action="stage-device" data-device="' + d[ 0 ] + '" aria-pressed="' + ( stage.device === d[ 0 ] ) + '"><span class="dashicons dashicons-' + d[ 2 ] + '"></span> ' + esc( d[ 1 ] ) + '</button>';
+		} );
+		h += '</div><span class="wonom-hint">' + esc( I.stageHint ) + '</span></div>';
+		h += '<div class="wonom-stage is-' + stage.device + '" data-stage><div class="wonom-stage-empty">' + esc( I.stageLoading ) + '</div></div>';
+		h += '</section>';
 
 		/* Images */
 		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-format-image"></span> ' + esc( I.secImages ) + '</h3>';
@@ -387,9 +403,14 @@
 		h += field( I.buttonBg, color( s, 'button_bg' ) );
 		h += field( I.buttonColor, color( s, 'button_color' ) );
 		h += '</div>';
-		h += '<div class="wonom-grid wonom-grid--2">';
+		h += '<div class="wonom-grid wonom-grid--3">';
 		h += field( I.overlay, '<span class="wonom-range"><input type="range" min="0" max="90" step="5" data-field="overlay" value="' + ( s.overlay | 0 ) + '"><output>' + ( s.overlay | 0 ) + '%</output></span>', esc( I.overlayHint ) );
 		h += field( I.overlayColor, color( s, 'overlay_color' ) );
+		h += field( I.bgColor, color( s, 'bg_color' ), esc( I.bgHint ) );
+		h += '</div>';
+		h += field( I.posMode, segmented( 'pos_mode', s.pos_mode, [ [ 'grid', I.posGrid ], [ 'free', I.posFree ] ] ), esc( I.posHint ) );
+		h += '<div class="wonom-grid wonom-grid--3 wonom-posrow js-pos-free" data-for="desktop"' + ( s.pos_mode === 'free' ? '' : ' hidden' ) + '>';
+		h += field( I.posX, numInput( s, 'pos_x', 0, 100 ) ) + field( I.posY, numInput( s, 'pos_y', 0, 100 ) ) + field( I.posW, numInput( s, 'pos_w', 10, 100 ) );
 		h += '</div>';
 		h += '</section>';
 
@@ -399,6 +420,10 @@
 		h += '<div class="wonom-grid wonom-grid--2">';
 		h += field( I.align, segmented( 'mobile_align', s.mobile_align, [ [ 'left', I.left, 'editor-alignleft' ], [ 'center', I.center, 'editor-aligncenter' ], [ 'right', I.right, 'editor-alignright' ] ], true ) );
 		h += field( I.valign, segmented( 'mobile_valign', s.mobile_valign, [ [ 'top', I.top, 'arrow-up-alt' ], [ 'middle', I.middle, 'minus' ], [ 'bottom', I.bottom, 'arrow-down-alt' ] ], true ) );
+		h += '</div>';
+		h += field( I.posMode, segmented( 'mobile_pos_mode', s.mobile_pos_mode, [ [ 'grid', I.posGrid ], [ 'free', I.posFree ] ], true ) );
+		h += '<div class="wonom-grid wonom-grid--3 wonom-posrow js-pos-free" data-for="mobile"' + ( s.mobile_pos_mode === 'free' ? '' : ' hidden' ) + '>';
+		h += field( I.posX, numInput( s, 'mobile_pos_x', 0, 100 ) ) + field( I.posY, numInput( s, 'mobile_pos_y', 0, 100 ) ) + field( I.posW, numInput( s, 'mobile_pos_w', 10, 100 ) );
 		h += '</div>';
 		h += '<label class="wonom-check"><input type="checkbox" data-field="mobile_hide_text"' + ( s.mobile_hide_text ? ' checked' : '' ) + '> ' + esc( I.hideTextMobile ) + '</label>';
 		h += '</section>';
@@ -454,7 +479,201 @@
 			} );
 		}
 		var open = app.querySelector( '.wonom-slide-card.is-open' );
-		if ( open && open.dataset.scrollTo ) { open.scrollIntoView( { behavior: 'smooth', block: 'start' } ); }
+		if ( open ) { mountStage( findSlide( open.getAttribute( 'data-id' ) ) ); }
+	}
+
+	/* ---------- stage: live preview rendered by the server, text block draggable ---------- */
+
+	var stage = { device: 'desktop', iframe: null, slideId: null, timer: null, req: 0 };
+
+	function mountStage( s ) {
+		var host = app.querySelector( '[data-stage]' );
+		if ( ! host || ! s ) { stage.iframe = null; stage.slideId = null; return; }
+		stage.slideId = s.id;
+		host.className = 'wonom-stage is-' + stage.device;
+		renderStage( s );
+	}
+
+	function scheduleStage( s, delay ) {
+		clearTimeout( stage.timer );
+		stage.timer = setTimeout( function () { renderStage( s ); }, delay || 400 );
+	}
+
+	function renderStage( s ) {
+		var host = app.querySelector( '[data-stage]' );
+		if ( ! host || stage.slideId !== s.id ) { return; }
+		var req = ++stage.req;
+		api( '/render', 'POST', { slide: s, settings: state.settings, lang: langTab[ s.id ] || defaultLang() } ).then( function ( res ) {
+			if ( req !== stage.req || stage.slideId !== s.id ) { return; }
+			if ( ! res.html ) {
+				host.innerHTML = '<div class="wonom-stage-empty">' + esc( I.stageEmpty ) + '</div>';
+				stage.iframe = null;
+				return;
+			}
+			var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">'
+				+ ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
+				+ '<style>html,body{margin:0;background:#eceff4;overflow:hidden}'
+				+ '.wonom-slide__badge,.wonom-slide__eyebrow,.wonom-slide__heading,.wonom-slide__text,.wonom-slide__actions{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}'
+				+ '.wonom-slide__inner{outline:1px dashed rgba(255,255,255,.75);outline-offset:8px;cursor:move;user-select:none;-webkit-user-select:none}'
+				+ '.wonom-slide__inner:hover,.wonom-slide__inner:focus{outline:2px solid #2563eb;outline-offset:8px}'
+				+ '.wonom-slide__inner a{pointer-events:none}'
+				+ '.wonom-stage-handle{position:absolute;right:-18px;top:50%;width:14px;height:34px;margin-top:-17px;border-radius:5px;background:#2563eb;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:ew-resize}'
+				+ '.wonom-stage-guide{position:absolute;background:rgba(37,99,235,.85);pointer-events:none;display:none;z-index:9}'
+				+ '.wonom-stage-guide.v{left:50%;top:0;bottom:0;width:1px}.wonom-stage-guide.h{top:50%;left:0;right:0;height:1px}'
+				+ '.wonom-stage-guide.is-on{display:block}'
+				+ ( res.custom_css || '' ) + '</style></head><body>' + res.html + '</body></html>';
+
+			var iframe = document.createElement( 'iframe' );
+			iframe.className = 'wonom-stage-frame';
+			iframe.setAttribute( 'title', I.preview );
+			host.innerHTML = '';
+			host.appendChild( iframe );
+			stage.iframe = iframe;
+			iframe.addEventListener( 'load', function () {
+				fitStage( iframe );
+				attachStage( iframe.contentDocument, s );
+				[].forEach.call( iframe.contentDocument.images, function ( img ) { img.addEventListener( 'load', function () { fitStage( iframe ); } ); } );
+			} );
+			iframe.srcdoc = doc;
+		} ).catch( function ( e ) {
+			host.innerHTML = '<div class="wonom-stage-empty">' + esc( e && e.message ? e.message : 'Error' ) + '</div>';
+		} );
+	}
+
+	function fitStage( iframe ) {
+		try {
+			var d = iframe.contentDocument;
+			var sl = d.querySelector( '.wonom-slider' );
+			iframe.style.height = ( sl ? sl.getBoundingClientRect().height : d.body.scrollHeight ) + 'px';
+		} catch ( e ) { /* ignore */ }
+	}
+
+	// Which position fields apply on the current stage device.
+	function posKeys() {
+		return stage.device === 'mobile' ? { mode: 'mobile_pos_mode', x: 'mobile_pos_x', y: 'mobile_pos_y', w: 'mobile_pos_w', vx: '--ws-mx', vy: '--ws-my', vw: '--ws-mw', cls: 'm-pos-' } : { mode: 'pos_mode', x: 'pos_x', y: 'pos_y', w: 'pos_w', vx: '--ws-x', vy: '--ws-y', vw: '--ws-w', cls: 'pos-' };
+	}
+
+	function applyFree( s, slideEl, x, y, w ) {
+		var k = posKeys();
+		x = Math.round( x * 10 ) / 10; y = Math.round( y * 10 ) / 10; w = Math.round( w * 10 ) / 10;
+		s[ k.mode ] = 'free'; s[ k.x ] = x; s[ k.y ] = y; s[ k.w ] = w;
+		slideEl.classList.remove( k.cls + 'grid' ); slideEl.classList.add( k.cls + 'free' );
+		slideEl.style.setProperty( k.vx, x + '%' ); slideEl.style.setProperty( k.vy, y + '%' ); slideEl.style.setProperty( k.vw, w + '%' );
+		if ( stage.device === 'desktop' && ! s.mobile_pos_mode ) {
+			// Mobile inherits desktop while it has no own mode.
+			slideEl.classList.remove( 'm-pos-grid' ); slideEl.classList.add( 'm-pos-free' );
+			slideEl.style.setProperty( '--ws-mx', x + '%' ); slideEl.style.setProperty( '--ws-my', y + '%' ); slideEl.style.setProperty( '--ws-mw', w + '%' );
+		}
+	}
+
+	function syncPosControls( s ) {
+		var card = app.querySelector( '.wonom-slide-card.is-open' );
+		if ( ! card ) { return; }
+		[ 'pos_x', 'pos_y', 'pos_w', 'mobile_pos_x', 'mobile_pos_y', 'mobile_pos_w' ].forEach( function ( k ) {
+			var inp = card.querySelector( '[data-field="' + k + '"]' );
+			if ( inp && document.activeElement !== inp ) { inp.value = s[ k ]; }
+		} );
+		[ 'pos_mode', 'mobile_pos_mode' ].forEach( function ( k ) {
+			[].forEach.call( card.querySelectorAll( '[data-seg="' + k + '"]' ), function ( b ) { b.setAttribute( 'aria-pressed', String( b.getAttribute( 'data-value' ) === ( s[ k ] || '' ) ) ); } );
+		} );
+		var dRow = card.querySelector( '.js-pos-free[data-for="desktop"]' ), mRow = card.querySelector( '.js-pos-free[data-for="mobile"]' );
+		if ( dRow ) { dRow.hidden = s.pos_mode !== 'free'; }
+		if ( mRow ) { mRow.hidden = s.mobile_pos_mode !== 'free'; }
+	}
+
+	function attachStage( doc, s ) {
+		var slideEl = doc.querySelector( '.wonom-slide' ), inner = doc.querySelector( '.wonom-slide__inner' );
+		if ( ! slideEl || ! inner ) { return; }
+		inner.setAttribute( 'tabindex', '0' );
+		var handle = doc.createElement( 'div' ); handle.className = 'wonom-stage-handle'; inner.appendChild( handle );
+		var gv = doc.createElement( 'div' ); gv.className = 'wonom-stage-guide v'; slideEl.appendChild( gv );
+		var gh = doc.createElement( 'div' ); gh.className = 'wonom-stage-guide h'; slideEl.appendChild( gh );
+
+		function current() {
+			var r = slideEl.getBoundingClientRect(), ir = inner.getBoundingClientRect();
+			return { r: r, cx: ( ir.left + ir.width / 2 - r.left ) / r.width * 100, cy: ( ir.top + ir.height / 2 - r.top ) / r.height * 100, w: ir.width / r.width * 100 };
+		}
+		function commit() {
+			markDirty( 'slides' );
+			syncPosControls( s );
+		}
+		function snap( v, guide ) {
+			var on = Math.abs( v - 50 ) < 1.5;
+			guide.classList.toggle( 'is-on', on );
+			return on ? 50 : Math.max( 0, Math.min( 100, v ) );
+		}
+
+		var drag = null;
+		inner.addEventListener( 'pointerdown', function ( e ) {
+			if ( e.button !== 0 ) { return; }
+			var c = current();
+			var isHandle = e.target === handle;
+			if ( ( posKeys().mode === 'pos_mode' ? s.pos_mode : ( s.mobile_pos_mode || s.pos_mode ) ) !== 'free' || ( stage.device === 'mobile' && ! s.mobile_pos_mode ) ) {
+				applyFree( s, slideEl, c.cx, c.cy, c.w );
+			}
+			drag = { handle: isHandle, r: c.r, cx: c.cx, cy: c.cy, w: c.w, offX: e.clientX - ( c.r.left + c.cx / 100 * c.r.width ), offY: e.clientY - ( c.r.top + c.cy / 100 * c.r.height ) };
+			inner.setPointerCapture( e.pointerId );
+			e.preventDefault();
+		} );
+		inner.addEventListener( 'pointermove', function ( e ) {
+			if ( ! drag ) { return; }
+			if ( drag.handle ) {
+				var cxPx = drag.r.left + drag.cx / 100 * drag.r.width;
+				var w = Math.max( 10, Math.min( 100, Math.abs( e.clientX - cxPx ) * 2 / drag.r.width * 100 ) );
+				applyFree( s, slideEl, drag.cx, drag.cy, w );
+			} else {
+				var nx = snap( ( e.clientX - drag.offX - drag.r.left ) / drag.r.width * 100, gv );
+				var ny = snap( ( e.clientY - drag.offY - drag.r.top ) / drag.r.height * 100, gh );
+				applyFree( s, slideEl, nx, ny, drag.w );
+			}
+		} );
+		function end() {
+			if ( ! drag ) { return; }
+			drag = null;
+			gv.classList.remove( 'is-on' ); gh.classList.remove( 'is-on' );
+			commit();
+		}
+		inner.addEventListener( 'pointerup', end );
+		inner.addEventListener( 'pointercancel', end );
+		inner.addEventListener( 'keydown', function ( e ) {
+			var dx = { ArrowLeft: -1, ArrowRight: 1 }[ e.key ] || 0, dy = { ArrowUp: -1, ArrowDown: 1 }[ e.key ] || 0;
+			if ( ! dx && ! dy ) { return; }
+			e.preventDefault();
+			var c = current(), step = e.shiftKey ? 5 : 1, k = posKeys();
+			var x = s[ k.mode ] === 'free' ? parseFloat( s[ k.x ] ) : c.cx, y = s[ k.mode ] === 'free' ? parseFloat( s[ k.y ] ) : c.cy, w = s[ k.mode ] === 'free' ? parseFloat( s[ k.w ] ) : c.w;
+			applyFree( s, slideEl, Math.max( 0, Math.min( 100, x + dx * step ) ), Math.max( 0, Math.min( 100, y + dy * step ) ), w );
+			commit();
+		} );
+	}
+
+	/**
+	 * Reflect a field change on the stage without a server round-trip where possible,
+	 * then schedule a full re-render so the stage always ends up exact.
+	 */
+	function stageUpdate( s, key ) {
+		if ( ! stage.iframe || stage.slideId !== s.id ) { return; }
+		var doc; try { doc = stage.iframe.contentDocument; } catch ( e ) { return; }
+		if ( ! doc ) { return; }
+		var slideEl = doc.querySelector( '.wonom-slide' );
+		var lang = langTab[ s.id ] || defaultLang();
+		var textMap = { heading: '.wonom-slide__heading', text: '.wonom-slide__text', eyebrow: '.wonom-slide__eyebrow', badge: '.wonom-slide__badge', button_text: '.wonom-slide__button:not(.wonom-slide__button--secondary)', button2_text: '.wonom-slide__button--secondary' };
+		var varMap = { text_color: '--ws-text', button_bg: '--ws-btn-bg', button_color: '--ws-btn-color', overlay_color: '--ws-overlay-color', bg_color: '--ws-bg', pos_x: '--ws-x', pos_y: '--ws-y', pos_w: '--ws-w', mobile_pos_x: '--ws-mx', mobile_pos_y: '--ws-my', mobile_pos_w: '--ws-mw' };
+		if ( textMap[ key ] ) {
+			var el = doc.querySelector( textMap[ key ] );
+			var val = ( lang !== defaultLang() && s.i18n && s.i18n[ lang ] && s.i18n[ lang ][ key ] ) || s[ key ] || '';
+			if ( el && val ) { el.textContent = val; scheduleStage( s, 1500 ); return; }
+			scheduleStage( s, 600 ); return;
+		}
+		if ( slideEl && varMap[ key ] ) {
+			var v = s[ key ];
+			if ( /pos_/.test( key ) ) { v = parseFloat( v ) + '%'; }
+			slideEl.style.setProperty( varMap[ key ], v );
+			if ( key === 'overlay' ) { slideEl.style.setProperty( '--ws-overlay', s.overlay / 100 ); }
+			scheduleStage( s, 1200 ); return;
+		}
+		if ( key === 'overlay' && slideEl ) { slideEl.style.setProperty( '--ws-overlay', s.overlay / 100 ); scheduleStage( s, 1200 ); return; }
+		scheduleStage( s, 500 );
 	}
 
 	/* ---------- calendar tab ---------- */
@@ -566,16 +785,40 @@
 			field( I.paddingMobile, sInput( 'padding_mobile', 'number', ' min="0" max="100"' ) ) +
 			'</div>' );
 
+		function fontField( key, label ) {
+			var v = S[ key ] || 'inherit', isCustom = v.indexOf( 'custom:' ) === 0;
+			var h2 = '<div class="wonom-field"><label>' + esc( label ) + '</label><select data-font="' + key + '">';
+			h2 += '<option value="inherit"' + ( v === 'inherit' ? ' selected' : '' ) + '>' + esc( I.fontInherit ) + '</option>';
+			( state.fonts || [] ).forEach( function ( f ) { h2 += '<option value="' + esc( f ) + '"' + ( v === f ? ' selected' : '' ) + ' style="font-family:\'' + esc( f ) + '\'">' + esc( f ) + '</option>'; } );
+			h2 += '<option value="custom"' + ( isCustom ? ' selected' : '' ) + '>' + esc( I.fontCustom ) + '</option></select>';
+			h2 += '<input type="text" data-font-custom="' + key + '" value="' + esc( isCustom ? v.slice( 7 ) : '' ) + '" placeholder="' + esc( I.fontCustomPh ) + '"' + ( isCustom ? '' : ' hidden' ) + ' style="margin-top:6px"></div>';
+			return h2;
+		}
 		h += group( I.gTypography, 'editor-textcolor',
 			'<div class="wonom-grid wonom-grid--2">' +
+			fontField( 'font_heading', I.fontHeading ) +
+			fontField( 'font_text', I.fontText ) +
+			field( I.headingWeight, sSelect( 'heading_weight', [ [ 300, '300' ], [ 400, '400' ], [ 500, '500' ], [ 600, '600' ], [ 700, '700' ], [ 800, '800' ] ] ) ) +
+			field( I.headingSpacing, sInput( 'heading_spacing', 'number', ' min="-10" max="60"' ) ) +
+			'</div>' +
+			toggleRow( 'heading_uppercase', I.headingUppercase ) +
+			'<p class="wonom-hint">' + esc( I.fontsHint ) + '</p>' +
+			'<div class="wonom-grid wonom-grid--2" style="margin-top:12px">' +
 			field( I.headingSize, sInput( 'heading_size', 'number', ' min="12" max="160"' ) ) +
 			field( I.headingSizeMobile, sInput( 'heading_size_mobile', 'number', ' min="12" max="100"' ) ) +
 			field( I.textSize, sInput( 'text_size', 'number', ' min="10" max="60"' ) ) +
 			field( I.textSizeMobile, sInput( 'text_size_mobile', 'number', ' min="10" max="40"' ) ) +
-			field( I.fontFamily, sInput( 'font_family', 'text', ' placeholder="inherit"' ), esc( I.fontHint ) ) +
 			field( I.buttonRadius, sInput( 'button_radius', 'number', ' min="0" max="100"' ) ) +
 			field( I.headingTag, sSelect( 'heading_tag', [ [ 'h2', 'H2' ], [ 'h1', 'H1' ], [ 'h3', 'H3' ], [ 'p', 'P' ] ] ), esc( I.headingTagHint ) ) +
 			'</div>' );
+
+		var C = state.cache || {};
+		var cacheInner = '<div class="wonom-row"><label class="wonom-toggle wonom-toggle--inline"><input type="checkbox" data-adv="auto_purge"' + ( A.auto_purge ? ' checked' : '' ) + '><span></span></label><span>' + esc( I.autoPurge ) + '</span></div>';
+		cacheInner += '<p class="wonom-hint">' + esc( C.detected && C.detected.length ? sprintf( I.cacheDetected, C.detected.join( ', ' ) ) : I.cacheNone ) + ( C.next_tick ? ' · ' + esc( sprintf( I.nextTick, C.next_tick ) ) : '' ) + '</p>';
+		if ( C.wp_cron_off ) { cacheInner += '<p class="wonom-warn">' + esc( I.cronOff ) + '</p>'; }
+		cacheInner += '<div class="wonom-grid wonom-grid--2">' + field( I.cfZone, '<input type="text" data-adv="cf_zone" value="' + esc( A.cf_zone || '' ) + '" autocomplete="off">' ) + field( I.cfToken, '<input type="text" data-adv="cf_token" value="' + esc( A.cf_token || '' ) + '" autocomplete="off">', esc( I.cfHint ) ) + '</div>';
+		cacheInner += '<div class="wonom-row"><button type="button" class="button" data-action="purge">' + esc( I.purgeNow ) + '</button></div>';
+		h += group( I.gCache, 'performance', cacheInner );
 
 		var langInner = '';
 		if ( CFG.langPlugin ) {
@@ -686,6 +929,15 @@
 			case 'copy':
 				navigator.clipboard && navigator.clipboard.writeText( btn.getAttribute( 'data-copy' ) ).then( function () { toast( I.copied, 'ok' ); } ); break;
 			case 'check-updates': checkUpdates( btn ); break;
+			case 'stage-device': stage.device = btn.getAttribute( 'data-device' ); render(); break;
+			case 'purge':
+				btn.disabled = true; var pl = btn.textContent; btn.textContent = I.purging;
+				api( '/purge', 'POST', {} ).then( function ( r ) {
+					btn.disabled = false; btn.textContent = pl;
+					toast( r.done && r.done.length ? sprintf( I.purged, r.done.join( ', ' ) ) : I.purgedNone, r.errors && r.errors.length ? 'err' : 'ok' );
+					if ( r.errors && r.errors.length ) { toast( r.errors.join( ' · ' ), 'err' ); }
+				} ).catch( function ( e ) { btn.disabled = false; btn.textContent = pl; toast( e.message || 'Error', 'err' ); } );
+				break;
 			case 'export': exportJson(); break;
 			case 'import': document.getElementById( 'wonom-import-file' ).click(); break;
 		}
@@ -715,6 +967,12 @@
 			}
 			markDirty( 'slides' );
 			updateCardHeader( card, s );
+			stageUpdate( s, key );
+			return;
+		}
+		if ( el.hasAttribute( 'data-font-custom' ) ) {
+			state.settings[ el.getAttribute( 'data-font-custom' ) ] = 'custom:' + el.value;
+			markDirty( 'settings' );
 			return;
 		}
 		if ( el.hasAttribute( 'data-setting' ) ) {
@@ -742,6 +1000,13 @@
 			var p = parseDisplay( el.value );
 			s2[ el.getAttribute( 'data-date' ) ] = p ? toIso( p ) : '';
 			markDirty( 'slides' ); render(); return;
+		}
+		if ( el.hasAttribute( 'data-font' ) ) {
+			var fk = el.getAttribute( 'data-font' );
+			var custom = el.parentNode.querySelector( '[data-font-custom]' );
+			if ( el.value === 'custom' ) { custom.hidden = false; custom.focus(); state.settings[ fk ] = 'custom:' + custom.value; }
+			else { custom.hidden = true; state.settings[ fk ] = el.value; }
+			markDirty( 'settings' ); return;
 		}
 		if ( el.hasAttribute( 'data-ratio-mode' ) ) {
 			var key = el.getAttribute( 'data-ratio-mode' );
@@ -780,9 +1045,10 @@
 			alt: '', eyebrow: '', heading: '', text: '', button_text: '', button_url: '', button_new_tab: false,
 			button2_text: '', button2_url: '', link_whole_slide: false,
 			align: 'center', valign: 'middle', text_color: '#ffffff', button_bg: '#f28cb1', button_color: '#ffffff',
-			overlay: 20, overlay_color: '#000000', badge: '', start: '', end: '',
+			overlay: 20, overlay_color: '#000000', bg_color: '#1d2433', badge: '', start: '', end: '',
 			focal_x: 50, focal_y: 50, mobile_focal_x: 50, mobile_focal_y: 50,
-			mobile_align: '', mobile_valign: '', mobile_hide_text: false, i18n: {}
+			mobile_align: '', mobile_valign: '', mobile_hide_text: false,
+			pos_mode: 'grid', pos_x: 50, pos_y: 50, pos_w: 60, mobile_pos_mode: '', mobile_pos_x: 50, mobile_pos_y: 50, mobile_pos_w: 90, i18n: {}
 		};
 		// Campaign slides go first (they usually should be seen first) with a default 14-day window.
 		if ( s.type === 'campaign' ) {
