@@ -222,6 +222,11 @@ body.wonom-app .wonom-field .wonom-color-hex { width: 110px; font-family: ui-mon
 .wonom-imgpick:hover { border-color: var(--w-primary); color: var(--w-primary); }
 .wonom-imgpick .dashicons { font-size: 24px; width: 24px; height: 24px; }
 
+.wonom-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.wonom-collage-slots .wonom-imgwrap img { max-height: 200px; }
+.wonom-collage-slots .wonom-imgpick { min-height: 160px; }
+@media (max-width: 1100px) { .wonom-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
 /* schedule */
 .wonom-sec--schedule { background: linear-gradient(0deg, #fff, #fff), var(--w-warn-soft); }
 .wonom-dt { position: relative; display: flex; gap: 6px; align-items: center; }

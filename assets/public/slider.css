@@ -147,6 +147,76 @@
 	box-shadow: none;
 }
 
+/* --- collage (2–4 images side by side) --- */
+
+.wonom-slide__media.wonom-collage {
+	--ws-seam: 90px;
+	display: flex;
+	gap: var(--ws-cgap, 0);
+	background: var(--ws-bg);
+}
+
+.wonom-collage.seam-fade,
+.wonom-collage.seam-blur { gap: 0; }
+
+.wonom-collage__item {
+	position: relative;
+	flex: 1 1 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.wonom-collage__item img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: var(--ws-cf, 50% 50%);
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+/* Fade / blur seam: each following image overlaps the previous one by --ws-seam and is masked in. */
+.wonom-collage.seam-fade .wonom-collage__item + .wonom-collage__item,
+.wonom-collage.seam-blur .wonom-collage__item + .wonom-collage__item {
+	margin-left: calc(-1 * var(--ws-seam));
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--ws-seam));
+	mask-image: linear-gradient(90deg, transparent, #000 var(--ws-seam));
+}
+
+.wonom-collage.seam-blur .wonom-collage__item + .wonom-collage__item::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: calc(var(--ws-seam) * 1.5);
+	z-index: 1;
+	pointer-events: none;
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+	-webkit-mask-image: linear-gradient(90deg, #000 40%, transparent);
+	mask-image: linear-gradient(90deg, #000 40%, transparent);
+}
+
+/* --- frame: media inset from the slide edge, rounded corners, background colour around --- */
+
+.wonom-slide.has-frame {
+	--ws-frame-d: 0px;
+	--ws-frame-r: 0px;
+	--ws-frame: var(--ws-frame-d);
+}
+
+.wonom-slide.has-frame .wonom-slide__media,
+.wonom-slide.has-frame .wonom-slide__overlay {
+	inset: var(--ws-frame);
+	border-radius: var(--ws-frame-r);
+	overflow: hidden;
+}
+
 .wonom-slider.has-ken-burns .wonom-slide.is-active .wonom-slide__img {
 	animation: wonom-kenburns 12s ease-out forwards;
 }
@@ -494,6 +564,11 @@
 	.wonom-slide.m-pos-grid .wonom-slide__inner { position: static; width: auto; max-width: var(--ws-content-width); transform: none; }
 
 	.wonom-slide.m-hide-text .wonom-slide__content { display: none !important; }
+
+	.wonom-collage { --ws-seam: 40px; }
+	.wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3) { display: none; }
+	.wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2) { display: none; }
+	.wonom-slide.has-frame { --ws-frame: calc(var(--ws-frame-d, 0px) * 0.5); }
 
 	.wonom-slider .wonom-slider__arrow { width: 38px !important; height: 38px !important; opacity: 1; background: rgba(255, 255, 255, 0.7) !important; }
 	.wonom-slider .wonom-slider__arrow--prev { left: 8px !important; }

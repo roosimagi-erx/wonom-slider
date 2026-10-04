@@ -91,6 +91,26 @@ return array(
 		'Background colour'                  => 'Taustavärv',
 		'Shown behind the image and on its own when the slide has no image – a slide can be text only.' => 'Näha pildi taga ja üksinda, kui slaidil pilti pole – slaid võib olla ka ainult tekstiga.',
 
+		// Collage & frame.
+		'Background'                         => 'Taust',
+		'One image'                          => 'Üks pilt',
+		'Collage (2–4 images)'               => 'Kollaaž (2–4 pilti)',
+		'Image %d'                           => 'Pilt %d',
+		'Add images'                         => 'Lisa pildid',
+		'Pick 2–4 portrait photos of the same size (e.g. 800×1000 px); you can select several at once. Click a photo to set its focal point. The slider ratio follows the first photo × number of columns.' => 'Vali 2–4 ühesuurust püstist fotot (nt 800×1000 px); korraga saab valida mitu. Klõps fotol määrab fookuspunkti. Slaideri külgede suhe tuleb esimesest fotost × veergude arv.',
+		'Seam between images'                => 'Piltide vaheline üleminek',
+		'Sharp'                              => 'Terav',
+		'Fade'                               => 'Sulandumine',
+		'Blur'                               => 'Hägu',
+		'Gap between images (px, sharp seam only)' => 'Piltide vahe (px, ainult terava ülemineku puhul)',
+		'On mobile show'                     => 'Mobiilis näita',
+		'All images'                         => 'Kõiki pilte',
+		'First two'                          => 'Kahte esimest',
+		'First one'                          => 'Ühte esimest',
+		'Frame: distance from slide edge (px)' => 'Raam: kaugus slaidi servast (px)',
+		'Frame: corner radius (px)'          => 'Raam: nurga raadius (px)',
+		'The background colour shows around the frame; 0 = no frame. On mobile the distance is halved.' => 'Raami ümber paistab taustavärv; 0 = raami pole. Mobiilis on kaugus poole väiksem.',
+
 		// Per-slide typography.
 		'Empty = default (shown as placeholder). Everything here applies to this slide only; the preview updates immediately.' => 'Tühi = vaikeväärtus (näha kohatäitena). Kõik siinne kehtib ainult sellele slaidile; eelvaade uueneb kohe.',
 		'Default'                            => 'Vaikimisi',

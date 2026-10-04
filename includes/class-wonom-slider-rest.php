@@ -158,6 +158,13 @@ class Wonom_Slider_Rest {
 			$slides[ $k ]['typo'] = (object) ( is_array( $slide['typo'] ) ? $slide['typo'] : array() );
 			$slides[ $k ]['status'] = Wonom_Slider_Data::slide_status( $slide );
 			$slides[ $k ]['thumb']  = $slide['image_id'] ? wp_get_attachment_image_url( $slide['image_id'], 'medium' ) : $slide['image_url'];
+			if ( ! $slides[ $k ]['thumb'] && Wonom_Slider_Data::slide_is_collage( $slide ) ) {
+				$main                  = Wonom_Slider_Data::slide_main_image( $slide );
+				$slides[ $k ]['thumb'] = $main['id'] ? wp_get_attachment_image_url( $main['id'], 'medium' ) : $main['url'];
+			}
+			foreach ( $slides[ $k ]['collage'] as $ci => $citem ) {
+				$slides[ $k ]['collage'][ $ci ]['thumb'] = ! empty( $citem['id'] ) ? wp_get_attachment_image_url( $citem['id'], 'medium' ) : $citem['url'];
+			}
 			$slides[ $k ]['mobile_thumb'] = $slide['mobile_image_id'] ? wp_get_attachment_image_url( $slide['mobile_image_id'], 'medium' ) : $slide['mobile_image_url'];
 		}
 		return array(

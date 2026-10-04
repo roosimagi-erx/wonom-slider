@@ -150,6 +150,26 @@ class Wonom_Slider_Admin {
 			'bgColor'          => __( 'Background colour', 'wonom-slider' ),
 			'bgHint'           => __( 'Shown behind the image and on its own when the slide has no image – a slide can be text only.', 'wonom-slider' ),
 
+			// Collage & frame.
+			'bgMode'           => __( 'Background', 'wonom-slider' ),
+			'bgImage'          => __( 'One image', 'wonom-slider' ),
+			'bgCollage'        => __( 'Collage (2–4 images)', 'wonom-slider' ),
+			'collageSlot'      => __( 'Image %d', 'wonom-slider' ),
+			'collageAdd'       => __( 'Add images', 'wonom-slider' ),
+			'collageHint'      => __( 'Pick 2–4 portrait photos of the same size (e.g. 800×1000 px); you can select several at once. Click a photo to set its focal point. The slider ratio follows the first photo × number of columns.', 'wonom-slider' ),
+			'seam'             => __( 'Seam between images', 'wonom-slider' ),
+			'seamHard'         => __( 'Sharp', 'wonom-slider' ),
+			'seamFade'         => __( 'Fade', 'wonom-slider' ),
+			'seamBlur'         => __( 'Blur', 'wonom-slider' ),
+			'collageGap'       => __( 'Gap between images (px, sharp seam only)', 'wonom-slider' ),
+			'collageMobile'    => __( 'On mobile show', 'wonom-slider' ),
+			'mAll'             => __( 'All images', 'wonom-slider' ),
+			'mFirst2'          => __( 'First two', 'wonom-slider' ),
+			'mFirst1'          => __( 'First one', 'wonom-slider' ),
+			'frameWidth'       => __( 'Frame: distance from slide edge (px)', 'wonom-slider' ),
+			'frameRadius'      => __( 'Frame: corner radius (px)', 'wonom-slider' ),
+			'frameHint'        => __( 'The background colour shows around the frame; 0 = no frame. On mobile the distance is halved.', 'wonom-slider' ),
+
 			// Per-slide typography.
 			'secTypo'          => __( 'Typography', 'wonom-slider' ),
 			'typoIntro'        => __( 'Empty = default (shown as placeholder). Everything here applies to this slide only; the preview updates immediately.', 'wonom-slider' ),

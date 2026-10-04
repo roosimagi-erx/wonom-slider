@@ -164,6 +164,7 @@
 			[ 'i18n', 'typo' ].forEach( function ( k ) {
 				if ( ! s[ k ] || Array.isArray( s[ k ] ) || typeof s[ k ] !== 'object' ) { s[ k ] = {}; }
 			} );
+			if ( ! Array.isArray( s.collage ) ) { s.collage = s.collage && typeof s.collage === 'object' ? Object.keys( s.collage ).map( function ( k ) { return s.collage[ k ]; } ) : []; }
 			if ( s.i18n ) { Object.keys( s.i18n ).forEach( function ( l ) { if ( ! s.i18n[ l ] || Array.isArray( s.i18n[ l ] ) ) { s.i18n[ l ] = {}; } } ); }
 		} );
 		return slides;
@@ -365,11 +366,37 @@
 
 		/* Images */
 		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-format-image"></span> ' + esc( I.secImages ) + '</h3>';
-		h += '<div class="wonom-grid wonom-grid--2">';
-		h += imageBox( s, 'image', I.desktopImage, I.recommended );
-		h += imageBox( s, 'mobile_image', I.mobileImage, I.mobileHint );
-		h += '</div>';
-		h += '<p class="wonom-hint">' + esc( I.focalHint ) + '</p>';
+		h += field( I.bgMode, segmented( 'bg_mode', s.bg_mode || 'image', [ [ 'image', I.bgImage ], [ 'collage', I.bgCollage ] ] ) );
+		if ( s.bg_mode === 'collage' ) {
+			var col = Array.isArray( s.collage ) ? s.collage : [];
+			h += '<div class="wonom-grid wonom-grid--4 wonom-collage-slots">';
+			for ( var ci = 0; ci < 4; ci++ ) {
+				var it = col[ ci ];
+				h += '<div class="wonom-imgbox wonom-cslot" data-slot="' + ci + '"><label>' + esc( sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
+				if ( it ) {
+					h += '<div class="wonom-imgwrap is-portrait" data-action="focal-collage" title="' + esc( I.focalHint ) + '"><img src="' + esc( it.thumb || it.url ) + '" alt=""><span class="wonom-focal" style="left:' + ( it.focal_x || 50 ) + '%;top:' + ( it.focal_y || 50 ) + '%"></span></div>';
+					h += '<div class="wonom-imgmeta">' + ( it.width ? esc( sprintf( I.imageSize, it.width, it.height ) ) : '' ) + '</div>';
+					h += '<div class="wonom-imgactions"><button type="button" class="button" data-action="pick-collage">' + esc( I.replace ) + '</button> <button type="button" class="button-link is-danger" data-action="remove-collage">' + esc( I.remove ) + '</button></div>';
+				} else {
+					h += '<button type="button" class="wonom-imgpick" data-action="pick-collage"><span class="dashicons dashicons-plus-alt2"></span>' + esc( ci === col.length ? I.collageAdd : I.chooseImage ) + '</button>';
+				}
+				h += '</div>';
+			}
+			h += '</div>';
+			h += '<p class="wonom-hint">' + esc( I.collageHint ) + '</p>';
+			h += '<div class="wonom-grid wonom-grid--3">';
+			h += field( I.seam, '<select data-field="collage_seam">' + [ [ 'hard', I.seamHard ], [ 'fade', I.seamFade ], [ 'blur', I.seamBlur ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_seam === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
+			h += field( I.collageGap, numInput( s, 'collage_gap', 0, 60, 1 ) );
+			h += field( I.collageMobile, '<select data-field="collage_mobile">' + [ [ 'all', I.mAll ], [ 'first2', I.mFirst2 ], [ 'first1', I.mFirst1 ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_mobile === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
+			h += '</div>';
+		} else {
+			h += '<div class="wonom-grid wonom-grid--2">';
+			h += imageBox( s, 'image', I.desktopImage, I.recommended );
+			h += imageBox( s, 'mobile_image', I.mobileImage, I.mobileHint );
+			h += '</div>';
+			h += '<p class="wonom-hint">' + esc( I.focalHint ) + '</p>';
+		}
+		h += '<div class="wonom-grid wonom-grid--2">' + field( I.frameWidth, numInput( s, 'frame_width', 0, 80, 1 ) ) + field( I.frameRadius, numInput( s, 'frame_radius', 0, 80, 1 ), esc( I.frameHint ) ) + '</div>';
 		h += '</section>';
 
 		/* Content with language tabs */
@@ -764,6 +791,17 @@
 			scheduleStage( s, 1200 ); return;
 		}
 		if ( key === 'overlay' && slideEl ) { slideEl.style.setProperty( '--ws-overlay', s.overlay / 100 ); scheduleStage( s, 1200 ); return; }
+		if ( ( key === 'frame_width' || key === 'frame_radius' ) && slideEl ) {
+			var fw = parseInt( s.frame_width, 10 ) || 0, fr = parseInt( s.frame_radius, 10 ) || 0;
+			slideEl.classList.toggle( 'has-frame', fw > 0 || fr > 0 );
+			slideEl.style.setProperty( '--ws-frame-d', fw + 'px' );
+			slideEl.style.setProperty( '--ws-frame-r', fr + 'px' );
+			scheduleStage( s, 1500 ); return;
+		}
+		if ( key === 'collage_gap' && doc.querySelector( '.wonom-collage' ) ) {
+			doc.querySelector( '.wonom-collage' ).style.setProperty( '--ws-cgap', ( parseInt( s.collage_gap, 10 ) || 0 ) + 'px' );
+			scheduleStage( s, 1500 ); return;
+		}
 		scheduleStage( s, 500 );
 	}
 
@@ -964,6 +1002,18 @@
 				if ( window.confirm( I.confirmDelete ) ) { state.slides.splice( state.slides.indexOf( s ), 1 ); if ( openId === s.id ) { openId = null; } markDirty( 'slides' ); render(); }
 				break;
 			case 'pick-image': pickImage( s, btn.closest( '.wonom-imgbox' ).getAttribute( 'data-base' ) ); break;
+			case 'pick-collage': pickCollage( s, parseInt( btn.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 ) ); break;
+			case 'remove-collage':
+				s.collage.splice( parseInt( btn.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 ), 1 );
+				markDirty( 'slides' ); render(); break;
+			case 'focal-collage':
+				var cw = btn, cimg = cw.querySelector( 'img' ), cr = cimg.getBoundingClientRect();
+				var slotIdx = parseInt( cw.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 );
+				var cfx = Math.round( Math.min( 100, Math.max( 0, ( e.clientX - cr.left ) / cr.width * 100 ) ) );
+				var cfy = Math.round( Math.min( 100, Math.max( 0, ( e.clientY - cr.top ) / cr.height * 100 ) ) );
+				s.collage[ slotIdx ].focal_x = cfx; s.collage[ slotIdx ].focal_y = cfy;
+				var cdot = cw.querySelector( '.wonom-focal' ); cdot.style.left = cfx + '%'; cdot.style.top = cfy + '%';
+				markDirty( 'slides' ); stageCollageFocal( s, slotIdx ); break;
 			case 'remove-image':
 				var base = btn.closest( '.wonom-imgbox' ).getAttribute( 'data-base' );
 				s[ base + '_id' ] = 0; s[ base + '_url' ] = ''; s[ base + '_width' ] = 0; s[ base + '_height' ] = 0;
@@ -1138,7 +1188,9 @@
 			overlay: 20, overlay_color: '#000000', bg_color: '#1d2433', badge: '', start: '', end: '',
 			focal_x: 50, focal_y: 50, mobile_focal_x: 50, mobile_focal_y: 50,
 			mobile_align: '', mobile_valign: '', mobile_hide_text: false,
-			pos_mode: 'grid', pos_x: 50, pos_y: 50, pos_w: 60, mobile_pos_mode: '', mobile_pos_x: 50, mobile_pos_y: 50, mobile_pos_w: 90, typo: {}, i18n: {}
+			pos_mode: 'grid', pos_x: 50, pos_y: 50, pos_w: 60, mobile_pos_mode: '', mobile_pos_x: 50, mobile_pos_y: 50, mobile_pos_w: 90,
+			bg_mode: 'image', collage: [], collage_seam: 'fade', collage_gap: 0, collage_mobile: 'first2', frame_width: 0, frame_radius: 0,
+			typo: {}, i18n: {}
 		};
 		// Campaign slides go first (they usually should be seen first) with a default 14-day window.
 		if ( s.type === 'campaign' ) {
@@ -1178,6 +1230,43 @@
 			markDirty( 'slides' ); render();
 		} );
 		frame.open();
+	}
+
+	var collageFrame = null;
+	function pickCollage( s, slot ) {
+		if ( ! window.wp || ! window.wp.media ) { return; }
+		if ( ! collageFrame ) {
+			collageFrame = window.wp.media( { title: I.bgCollage, library: { type: 'image' }, multiple: 'add', button: { text: I.chooseImage } } );
+		}
+		collageFrame.off( 'select' );
+		collageFrame.on( 'select', function () {
+			var picked = collageFrame.state().get( 'selection' ).toJSON();
+			s.collage = Array.isArray( s.collage ) ? s.collage : [];
+			picked.forEach( function ( a, i ) {
+				var idx = slot + i;
+				if ( idx > 3 ) { return; }
+				var th = ( a.sizes && ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ) ) ? ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ).url : a.url;
+				var prev = s.collage[ idx ] || {};
+				s.collage[ idx ] = { id: a.id, url: a.url, width: a.width || 0, height: a.height || 0, focal_x: prev.focal_x || 50, focal_y: prev.focal_y || 50, thumb: th };
+			} );
+			// No holes: compact the list.
+			s.collage = s.collage.filter( Boolean );
+			if ( ! s.name && picked[ 0 ] && picked[ 0 ].title ) { s.name = picked[ 0 ].title; }
+			markDirty( 'slides' ); render();
+		} );
+		collageFrame.on( 'open', function () {
+			var sel = collageFrame.state().get( 'selection' );
+			sel.reset();
+		} );
+		collageFrame.open();
+	}
+
+	function stageCollageFocal( s, idx ) {
+		if ( ! stage.iframe || stage.slideId !== s.id ) { return; }
+		try {
+			var items = stage.iframe.contentDocument.querySelectorAll( '.wonom-collage__item' );
+			if ( items[ idx ] ) { items[ idx ].style.setProperty( '--ws-cf', s.collage[ idx ].focal_x + '% ' + s.collage[ idx ].focal_y + '%' ); }
+		} catch ( e ) { /* ignore */ }
 	}
 
 	function translateSlide( s, lang, btn ) {

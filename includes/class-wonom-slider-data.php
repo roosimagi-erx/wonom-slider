@@ -294,6 +294,15 @@ class Wonom_Slider_Data {
 			'mobile_pos_x'        => 50,
 			'mobile_pos_y'        => 50,
 			'mobile_pos_w'        => 90,
+			// Background: a single image (image_* fields) or a collage of 2–4 images built in the browser.
+			'bg_mode'             => 'image', // image | collage
+			'collage'             => array(), // list of { id, url, width, height, focal_x, focal_y }
+			'collage_seam'        => 'fade',  // hard | fade | blur
+			'collage_gap'         => 0,       // px, used with the hard seam
+			'collage_mobile'      => 'first2', // all | first2 | first1
+			// Frame: inset from the slide edge + corner radius; the background colour shows around it.
+			'frame_width'         => 0,
+			'frame_radius'        => 0,
 			// Per-slide typography overrides. '' / null = use the global setting.
 			'typo'                => array(),
 			'i18n'                => array(), // lang => array( field => value )
@@ -571,6 +580,44 @@ class Wonom_Slider_Data {
 
 		$out['typo'] = isset( $in['typo'] ) ? self::sanitize_typo( $in['typo'] ) : array();
 
+		// Collage + frame.
+		$out['bg_mode']        = ( isset( $in['bg_mode'] ) && 'collage' === $in['bg_mode'] ) ? 'collage' : 'image';
+		$out['collage_seam']   = ( isset( $in['collage_seam'] ) && in_array( $in['collage_seam'], array( 'hard', 'fade', 'blur' ), true ) ) ? $in['collage_seam'] : $d['collage_seam'];
+		$out['collage_gap']    = isset( $in['collage_gap'] ) ? max( 0, min( 60, absint( $in['collage_gap'] ) ) ) : $d['collage_gap'];
+		$out['collage_mobile'] = ( isset( $in['collage_mobile'] ) && in_array( $in['collage_mobile'], array( 'all', 'first2', 'first1' ), true ) ) ? $in['collage_mobile'] : $d['collage_mobile'];
+		$out['frame_width']    = isset( $in['frame_width'] ) ? max( 0, min( 80, absint( $in['frame_width'] ) ) ) : 0;
+		$out['frame_radius']   = isset( $in['frame_radius'] ) ? max( 0, min( 80, absint( $in['frame_radius'] ) ) ) : 0;
+		$out['collage']        = array();
+		if ( isset( $in['collage'] ) && is_array( $in['collage'] ) ) {
+			foreach ( array_slice( array_values( $in['collage'] ), 0, 4 ) as $item ) {
+				if ( ! is_array( $item ) ) {
+					continue;
+				}
+				$id   = isset( $item['id'] ) ? absint( $item['id'] ) : 0;
+				$slot = array(
+					'id'      => $id,
+					'url'     => isset( $item['url'] ) ? esc_url_raw( $item['url'] ) : '',
+					'width'   => isset( $item['width'] ) ? absint( $item['width'] ) : 0,
+					'height'  => isset( $item['height'] ) ? absint( $item['height'] ) : 0,
+					'focal_x' => isset( $item['focal_x'] ) ? max( 0, min( 100, absint( $item['focal_x'] ) ) ) : 50,
+					'focal_y' => isset( $item['focal_y'] ) ? max( 0, min( 100, absint( $item['focal_y'] ) ) ) : 50,
+				);
+				if ( $id ) {
+					$src = wp_get_attachment_image_src( $id, 'full' );
+					if ( $src ) {
+						$slot['url']    = $src[0];
+						$slot['width']  = (int) $src[1];
+						$slot['height'] = (int) $src[2];
+					} else {
+						$slot['id'] = 0;
+					}
+				}
+				if ( '' !== $slot['url'] ) {
+					$out['collage'][] = $slot;
+				}
+			}
+		}
+
 		// Translations.
 		$out['i18n'] = array();
 		if ( isset( $in['i18n'] ) && is_array( $in['i18n'] ) ) {
@@ -753,12 +800,33 @@ class Wonom_Slider_Data {
 	 * A slide can be shown when it has an image or at least some text.
 	 */
 	public static function slide_has_content( $slide ) {
+		if ( self::slide_is_collage( $slide ) ) {
+			return true;
+		}
 		foreach ( array( 'image_url', 'heading', 'text', 'eyebrow', 'button_text' ) as $k ) {
 			if ( ! empty( $slide[ $k ] ) ) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Collage mode with at least one image.
+	 */
+	public static function slide_is_collage( $slide ) {
+		return isset( $slide['bg_mode'] ) && 'collage' === $slide['bg_mode'] && ! empty( $slide['collage'] ) && is_array( $slide['collage'] );
+	}
+
+	/**
+	 * Representative image (for thumbnails / aspect ratio): the single image or the first collage image.
+	 */
+	public static function slide_main_image( $slide ) {
+		if ( self::slide_is_collage( $slide ) ) {
+			$c = $slide['collage'][0];
+			return array( 'id' => (int) $c['id'], 'url' => $c['url'], 'width' => (int) $c['width'], 'height' => (int) $c['height'] );
+		}
+		return array( 'id' => (int) $slide['image_id'], 'url' => $slide['image_url'], 'width' => (int) $slide['image_width'], 'height' => (int) $slide['image_height'] );
 	}
 
 	public static function slide_status( $slide ) {

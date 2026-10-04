@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 - 2026-10-04
+
+- Uus: kollaažslaid – 2–4 pilti meediateegist kõrvuti, igal oma fookuspunkt; üleminek terav / sulandumine / hägu; piltide vahe; mobiilis kõik / kaks esimest / üks. Külgede suhe arvutatakse esimesest fotost. Komposiitpilti pole enam vaja Photoshopis teha.
+- Uus: raam – pildi (või kollaaži) kaugus slaidi servast ja nurga raadius; raami ümber paistab slaidi taustavärv. Mobiilis on kaugus poole väiksem.
+
 ## 1.3.0 - 2026-10-04
 
 - Muudatus: tüpograafia on ainult slaidi põhine. Üldseadete plokk „Tüpograafia” on eemaldatud; kõik samad valikud (fondid, suurused arvutile ja mobiilile, paksus, suurtähed, tähevahe, ridade vahe, vahe nupu ees) ja lisaks nupu nurgaraadius on slaidi plokis „Tüpograafia”. Tühi väli = vaikeväärtus, mis on kohatäitena näha.
