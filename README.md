@@ -48,6 +48,8 @@ ja „ainult pilt“ – kõik seaded on vaikimisi „sama mis arvutis“. Fooku
 
 **Vahemälu:** Seaded → Lehe vahemälu: tühjendatakse automaatselt salvestamisel, ajastatud alguse/lõpu hetkel ja pärast plugina uuendust (FlyingPress, WP Rocket, LiteSpeed, W3TC jt; Cloudflare API võtmega). Nupp „Tühjenda vahemälu kohe”.
 
+**Kampaaniariba sidumine:** kui Wonom Kampaaniariba on aktiivne, saab slaidi sisu allikaks valida kampaania. Pealkiri, tekst, väike rida, silt (sooduskood), nupu link (koos kupongi automaatse rakendamisega) ja ajakava tulevad kampaaniast mõlemas keeles ja on slaidil lukus; pildid, asukoht, tüpograafia, värvid ja nupu tekst jäävad slaidil muudetavaks. Kampaania muutmise lehel on kast „Wonom Slider” linnukesega „Näita seda kampaaniat ka slaideris” ja malli valikuga: linnuke loob seotud slaidi automaatselt (mall: Seaded → Kampaaniariba või kampaania enda valik), eemaldamine peidab slaidi, kampaania kustutamine kustutab slaidi. Kampaaniariba koodi muuta ei tule.
+
 **Eelvaade:** nupp *Eelvaade* avab salvestatud slaideri arvuti/tahvli/mobiili laiuses otse redaktoris.
 
 ## Seaded
