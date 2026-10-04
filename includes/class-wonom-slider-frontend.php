@@ -165,7 +165,16 @@ class Wonom_Slider_Frontend {
 			'progress'     => (bool) $settings['show_progress'],
 		);
 
-		$style = self::inline_style( $settings, $slides[0] );
+		// The slider ratio follows the first slide that actually has an image (text-only slides carry no dimensions).
+		$ratio_slide = $slides[0];
+		foreach ( $slides as $candidate ) {
+			$main = Wonom_Slider_Data::slide_main_image( $candidate );
+			if ( $main['width'] && $main['height'] ) {
+				$ratio_slide = $candidate;
+				break;
+			}
+		}
+		$style = self::inline_style( $settings, $ratio_slide );
 
 		ob_start();
 		// The stylesheet's mobile rules use 767px; a custom breakpoint needs its own media block.
@@ -450,7 +459,8 @@ class Wonom_Slider_Frontend {
 				$settings['ratio_mobile'],
 				$first['mobile_image_width'] ? $first['mobile_image_width'] : $first['image_width'],
 				$first['mobile_image_height'] ? $first['mobile_image_height'] : $first['image_height'],
-				$ratio_d
+				// No image anywhere (text-only slider): 4:3 gives the texts room on phones.
+				$first['image_width'] ? $ratio_d : '4 / 3'
 			);
 		}
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1 - 2026-10-04
+
+- Parandus: slaideri külgede suhe võetakse esimeselt slaidilt, millel on pilt või kollaaž, mitte lihtsalt esimeselt slaidilt. Kui esimene slaid oli ainult tekstiga, jäi slaider mobiilis liiga madalaks ja tekst läks üle serva. Kui ühelgi slaidil pilti pole, on mobiilis suhe 4:3.
+
 ## 1.4.0 - 2026-10-04
 
 - Uus: kollaažslaid – 2–4 pilti meediateegist kõrvuti, igal oma fookuspunkt; üleminek terav / sulandumine / hägu; piltide vahe; mobiilis kõik / kaks esimest / üks. Külgede suhe arvutatakse esimesest fotost. Komposiitpilti pole enam vaja Photoshopis teha.
