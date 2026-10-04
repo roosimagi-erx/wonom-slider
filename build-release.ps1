@@ -88,7 +88,7 @@ if ($Tag) {
         git add -A
         git commit -m "Release $Version"
         git tag "v$Version"
-        git push origin HEAD --tags 2>&1 | ForEach-Object { "$_" }
+        cmd /c "git push origin HEAD --tags 2>&1"
         Write-Host "Tag v$Version pushed. GitHub Actions will publish the release in ~1 minute." -ForegroundColor Green
     } finally {
         Pop-Location
