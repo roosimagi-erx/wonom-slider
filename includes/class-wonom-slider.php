@@ -34,6 +34,8 @@ final class Wonom_Slider {
 		Wonom_Slider_Rest::init();
 		Wonom_Slider_Updater::init();
 		Wonom_Slider_Cache::init();
+		// Campaign post type is registered by Kampaaniariba on plugins_loaded/init; bind after init.
+		add_action( 'init', array( 'Wonom_Slider_Campaigns', 'init' ), 20 );
 
 		if ( is_admin() ) {
 			Wonom_Slider_Admin::init();

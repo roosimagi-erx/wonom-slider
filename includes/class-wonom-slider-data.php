@@ -134,6 +134,7 @@ class Wonom_Slider_Data {
 			'heading_weight'      => 400,
 			'heading_uppercase'   => true,
 			'heading_spacing'     => 14, // letter-spacing in 1/100 em
+			'campaign_template_id' => '', // slide id used as template for auto-created campaign slides
 			'custom_css'          => '',
 		);
 	}
@@ -306,6 +307,9 @@ class Wonom_Slider_Data {
 			// Frame: inset from the slide edge + corner radius; the background colour shows around it.
 			'frame_width'         => 0,
 			'frame_radius'        => 0,
+			// Content source: own texts, or a Wonom Kampaaniariba campaign (texts, link, coupon, schedule follow it).
+			'source'              => 'own', // own | campaign
+			'campaign_id'         => 0,
 			// Per-slide typography overrides. '' / null = use the global setting.
 			'typo'                => array(),
 			'i18n'                => array(), // lang => array( field => value )
@@ -390,7 +394,11 @@ class Wonom_Slider_Data {
 		$out = array();
 		foreach ( $slides as $slide ) {
 			if ( is_array( $slide ) ) {
-				$out[] = wp_parse_args( $slide, self::default_slide() );
+				$slide = wp_parse_args( $slide, self::default_slide() );
+				if ( class_exists( 'Wonom_Slider_Campaigns' ) ) {
+					$slide = Wonom_Slider_Campaigns::apply( $slide );
+				}
+				$out[] = $slide;
 			}
 		}
 		return $out;
@@ -493,6 +501,8 @@ class Wonom_Slider_Data {
 
 		$out['custom_css'] = isset( $in['custom_css'] ) ? self::sanitize_css( $in['custom_css'] ) : '';
 
+		$out['campaign_template_id'] = isset( $in['campaign_template_id'] ) ? preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $in['campaign_template_id'] ) : '';
+
 		return $out;
 	}
 
@@ -588,6 +598,12 @@ class Wonom_Slider_Data {
 		$out['end']   = isset( $in['end'] ) ? self::sanitize_datetime( $in['end'] ) : '';
 
 		$out['typo'] = isset( $in['typo'] ) ? self::sanitize_typo( $in['typo'] ) : array();
+
+		$out['source']      = ( isset( $in['source'] ) && 'campaign' === $in['source'] ) ? 'campaign' : 'own';
+		$out['campaign_id'] = isset( $in['campaign_id'] ) ? absint( $in['campaign_id'] ) : 0;
+		if ( 'campaign' === $out['source'] && ! $out['campaign_id'] ) {
+			$out['source'] = 'own';
+		}
 
 		// Collage + frame.
 		$out['bg_mode']        = ( isset( $in['bg_mode'] ) && 'collage' === $in['bg_mode'] ) ? 'collage' : 'image';

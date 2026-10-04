@@ -176,6 +176,26 @@ class Wonom_Slider_Admin {
 			'frameRadius'      => __( 'Frame: corner radius (px)', 'wonom-slider' ),
 			'frameHint'        => __( 'The background colour shows around the frame; 0 = no frame. On mobile the distance is halved.', 'wonom-slider' ),
 
+			// Kampaaniariba link.
+			'source'           => __( 'Content source', 'wonom-slider' ),
+			'sourceOwn'        => __( 'Own texts', 'wonom-slider' ),
+			'sourceCampaign'   => __( 'Kampaaniariba campaign', 'wonom-slider' ),
+			'campaignSelect'   => __( 'Campaign', 'wonom-slider' ),
+			'campaignPick'     => __( '— choose a campaign —', 'wonom-slider' ),
+			'campaignLocked'   => __( 'Heading, text, small line, badge (coupon), button link and schedule come from the campaign and are locked here. Images, position, typography and the button text stay editable.', 'wonom-slider' ),
+			'editCampaign'     => __( 'Edit in Kampaaniariba', 'wonom-slider' ),
+			'campaignMissing'  => __( 'The linked campaign no longer exists – the slide is hidden.', 'wonom-slider' ),
+			'campaignNone'     => __( 'No campaigns yet – create one in Kampaaniariba first.', 'wonom-slider' ),
+			'cLive'            => __( 'live', 'wonom-slider' ),
+			'cUpcoming'        => __( 'upcoming', 'wonom-slider' ),
+			'cEnded'           => __( 'ended', 'wonom-slider' ),
+			'cOff'             => __( 'off', 'wonom-slider' ),
+			'gCampaigns'       => __( 'Kampaaniariba', 'wonom-slider' ),
+			'campaignTemplate' => __( 'Template slide for campaign slides', 'wonom-slider' ),
+			'campaignTemplateHint' => __( 'When a campaign gets “Show this campaign in the slider too” ticked (on the campaign edit screen), a linked slide is created from this template: images, position, typography and colours are copied; texts, link and schedule follow the campaign. Each campaign can also pick its own template.', 'wonom-slider' ),
+			'noTemplate'       => __( 'Plain defaults (no template)', 'wonom-slider' ),
+			'linkedFromCampaign' => __( 'Linked to campaign: %s', 'wonom-slider' ),
+
 			// Two-column content editor.
 			'colContent'       => __( 'Content', 'wonom-slider' ),
 			'colTypo'          => __( 'Look of this row', 'wonom-slider' ),

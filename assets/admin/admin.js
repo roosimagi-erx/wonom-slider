@@ -181,6 +181,7 @@
 		state.settings = res.settings;
 		state.advanced = res.advanced || state.advanced;
 		state.cache = res.cache || state.cache;
+		state.campaigns = res.campaigns !== undefined ? res.campaigns : state.campaigns;
 		state.fonts = res.fonts || state.fonts;
 		state.languages = res.languages || state.languages;
 		state.now = res.now || state.now;
@@ -314,6 +315,7 @@
 			h += '<strong class="js-name">' + esc( s.name || s.heading || I.untitled ) + '</strong>';
 		}
 		if ( s.type === 'campaign' ) { h += ' <span class="wonom-tag wonom-tag--campaign">' + esc( I.typeCampaign ) + '</span>'; }
+		if ( s.source === 'campaign' && s.campaign_id ) { h += ' <span class="wonom-tag wonom-tag--linked" title="' + esc( sprintf( I.linkedFromCampaign, s.campaign_title || s.campaign_id ) ) + '"><span class="dashicons dashicons-admin-links"></span> ' + esc( I.gCampaigns ) + '</span>'; }
 		h += '</div>';
 		h += '<div class="wonom-slide-sub"><span class="wonom-pill wonom-pill--' + st + ' js-status">' + esc( statusLabel( st ) ) + '</span> <span class="js-sched">' + esc( scheduleSummary( s ) ) + '</span></div>';
 		h += '</div>';
@@ -340,7 +342,7 @@
 		var val = lang ? ( ( s.i18n && s.i18n[ lang ] && s.i18n[ lang ][ key ] ) || '' ) : ( s[ key ] == null ? '' : s[ key ] );
 		var ph = opts.placeholder != null ? opts.placeholder : ( lang ? ( s[ key ] || '' ) : '' );
 		if ( opts.textarea ) {
-			return '<textarea rows="2" data-field="' + key + '"' + ( lang ? ' data-lang="' + esc( lang ) + '"' : '' ) + ' placeholder="' + esc( ph ) + '">' + esc( val ) + '</textarea>';
+			return '<textarea rows="2" data-field="' + key + '"' + ( lang ? ' data-lang="' + esc( lang ) + '"' : '' ) + ' placeholder="' + esc( ph ) + '"' + ( opts.attrs || '' ) + '>' + esc( val ) + '</textarea>';
 		}
 		return '<input type="' + ( opts.type || 'text' ) + '" data-field="' + key + '"' + ( lang ? ' data-lang="' + esc( lang ) + '"' : '' ) + ' value="' + esc( val ) + '" placeholder="' + esc( ph ) + '"' + ( opts.attrs || '' ) + '>';
 	}
@@ -445,6 +447,29 @@
 		}
 		var L = cur === defaultLang() ? '' : cur;
 
+		/* Content source: own texts or a Kampaaniariba campaign (locks texts, link and schedule). */
+		var linked = s.source === 'campaign' && s.campaign_id > 0;
+		if ( state.campaigns ) {
+			h += field( I.source, segmented( 'source', s.source || 'own', [ [ 'own', I.sourceOwn ], [ 'campaign', I.sourceCampaign ] ] ) );
+			if ( s.source === 'campaign' ) {
+				if ( ! state.campaigns.length ) {
+					h += '<p class="wonom-hint wonom-warn">' + esc( I.campaignNone ) + '</p>';
+				} else {
+					var opts = '<option value="0">' + esc( I.campaignPick ) + '</option>';
+					state.campaigns.forEach( function ( c ) {
+						var stLabel = { live: I.cLive, upcoming: I.cUpcoming, ended: I.cEnded, off: I.cOff }[ c.status ] || c.status;
+						opts += '<option value="' + c.id + '"' + ( ( s.campaign_id | 0 ) === c.id ? ' selected' : '' ) + '>' + esc( c.title ) + ' (' + esc( stLabel ) + ( c.start ? ', ' + esc( toDisplay( c.start ) ) : '' ) + ')</option>';
+					} );
+					h += field( I.campaignSelect, '<select data-campaign>' + opts + '</select>' );
+				}
+				if ( linked ) {
+					h += '<p class="wonom-hint">' + esc( I.campaignLocked ) + ( s.campaign_edit_url ? ' <a href="' + esc( s.campaign_edit_url ) + '" target="_blank" rel="noopener">' + esc( I.editCampaign ) + ' ↗</a>' : '' ) + '</p>';
+					if ( s.campaign_missing ) { h += '<p class="wonom-hint wonom-bad">' + esc( I.campaignMissing ) + '</p>'; }
+				}
+			}
+		}
+		var lock = linked ? ' disabled' : '';
+
 		/* Two columns: content on the left, the look of that same row on the right. */
 		var T = s.typo || {}, G = state.settings;
 		function typoFont( key, label ) {
@@ -476,15 +501,15 @@
 		h += '<div class="wonom-pair wonom-pair--head"><div>' + esc( I.colContent ) + '</div><div>' + esc( I.colTypo ) + '</div></div>';
 
 		h += pair(
-			field( I.badge, input( s, 'badge', { lang: L } ) ),
+			field( I.badge, input( s, 'badge', { lang: L, attrs: lock } ) ),
 			lookHint( I.badgeTypoHint )
 		);
 		h += pair(
-			field( I.eyebrow, input( s, 'eyebrow', { lang: L } ) ),
+			field( I.eyebrow, input( s, 'eyebrow', { lang: L, attrs: lock } ) ),
 			look( typoNum( 'eyebrow_size', I.tSize, 8, 40, 14 ), typoNum( 'eyebrow_size_mobile', I.tSizeMobile, 8, 30, 12 ) ) + lookHint( I.eyebrowTypoHint )
 		);
 		h += pair(
-			field( I.heading, input( s, 'heading', { lang: L, attrs: ' class="wonom-big"' } ) ),
+			field( I.heading, input( s, 'heading', { lang: L, attrs: ' class="wonom-big"' + lock } ) ),
 			look(
 				typoFont( 'font_heading', I.tFont ),
 				typoNum( 'heading_size', I.tSize, 12, 160, G.heading_size ),
@@ -497,11 +522,11 @@
 			) + lookHint( I.tTextColorHint + ' ' + I.gapHint )
 		);
 		h += pair(
-			field( I.text, input( s, 'text', { lang: L, textarea: true } ) ),
+			field( I.text, input( s, 'text', { lang: L, textarea: true, attrs: lock } ) ),
 			look( typoFont( 'font_text', I.tFont ), typoNum( 'text_size', I.tSize, 10, 60, G.text_size ), typoNum( 'text_size_mobile', I.tSizeMobile, 10, 40, G.text_size_mobile ) )
 		);
 		h += pair(
-			field( I.buttonText, input( s, 'button_text', { lang: L } ) ) + field( I.buttonUrl, input( s, 'button_url', { lang: L, type: 'url', placeholder: L ? ( s.button_url || CFG.homeUrl ) : CFG.homeUrl } ) ),
+			field( I.buttonText, input( s, 'button_text', { lang: L } ) ) + field( I.buttonUrl, input( s, 'button_url', { lang: L, type: 'url', placeholder: L ? ( s.button_url || CFG.homeUrl ) : CFG.homeUrl, attrs: lock } ) ),
 			look( field( I.tBg, color( s, 'button_bg' ) ), field( I.tColor, color( s, 'button_color' ) ), typoNum( 'button_radius', I.tRadius, 0, 100, G.button_radius ), typoNum( 'gap_button', I.tGapAbove, 0, 100, 22 ) )
 		);
 		h += pair(
@@ -547,11 +572,15 @@
 
 		/* Schedule */
 		h += '<section class="wonom-sec wonom-sec--schedule"><h3><span class="dashicons dashicons-calendar-alt"></span> ' + esc( I.secSchedule ) + '</h3>';
-		h += '<p class="wonom-hint">' + esc( I.scheduleIntro ) + ' ' + esc( sprintf( I.scheduleTz, state.timezone || '' ) ) + '</p>';
-		h += '<div class="wonom-grid wonom-grid--2">';
-		h += dateField( s, 'start', I.start, [ [ 'now', I.presetNow ], [ 'tomorrow', I.presetTomorrow ], [ 'monday', I.presetMonday ] ] );
-		h += dateField( s, 'end', I.end, [ [ 'p7', I.preset7 ], [ 'p14', I.preset14 ], [ 'eom', I.presetEom ] ] );
-		h += '</div>';
+		if ( linked ) {
+			h += '<p class="wonom-hint">' + esc( sprintf( I.linkedFromCampaign, s.campaign_title || s.campaign_id ) ) + ' – ' + esc( I.start ) + ': <strong>' + esc( s.start ? toDisplay( s.start ) : I.noStart ) + '</strong>, ' + esc( I.end ) + ': <strong>' + esc( s.end ? toDisplay( s.end ) : I.noEnd ) + '</strong>' + ( s.campaign_edit_url ? ' · <a href="' + esc( s.campaign_edit_url ) + '" target="_blank" rel="noopener">' + esc( I.editCampaign ) + ' ↗</a>' : '' ) + '</p>';
+		} else {
+			h += '<p class="wonom-hint">' + esc( I.scheduleIntro ) + ' ' + esc( sprintf( I.scheduleTz, state.timezone || '' ) ) + '</p>';
+			h += '<div class="wonom-grid wonom-grid--2">';
+			h += dateField( s, 'start', I.start, [ [ 'now', I.presetNow ], [ 'tomorrow', I.presetTomorrow ], [ 'monday', I.presetMonday ] ] );
+			h += dateField( s, 'end', I.end, [ [ 'p7', I.preset7 ], [ 'p14', I.preset14 ], [ 'eom', I.presetEom ] ] );
+			h += '</div>';
+		}
 		var invalid = isoToDate( s.start ) && isoToDate( s.end ) && isoToDate( s.end ) < isoToDate( s.start );
 		h += '<div class="wonom-schedstatus' + ( invalid ? ' is-bad' : '' ) + '"><span class="wonom-pill wonom-pill--' + slideStatus( s ) + '">' + esc( statusLabel( slideStatus( s ) ) ) + '</span> <span class="js-sched2">' + esc( scheduleSummary( s ) ) + '</span> <span class="wonom-muted js-dur">' + esc( durationText( s ) ) + '</span></div>';
 		h += '</section>';
@@ -991,6 +1020,12 @@
 		cacheInner += '<p class="wonom-hint">' + esc( I.delayJsHint ) + '</p><p class="wonom-codeline"><code>wonom-slider</code><button type="button" class="button" data-action="copy" data-copy="wonom-slider">' + esc( I.copy ) + '</button></p>';
 		h += group( I.gCache, 'performance', cacheInner );
 
+		if ( state.campaigns ) {
+			var tplOpts = '<option value="">' + esc( I.noTemplate ) + '</option>';
+			state.slides.forEach( function ( sl ) { if ( sl.source === 'campaign' ) { return; } tplOpts += '<option value="' + esc( sl.id ) + '"' + ( S.campaign_template_id === sl.id ? ' selected' : '' ) + '>' + esc( sl.name || sl.heading || sl.id ) + '</option>'; } );
+			h += group( I.gCampaigns, 'megaphone', field( I.campaignTemplate, '<select data-setting="campaign_template_id">' + tplOpts + '</select>', esc( I.campaignTemplateHint ) ) );
+		}
+
 		var langInner = '';
 		if ( CFG.langPlugin ) {
 			langInner += '<p class="wonom-ok">' + esc( sprintf( I.languagesDetected, CFG.langPlugin ) ) + ' (' + esc( state.languages.map( function ( l ) { return l.name; } ).join( ', ' ) ) + ')</p>';
@@ -1215,6 +1250,22 @@
 			if ( el.value === 'custom' ) { custom.hidden = false; custom.focus(); state.settings[ fk ] = 'custom:' + custom.value; }
 			else { custom.hidden = true; state.settings[ fk ] = el.value; }
 			markDirty( 'settings' ); return;
+		}
+		if ( el.hasAttribute( 'data-campaign' ) && card ) {
+			var cs = findSlide( card.getAttribute( 'data-id' ) ), cid = parseInt( el.value, 10 ) || 0;
+			cs.campaign_id = cid; cs.source = 'campaign';
+			markDirty( 'slides' );
+			if ( ! cid ) { render(); return; }
+			api( '/campaign/' + cid ).then( function ( f ) {
+				Object.keys( f.base ).forEach( function ( k ) { cs[ k ] = f.base[ k ]; } );
+				cs.i18n = cs.i18n || {};
+				Object.keys( f.i18n || {} ).forEach( function ( lg ) { cs.i18n[ lg ] = Object.assign( {}, cs.i18n[ lg ] || {}, f.i18n[ lg ] ); } );
+				cs.start = f.start; cs.end = f.end; cs.type = 'campaign';
+				if ( ! cs.name ) { cs.name = f.title; }
+				cs.campaign_title = f.title; cs.campaign_status = f.status; cs.campaign_edit_url = f.edit_url;
+				render();
+			} ).catch( function ( e ) { toast( e.message || 'Error', 'err' ); render(); } );
+			return;
 		}
 		if ( el.hasAttribute( 'data-ratio-mode' ) ) {
 			var key = el.getAttribute( 'data-ratio-mode' );

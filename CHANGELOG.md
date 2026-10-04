@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0 - 2026-10-04
+
+- Uus: sidumine Wonom Kampaaniaribaga. Slaidi sisu allikaks saab valida Kampaaniariba kampaania: pealkiri (1. rida), tekst (2. rida), väike rida (3. rida), silt (sooduskood), nupu link (koos automaatse kupongi rakendamisega) ja ajakava tulevad kampaaniast ning on slaidil lukus; mõlemad keeled kaasa. Pildid, asukoht, tüpograafia, värvid ja nupu tekst jäävad slaidil muudetavaks. Kampaania muutmine Kampaaniaribal muudab slaidi kohe.
+- Uus: kampaania muutmise lehel on kast „Wonom Slider” linnukesega „Näita seda kampaaniat ka slaideris” ja malli valikuga. Linnuke loob seotud slaidi automaatselt (mallist kopeeritakse pildid, asukoht, tüpograafia, värvid), eemaldamine peidab slaidi, kampaania kustutamine kustutab slaidi. Üldine mall: Seaded → Kampaaniariba.
+- Kampaaniariba koodi ei pea muutma; sidumine töötab ainult siis, kui Kampaaniariba on aktiivne.
+
 ## 1.5.6 - 2026-10-04
 
 - Muudatus: slaidi nime saab muuta otse kaardi päises (avatud kaardil on nimi sisestusväli). Eraldi „Sisemine nimi” väli kadus.

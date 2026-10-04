@@ -117,6 +117,17 @@ class Wonom_Slider_Rest {
 		);
 		register_rest_route(
 			self::NS,
+			'/campaign/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'campaign' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
 			'/preview',
 			array(
 				array(
@@ -188,11 +199,23 @@ class Wonom_Slider_Rest {
 			'settings'  => Wonom_Slider_Data::get_settings(),
 			'advanced'  => Wonom_Slider_Data::get_advanced_public(),
 			'cache'     => Wonom_Slider_Cache::status(),
+			'campaigns' => Wonom_Slider_Campaigns::available() ? Wonom_Slider_Campaigns::list_campaigns() : null,
 			'fonts'     => array_keys( Wonom_Slider_Data::fonts() ),
 			'languages' => Wonom_Slider_Data::get_languages(),
 			'now'       => wp_date( 'Y-m-d\TH:i' ),
 			'timezone'  => wp_timezone_string(),
 		);
+	}
+
+	/**
+	 * Fields of one campaign, mapped to slide fields (editor applies them when a campaign is picked).
+	 */
+	public static function campaign( WP_REST_Request $req ) {
+		$f = Wonom_Slider_Campaigns::fields( (int) $req['id'] );
+		if ( ! $f ) {
+			return new WP_Error( 'wonom_not_found', __( 'Campaign not found.', 'wonom-slider' ), array( 'status' => 404 ) );
+		}
+		return rest_ensure_response( $f );
 	}
 
 	/**

@@ -142,6 +142,9 @@ class Wonom_Slider_Frontend {
 
 		$lang = isset( $args['lang'] ) ? sanitize_key( $args['lang'] ) : Wonom_Slider_Data::current_language();
 		foreach ( $slides as $k => $slide ) {
+			if ( class_exists( 'Wonom_Slider_Campaigns' ) ) {
+				$slide = Wonom_Slider_Campaigns::apply( $slide ); // unsaved slides from the editor stage.
+			}
 			$slides[ $k ] = Wonom_Slider_Data::localize_slide( $slide, $lang );
 		}
 

@@ -3,7 +3,7 @@
  * Plugin Name:       Wonom Slider
  * Plugin URI:        https://github.com/roosimagi-erx/wonom-slider
  * Description:       Lightweight, easy-to-manage hero slider for WooCommerce / WordPress home pages. Multiple slides, scheduled campaign banners, responsive images, GitHub auto-updates.
- * Version:           1.5.6
+ * Version:           1.6.0
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Wonom Digital OÜ
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WONOM_SLIDER_VERSION', '1.5.6' );
+define( 'WONOM_SLIDER_VERSION', '1.6.0' );
 define( 'WONOM_SLIDER_FILE', __FILE__ );
 define( 'WONOM_SLIDER_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WONOM_SLIDER_URL', plugin_dir_url( __FILE__ ) );
@@ -41,6 +41,7 @@ require_once WONOM_SLIDER_PATH . 'includes/class-wonom-slider-admin.php';
 require_once WONOM_SLIDER_PATH . 'includes/class-wonom-slider-rest.php';
 require_once WONOM_SLIDER_PATH . 'includes/class-wonom-slider-updater.php';
 require_once WONOM_SLIDER_PATH . 'includes/class-wonom-slider-cache.php';
+require_once WONOM_SLIDER_PATH . 'includes/class-wonom-slider-campaigns.php';
 require_once WONOM_SLIDER_PATH . 'includes/class-wonom-slider.php';
 
 /**
