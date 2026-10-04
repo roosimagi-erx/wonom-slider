@@ -69,9 +69,13 @@
 	}
 	var loadedAt = Date.now();
 
+	function hasContent( s ) {
+		if ( s.bg_mode === 'collage' && Array.isArray( s.collage ) && s.collage.length ) { return true; }
+		return !! ( s.image_url || s.heading || s.text || s.eyebrow || s.button_text );
+	}
 	function slideStatus( s ) {
 		if ( ! s.enabled ) { return 'disabled'; }
-		if ( ! s.image_url ) { return 'noimage'; }
+		if ( ! hasContent( s ) ) { return 'noimage'; }
 		var now = siteNow();
 		var st = isoToDate( s.start ), en = isoToDate( s.end );
 		if ( st && st > now ) { return 'scheduled'; }
@@ -277,11 +281,13 @@
 		var st = slideStatus( s );
 		var open = openId === s.id;
 		var thumb = s.thumb || s.image_url;
+		if ( ! thumb && s.bg_mode === 'collage' && Array.isArray( s.collage ) && s.collage[ 0 ] ) { thumb = s.collage[ 0 ].thumb || s.collage[ 0 ].url; }
 		var h = '<div class="wonom-slide-card' + ( open ? ' is-open' : '' ) + ' type-' + s.type + ' st-' + st + '" data-id="' + esc( s.id ) + '">';
 		h += '<div class="wonom-slide-head">';
 		h += '<span class="wonom-drag" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span></span>';
 		h += '<span class="wonom-order">' + ( i + 1 ) + '</span>';
-		h += '<div class="wonom-thumb" data-action="open">' + ( thumb ? '<img src="' + esc( thumb ) + '" alt="">' : '<span class="dashicons dashicons-format-image"></span>' ) + '</div>';
+		var thumbInner = thumb ? '<img src="' + esc( thumb ) + '" alt="">' : ( hasContent( s ) ? '<span class="wonom-thumb-text" style="background:' + esc( s.bg_color || '#1d2433' ) + ';color:' + esc( s.text_color || '#fff' ) + '">' + esc( ( s.heading || s.text || s.eyebrow || 'Aa' ).slice( 0, 14 ) ) + '</span>' : '<span class="dashicons dashicons-format-image"></span>' );
+		h += '<div class="wonom-thumb" data-action="open">' + thumbInner + '</div>';
 		h += '<div class="wonom-slide-meta" data-action="open">';
 		h += '<div class="wonom-slide-title"><strong class="js-name">' + esc( s.name || s.heading || I.untitled ) + '</strong>';
 		if ( s.type === 'campaign' ) { h += ' <span class="wonom-tag wonom-tag--campaign">' + esc( I.typeCampaign ) + '</span>'; }

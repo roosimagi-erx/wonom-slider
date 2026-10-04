@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1 - 2026-10-04
+
+- Parandus: slaidide nimekiri näitas ainult tekstiga slaidi ja kollaažslaidi olekuna „Tühi”, kuigi need olid eetris. Nimekiri kasutab nüüd sama sisu-loogikat mis server. Pildita slaidil on pisipildi asemel tema taustavärv ja pealkiri.
+
 ## 1.5.0 - 2026-10-04
 
 - Muudatus: „Tekstid ja nupp” on nüüd kahes veerus – vasakul sisu (silt, väike rida, pealkiri, tekst, nupud, alt-tekst), paremal sama rea kujundus ja tüpograafia (font, suurus arvutis/mobiilis, paksus, suurtähed, tähevahe, värvid, vahed, nupu nurgad). Eraldi Tüpograafia plokk kadus, nupu ja teksti värvid liikusid oma rea juurde.
