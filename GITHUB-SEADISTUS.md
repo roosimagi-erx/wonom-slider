@@ -3,6 +3,8 @@
 Sama muster mis Wonom Kampaaniaribal. Konto: **roosimagi-erx**. Hoidla nimi: **wonom-slider**.
 Erinevus Kampaaniaribast: siin ehitab GitHub Action ZIP-i ise, käsitsi üleslaadimist ei ole.
 
+> **Olek 04.10.2026:** hoidla on loodud (avalik), kood pushitud, release 1.0.0 avaldatud Actioni poolt, plugin paigaldatud testsaidile test.emmaandtheo.ee. Sammud 1–3 on tehtud; edaspidi vt „Edaspidine töövoog”.
+
 ## 1. Loo hoidla
 
 1. <https://github.com/new> → **Repository name:** `wonom-slider` → Private või Public.
