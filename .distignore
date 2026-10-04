@@ -1,0 +1,9 @@
+.git
+.github
+.gitignore
+.distignore
+build
+docs
+*.md
+*.zip
+build-release.ps1

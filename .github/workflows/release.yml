@@ -1,0 +1,64 @@
+name: Build release zip
+
+# Pushing a tag like v1.2.0 creates a GitHub Release with wonom-slider.zip attached.
+# The plugin's updater picks that zip up on every WordPress site where it is installed.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from tag
+        id: v
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify plugin version matches tag
+        run: |
+          FILE_VERSION=$(grep -m1 -oP '^\s*\*\s*Version:\s*\K[0-9.]+' wonom-slider.php)
+          echo "Tag: ${{ steps.v.outputs.version }}  File: $FILE_VERSION"
+          if [ "$FILE_VERSION" != "${{ steps.v.outputs.version }}" ]; then
+            echo "::error::Version in wonom-slider.php ($FILE_VERSION) does not match tag (${{ steps.v.outputs.version }})."
+            exit 1
+          fi
+
+      - name: PHP syntax check
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq php-cli >/dev/null
+          find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Build zip
+        run: |
+          mkdir -p build/wonom-slider
+          rsync -a ./ build/wonom-slider/ \
+            --exclude .git --exclude .github --exclude build --exclude docs \
+            --exclude '*.md' --exclude .gitignore --exclude .distignore \
+            --exclude build-release.ps1 --exclude '*.zip'
+          cd build && zip -rq ../wonom-slider.zip wonom-slider
+          cd .. && unzip -l wonom-slider.zip | tail -n 3
+
+      - name: Extract changelog section
+        id: notes
+        run: |
+          V="${{ steps.v.outputs.version }}"
+          awk -v v="$V" '
+            $0 ~ "^## \\[?"v"\\]?" {p=1; next}
+            p && /^## / {exit}
+            p {print}
+          ' CHANGELOG.md > notes.md || true
+          if [ ! -s notes.md ]; then echo "Release $V" > notes.md; fi
+          cat notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.v.outputs.version }}
+          body_path: notes.md
+          files: wonom-slider.zip

@@ -1,0 +1,311 @@
+/* =====================================================================
+ * Wonom Slider – admin design. Same design language as Wonom Kampaaniariba /
+ * Wonom Feed: identical colour & radius tokens, cards, pills and switches.
+ * Everything is scoped to body.wonom-app (only our screen).
+ * ================================================================== */
+
+:root {
+	--w-bg: #f4f6fa;
+	--w-card: #ffffff;
+	--w-border: #e4e7ee;
+	--w-border-strong: #cfd5df;
+	--w-text: #1d2433;
+	--w-muted: #697386;
+	--w-faint: #98a1b2;
+	--w-primary: #2563eb;
+	--w-primary-hover: #1d4fd7;
+	--w-primary-soft: #edf3ff;
+	--w-ok: #15803d;
+	--w-ok-soft: #e9f8ef;
+	--w-warn: #a15c07;
+	--w-warn-soft: #fff6e5;
+	--w-danger: #c62828;
+	--w-danger-soft: #fdecec;
+	--w-campaign: #be185d;
+	--w-campaign-soft: #fdf2f8;
+	--w-radius: 12px;
+	--w-radius-sm: 8px;
+	--w-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+	--w-ring: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
+/* --- page ------------------------------------------------------------ */
+
+body.wonom-app,
+body.wonom-app #wpwrap,
+body.wonom-app #wpcontent,
+body.wonom-app #wpbody-content { background: var(--w-bg); }
+body.wonom-app #wpcontent { padding-left: 0; }
+body.wonom-app #wpbody-content { box-sizing: border-box; padding: 0 28px 80px; color: var(--w-text); }
+body.wonom-app .wrap.wonom-wrap { margin: 20px 0 0; max-width: 1240px; }
+body.wonom-app .notice { margin-left: 0; margin-right: 0; }
+
+/* --- app bar ----------------------------------------------------------- */
+
+.wonom-appbar {
+	position: sticky;
+	top: 32px;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	margin: 0 -28px;
+	padding: 10px 28px;
+	background: var(--w-card);
+	border-bottom: 1px solid var(--w-border);
+	box-shadow: var(--w-shadow);
+}
+.wonom-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--w-text); }
+.wonom-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--w-primary); color: #fff; }
+.wonom-logo .dashicons { font-size: 20px; width: 20px; height: 20px; }
+.wonom-brand-name { font-weight: 700; font-size: 15px; }
+.wonom-brand-version { font-size: 11px; color: var(--w-faint); font-variant-numeric: tabular-nums; }
+.wonom-nav { display: flex; gap: 4px; margin-left: 10px; }
+.wonom-nav a { padding: 7px 14px; border-radius: 999px; text-decoration: none; color: var(--w-muted); font-weight: 600; font-size: 13px; }
+.wonom-nav a:hover { color: var(--w-text); background: var(--w-bg); }
+.wonom-nav a.is-active { color: var(--w-primary); background: var(--w-primary-soft); }
+.wonom-appbar-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.wonom-dirty { font-size: 12px; color: var(--w-warn); font-weight: 600; }
+.wonom-dirty::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--w-warn); vertical-align: 0; }
+body.wonom-app .button-primary.wonom-save { border-radius: var(--w-radius-sm); padding: 2px 16px; font-weight: 600; }
+
+/* --- generic ----------------------------------------------------------- */
+
+body.wonom-app .button,
+body.wonom-app .button-primary { border-radius: var(--w-radius-sm); font-weight: 600; }
+body.wonom-app .button .dashicons { font-size: 16px; width: 16px; height: 16px; vertical-align: -3px; margin-right: 2px; }
+body.wonom-app .button.is-on { background: var(--w-primary-soft); border-color: var(--w-primary); color: var(--w-primary); }
+body.wonom-app .button-link { color: var(--w-primary); text-decoration: none; font-weight: 600; }
+body.wonom-app .button-link.is-danger { color: var(--w-danger); }
+.wonom-spacer { flex: 1; }
+.wonom-hint { display: block; margin-top: 4px; font-size: 12px; color: var(--w-muted); line-height: 1.45; }
+.wonom-muted { color: var(--w-muted); }
+.wonom-ok { color: var(--w-ok); font-weight: 600; }
+.wonom-warn { color: var(--w-warn); font-weight: 600; }
+.wonom-bad { color: var(--w-danger); font-weight: 600; }
+.wonom-card {
+	background: var(--w-card);
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius);
+	box-shadow: var(--w-shadow);
+	padding: 20px 22px;
+	margin-bottom: 16px;
+}
+.wonom-card > h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.wonom-card > h2 .dashicons { color: var(--w-primary); }
+
+.wonom-toolbar { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; }
+
+.wonom-empty { text-align: center; padding: 70px 20px; background: var(--w-card); border: 1px dashed var(--w-border-strong); border-radius: var(--w-radius); color: var(--w-muted); }
+.wonom-empty .dashicons { font-size: 42px; width: 42px; height: 42px; color: var(--w-faint); }
+.wonom-empty p { font-size: 14px; max-width: 420px; margin: 10px auto 0; }
+
+/* --- pills, tags, toggles ---------------------------------------------- */
+
+.wonom-pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+.wonom-pill--active { background: var(--w-ok-soft); color: var(--w-ok); }
+.wonom-pill--scheduled { background: var(--w-warn-soft); color: var(--w-warn); }
+.wonom-pill--expired, .wonom-pill--disabled, .wonom-pill--noimage { background: #eef0f5; color: var(--w-muted); }
+.wonom-pill--noimage { background: var(--w-danger-soft); color: var(--w-danger); }
+.wonom-tag { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; vertical-align: 1px; }
+.wonom-tag--campaign { background: var(--w-campaign-soft); color: var(--w-campaign); }
+
+.wonom-toggle { position: relative; display: inline-block; width: 38px; height: 22px; flex: 0 0 auto; cursor: pointer; }
+.wonom-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.wonom-toggle span { position: absolute; inset: 0; border-radius: 999px; background: #cfd5df; transition: background 0.2s; }
+.wonom-toggle span::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: transform 0.2s; }
+.wonom-toggle input:checked + span { background: var(--w-ok); }
+.wonom-toggle input:checked + span::after { transform: translateX(16px); }
+.wonom-toggle input:focus-visible + span { box-shadow: var(--w-ring); }
+.wonom-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; font-size: 13px; }
+.wonom-row + .wonom-row { border-top: 1px solid var(--w-border); }
+
+.wonom-check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 8px 0; cursor: pointer; }
+.wonom-check input { margin: 0; }
+
+.wonom-switch { display: inline-flex; padding: 3px; gap: 2px; background: var(--w-bg); border: 1px solid var(--w-border); border-radius: 10px; }
+.wonom-switch button { border: 0; background: transparent; padding: 5px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--w-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+.wonom-switch button:hover { color: var(--w-text); }
+.wonom-switch button[aria-pressed="true"] { background: var(--w-card); color: var(--w-primary); box-shadow: var(--w-shadow); }
+.wonom-switch button .dashicons { font-size: 16px; width: 16px; height: 16px; }
+.wonom-switch button small { font-weight: 500; opacity: 0.7; }
+.wonom-switch .wonom-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--w-warn); margin-left: 2px; }
+.wonom-switch--seg { width: 100%; }
+.wonom-switch--seg button { flex: 1; justify-content: center; }
+
+/* --- slide cards --------------------------------------------------------- */
+
+.wonom-list { display: flex; flex-direction: column; gap: 10px; }
+.wonom-slide-card {
+	background: var(--w-card);
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius);
+	box-shadow: var(--w-shadow);
+	transition: box-shadow 0.15s, border-color 0.15s;
+}
+.wonom-slide-card.is-open { border-color: var(--w-primary); box-shadow: 0 0 0 3px var(--w-primary-soft), var(--w-shadow); }
+.wonom-slide-card.st-disabled .wonom-thumb img, .wonom-slide-card.st-expired .wonom-thumb img { filter: grayscale(1); opacity: 0.6; }
+.wonom-slide-card.type-campaign { border-left: 4px solid var(--w-campaign); }
+.wonom-placeholder { border: 2px dashed var(--w-primary); background: var(--w-primary-soft); min-height: 84px; box-shadow: none; }
+.ui-sortable-helper { box-shadow: 0 14px 30px -10px rgba(16,24,40,0.3) !important; }
+
+.wonom-slide-head { display: flex; align-items: center; gap: 14px; padding: 12px 14px; }
+.wonom-drag { cursor: grab; color: var(--w-faint); display: flex; }
+.wonom-drag:active { cursor: grabbing; }
+.wonom-order { width: 22px; height: 22px; border-radius: 50%; background: var(--w-bg); color: var(--w-muted); font-size: 11px; font-weight: 700; display: grid; place-items: center; flex: 0 0 auto; }
+.wonom-thumb { width: 128px; height: 56px; border-radius: 8px; background: var(--w-bg); overflow: hidden; display: grid; place-items: center; color: var(--w-faint); cursor: pointer; flex: 0 0 auto; }
+.wonom-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wonom-slide-meta { flex: 1; min-width: 0; cursor: pointer; }
+.wonom-slide-title { font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.wonom-slide-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wonom-slide-sub { margin-top: 4px; font-size: 12px; color: var(--w-muted); display: flex; align-items: center; gap: 8px; }
+.wonom-slide-actions { display: flex; align-items: center; gap: 4px; }
+.wonom-slide-actions .button { margin-left: 6px; }
+.wonom-icon { width: 32px; height: 32px; border: 0; background: transparent; border-radius: 8px; color: var(--w-muted); cursor: pointer; display: grid; place-items: center; }
+.wonom-icon:hover { background: var(--w-bg); color: var(--w-text); }
+.wonom-icon.is-danger:hover { background: var(--w-danger-soft); color: var(--w-danger); }
+.wonom-icon:disabled { opacity: 0.3; cursor: default; background: none; }
+
+/* --- editor -------------------------------------------------------------- */
+
+.wonom-editor { border-top: 1px solid var(--w-border); padding: 6px 22px 18px; }
+.wonom-sec { padding: 18px 0; border-bottom: 1px solid var(--w-border); }
+.wonom-sec:last-of-type { border-bottom: 0; }
+.wonom-sec h3 { margin: 0 0 14px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--w-muted); display: flex; align-items: center; gap: 6px; }
+.wonom-sec h3 .dashicons { font-size: 16px; width: 16px; height: 16px; color: var(--w-primary); }
+.wonom-editor-foot { display: flex; justify-content: flex-end; gap: 8px; padding-top: 14px; }
+
+.wonom-grid { display: grid; gap: 14px 18px; }
+.wonom-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.wonom-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.wonom-field { margin: 0 0 12px; }
+.wonom-field > label, .wonom-imgbox > label { display: block; font-size: 12px; font-weight: 600; color: var(--w-text); margin-bottom: 5px; }
+body.wonom-app .wonom-field input[type="text"],
+body.wonom-app .wonom-field input[type="url"],
+body.wonom-app .wonom-field input[type="number"],
+body.wonom-app .wonom-field select,
+body.wonom-app .wonom-field textarea {
+	width: 100%;
+	max-width: none;
+	border-radius: var(--w-radius-sm);
+	border: 1px solid var(--w-border-strong);
+	min-height: 36px;
+	font-size: 13px;
+	box-shadow: none;
+}
+body.wonom-app .wonom-field input:focus,
+body.wonom-app .wonom-field select:focus,
+body.wonom-app .wonom-field textarea:focus { border-color: var(--w-primary); box-shadow: var(--w-ring); outline: 0; }
+body.wonom-app .wonom-field input.wonom-big { font-size: 18px; min-height: 44px; }
+.wonom-inline { display: flex; gap: 8px; }
+.wonom-inline select { max-width: 180px; }
+
+.wonom-color { display: flex; align-items: center; gap: 8px; }
+.wonom-color input[type="color"] { width: 40px; height: 36px; padding: 2px; border: 1px solid var(--w-border-strong); border-radius: var(--w-radius-sm); background: #fff; cursor: pointer; }
+body.wonom-app .wonom-field .wonom-color-hex { width: 110px; font-family: ui-monospace, monospace; }
+
+.wonom-range { display: flex; align-items: center; gap: 10px; }
+.wonom-range input { flex: 1; }
+.wonom-range output { width: 40px; font-variant-numeric: tabular-nums; font-size: 12px; color: var(--w-muted); }
+
+.wonom-langbar { display: flex; align-items: center; gap: 10px; margin: 8px 0 14px; }
+
+/* images */
+.wonom-imgbox { padding: 12px; border: 1px solid var(--w-border); border-radius: var(--w-radius-sm); background: var(--w-bg); }
+.wonom-imgwrap { position: relative; border-radius: 6px; overflow: hidden; background: #ddd; cursor: crosshair; line-height: 0; }
+.wonom-imgwrap img { width: 100%; max-height: 260px; object-fit: contain; display: block; background: #e5e7eb; }
+.wonom-focal { position: absolute; width: 18px; height: 18px; border: 3px solid #fff; border-radius: 50%; background: rgba(37,99,235,0.6); box-shadow: 0 0 0 1px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.35); transform: translate(-50%, -50%); pointer-events: none; }
+.wonom-imgmeta { font-size: 11px; color: var(--w-muted); margin-top: 6px; }
+.wonom-imgactions { margin-top: 6px; display: flex; align-items: center; gap: 10px; }
+.wonom-imgpick { width: 100%; min-height: 110px; border: 2px dashed var(--w-border-strong); border-radius: 8px; background: #fff; color: var(--w-muted); font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.wonom-imgpick:hover { border-color: var(--w-primary); color: var(--w-primary); }
+.wonom-imgpick .dashicons { font-size: 24px; width: 24px; height: 24px; }
+
+/* schedule */
+.wonom-sec--schedule { background: linear-gradient(0deg, #fff, #fff), var(--w-warn-soft); }
+.wonom-dt { position: relative; display: flex; gap: 6px; align-items: center; }
+.wonom-dt input.wonom-date { flex: 1; font-variant-numeric: tabular-nums; }
+.wonom-dtbtn { flex: 0 0 auto; width: 36px; height: 36px; border: 1px solid var(--w-border-strong); border-radius: var(--w-radius-sm); background: var(--w-card); cursor: pointer; display: grid; place-items: center; color: var(--w-muted); }
+.wonom-dtbtn:hover { border-color: var(--w-primary); color: var(--w-primary); }
+.wonom-presets { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 12px; }
+.wonom-presets .button-link { font-size: 12px; }
+.wonom-schedstatus { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding: 10px 12px; border-radius: var(--w-radius-sm); background: var(--w-bg); font-size: 13px; }
+.wonom-schedstatus.is-bad { background: var(--w-danger-soft); color: var(--w-danger); }
+
+.wonom-dtpop {
+	position: absolute; top: calc(100% + 6px); left: 0; z-index: 100; width: 272px; padding: 12px;
+	border: 1px solid var(--w-border); border-radius: var(--w-radius); background: var(--w-card);
+	box-shadow: 0 12px 28px -10px rgba(16, 24, 40, 0.28);
+}
+.wonom-dtnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.wonom-dtnav button { border: 0; background: none; cursor: pointer; font-size: 18px; padding: 0 9px; border-radius: 6px; color: var(--w-muted); line-height: 1.4; }
+.wonom-dtnav button:hover { background: var(--w-bg); color: var(--w-text); }
+.wonom-dtmonth { font-weight: 700; font-size: 13px; }
+.wonom-dtgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.wonom-dtdow { text-align: center; font-size: 10px; font-weight: 700; color: var(--w-faint); padding: 2px 0 4px; }
+.wonom-dtgrid button { border: 0; background: none; padding: 6px 0; border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--w-text); font-variant-numeric: tabular-nums; }
+.wonom-dtgrid button:hover { background: var(--w-bg); }
+.wonom-dtgrid button.is-out { color: var(--w-faint); }
+.wonom-dtgrid button.is-today { box-shadow: inset 0 0 0 1px var(--w-primary); }
+.wonom-dtgrid button.is-sel { background: var(--w-primary); color: #fff; font-weight: 700; }
+.wonom-dttime { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--w-border); }
+.wonom-dttime select { min-width: 60px; min-height: 30px; }
+
+/* preview */
+.wonom-preview { padding: 14px 16px; }
+.wonom-preview-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.wonom-preview-stage { background: repeating-conic-gradient(#eceff4 0 25%, #f7f8fb 0 50%) 0 0 / 20px 20px; border-radius: var(--w-radius-sm); border: 1px solid var(--w-border); padding: 18px; display: flex; justify-content: center; }
+.wonom-preview-stage iframe { width: 100%; height: 480px; border: 0; background: #fff; border-radius: 6px; box-shadow: 0 8px 30px -10px rgba(16,24,40,0.25); transition: width 0.25s; }
+.wonom-preview-stage.is-tablet iframe { width: 768px; height: 620px; }
+.wonom-preview-stage.is-mobile iframe { width: 390px; height: 700px; border-radius: 28px; border: 10px solid #1d2433; }
+
+/* calendar */
+.wonom-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.wonom-cal-head h2 { margin: 0; }
+.wonom-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
+.wonom-cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--w-faint); padding: 4px 0; }
+.wonom-cal-day { min-height: 92px; padding: 6px; border: 1px solid var(--w-border); border-radius: 8px; background: var(--w-card); }
+.wonom-cal-day.is-out { background: var(--w-bg); opacity: 0.6; }
+.wonom-cal-num { display: inline-block; font-size: 12px; font-weight: 600; color: var(--w-muted); margin-bottom: 4px; }
+.wonom-cal-day.is-today .wonom-cal-num { background: var(--w-primary); color: #fff; border-radius: 999px; padding: 0 7px; }
+.wonom-cal-bar { display: block; margin: 2px 0; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; color: #fff; background: var(--bar, var(--w-primary)); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wonom-cal-bar:hover { filter: brightness(1.1); color: #fff; }
+.wonom-cal-bar.is-dim { opacity: 0.4; }
+.wonom-cal-bar.is-campaign { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4); }
+body.wonom-app .wonom-table { border-radius: var(--w-radius-sm); overflow: hidden; border-color: var(--w-border); }
+body.wonom-app .wonom-table a { text-decoration: none; }
+
+/* settings */
+.wonom-settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.wonom-settings-group { margin: 0; }
+.wonom-settings-group p { margin: 6px 0; font-size: 13px; }
+.wonom-codeline { display: flex; align-items: center; gap: 10px; }
+.wonom-codeline code { flex: 1; padding: 8px 10px; border-radius: 6px; background: var(--w-bg); font-size: 12px; overflow: auto; }
+body.wonom-app .wonom-settings textarea.wonom-code { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; border-radius: var(--w-radius-sm); border-color: var(--w-border-strong); }
+.wonom-updrow { margin-top: 6px; flex-wrap: wrap; }
+.wonom-updrow .button-small { margin-left: 6px; }
+
+/* toasts */
+.wonom-toasts { position: fixed; right: 20px; bottom: 20px; z-index: 100000; display: flex; flex-direction: column; gap: 8px; }
+.wonom-toast { padding: 10px 16px; border-radius: 10px; background: #1d2433; color: #fff; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.4); opacity: 0; transform: translateY(8px); transition: all 0.25s; max-width: 420px; }
+.wonom-toast.is-in { opacity: 1; transform: none; }
+.wonom-toast.is-ok { background: var(--w-ok); }
+.wonom-toast.is-err { background: var(--w-danger); }
+
+/* responsive */
+@media (max-width: 1100px) {
+	.wonom-settings { grid-template-columns: 1fr; }
+	.wonom-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 782px) {
+	.wonom-appbar { top: 46px; flex-wrap: wrap; gap: 10px; }
+	.wonom-nav { order: 3; width: 100%; margin: 0; }
+	body.wonom-app #wpbody-content { padding: 0 14px 80px; }
+	.wonom-appbar { margin: 0 -14px; padding: 10px 14px; }
+	.wonom-grid--2, .wonom-grid--3 { grid-template-columns: 1fr; }
+	.wonom-slide-head { flex-wrap: wrap; }
+	.wonom-slide-actions { width: 100%; justify-content: flex-end; }
+	.wonom-preview-stage.is-tablet iframe, .wonom-preview-stage.is-mobile iframe { width: 100%; }
+	.wonom-cal-day { min-height: 60px; }
+}
