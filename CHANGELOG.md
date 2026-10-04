@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0 - 2026-10-04
+
+- Muudatus: tüpograafia on ainult slaidi põhine. Üldseadete plokk „Tüpograafia” on eemaldatud; kõik samad valikud (fondid, suurused arvutile ja mobiilile, paksus, suurtähed, tähevahe, ridade vahe, vahe nupu ees) ja lisaks nupu nurgaraadius on slaidi plokis „Tüpograafia”. Tühi väli = vaikeväärtus, mis on kohatäitena näha.
+- Muudatus: pealkirja HTML-tag (SEO) on nüüd Seaded → Paigutus all.
+
 ## 1.2.3 - 2026-10-04
 
 - Muudatus: eelvaade on slaidide lehel vaikimisi avatud; „Peida eelvaade” jääb brauseris meelde. Eelvaate kõrgus järgib slaiderit, tühja ala alla ei jää.

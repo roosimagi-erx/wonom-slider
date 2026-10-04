@@ -151,14 +151,14 @@ class Wonom_Slider_Admin {
 			'bgHint'           => __( 'Shown behind the image and on its own when the slide has no image – a slide can be text only.', 'wonom-slider' ),
 
 			// Per-slide typography.
-			'secTypo'          => __( 'Typography (this slide)', 'wonom-slider' ),
-			'typoIntro'        => __( 'Empty = as in Settings → Typography. Set only what this slide should do differently; the preview updates immediately.', 'wonom-slider' ),
-			'asSettings'       => __( 'As in settings', 'wonom-slider' ),
+			'secTypo'          => __( 'Typography', 'wonom-slider' ),
+			'typoIntro'        => __( 'Empty = default (shown as placeholder). Everything here applies to this slide only; the preview updates immediately.', 'wonom-slider' ),
+			'asSettings'       => __( 'Default', 'wonom-slider' ),
 			'gap'              => __( 'Space between lines (px)', 'wonom-slider' ),
 			'gapButton'        => __( 'Space above buttons (px)', 'wonom-slider' ),
 			'yes'              => __( 'Yes', 'wonom-slider' ),
 			'no'               => __( 'No', 'wonom-slider' ),
-			'typoReset'        => __( 'Reset to settings', 'wonom-slider' ),
+			'typoReset'        => __( 'Reset to defaults', 'wonom-slider' ),
 
 			// Fonts.
 			'fontHeading'      => __( 'Heading font', 'wonom-slider' ),

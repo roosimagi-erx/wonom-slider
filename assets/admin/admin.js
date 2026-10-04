@@ -458,7 +458,9 @@
 		h += typoSelect( 'heading_uppercase', I.headingUppercase, [ [ 1, I.yes ], [ 0, I.no ] ] );
 		h += typoNum( 'heading_spacing', I.headingSpacing, -10, 60, G.heading_spacing );
 		h += typoNum( 'gap', I.gap, 0, 80, 14 ) + typoNum( 'gap_button', I.gapButton, 0, 100, 22 );
+		h += typoNum( 'button_radius', I.buttonRadius, 0, 100, G.button_radius );
 		h += '</div>';
+		h += '<p class="wonom-hint">' + esc( I.fontsHint ) + '</p>';
 		h += '<button type="button" class="button-link" data-action="typo-reset">' + esc( I.typoReset ) + '</button>';
 		h += '</section>';
 
@@ -713,7 +715,7 @@
 	/**
 	 * Per-slide typography → CSS custom property on the stage's slide element.
 	 */
-	var TYPO_VARS = { font_heading: '--ws-font-h', font_text: '--ws-font-t', heading_size: '--ws-h-size', heading_size_mobile: '--ws-h-size-mobile', text_size: '--ws-t-size', text_size_mobile: '--ws-t-size-mobile', heading_weight: '--ws-h-weight', heading_uppercase: '--ws-h-transform', heading_spacing: '--ws-h-spacing', gap: '--ws-gap', gap_button: '--ws-gap-btn' };
+	var TYPO_VARS = { font_heading: '--ws-font-h', font_text: '--ws-font-t', heading_size: '--ws-h-size', heading_size_mobile: '--ws-h-size-mobile', text_size: '--ws-t-size', text_size_mobile: '--ws-t-size-mobile', heading_weight: '--ws-h-weight', heading_uppercase: '--ws-h-transform', heading_spacing: '--ws-h-spacing', gap: '--ws-gap', gap_button: '--ws-gap-btn', button_radius: '--ws-btn-radius' };
 	var SERIF = [ 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display' ];
 	function fontCss( v ) {
 		if ( ! v || v === 'inherit' ) { return 'inherit'; }
@@ -872,32 +874,6 @@
 			field( I.breakpoint, sInput( 'mobile_breakpoint', 'number', ' min="320" max="1400" step="1"' ), esc( I.breakpointHint ) ) +
 			field( I.contentWidth, sInput( 'content_max_width', 'number', ' min="200" max="2000" step="10"' ) ) +
 			field( I.paddingMobile, sInput( 'padding_mobile', 'number', ' min="0" max="100"' ) ) +
-			'</div>' );
-
-		function fontField( key, label ) {
-			var v = S[ key ] || 'inherit', isCustom = v.indexOf( 'custom:' ) === 0;
-			var h2 = '<div class="wonom-field"><label>' + esc( label ) + '</label><select data-font="' + key + '">';
-			h2 += '<option value="inherit"' + ( v === 'inherit' ? ' selected' : '' ) + '>' + esc( I.fontInherit ) + '</option>';
-			( state.fonts || [] ).forEach( function ( f ) { h2 += '<option value="' + esc( f ) + '"' + ( v === f ? ' selected' : '' ) + ' style="font-family:\'' + esc( f ) + '\'">' + esc( f ) + '</option>'; } );
-			h2 += '<option value="custom"' + ( isCustom ? ' selected' : '' ) + '>' + esc( I.fontCustom ) + '</option></select>';
-			h2 += '<input type="text" data-font-custom="' + key + '" value="' + esc( isCustom ? v.slice( 7 ) : '' ) + '" placeholder="' + esc( I.fontCustomPh ) + '"' + ( isCustom ? '' : ' hidden' ) + ' style="margin-top:6px"></div>';
-			return h2;
-		}
-		h += group( I.gTypography, 'editor-textcolor',
-			'<div class="wonom-grid wonom-grid--2">' +
-			fontField( 'font_heading', I.fontHeading ) +
-			fontField( 'font_text', I.fontText ) +
-			field( I.headingWeight, sSelect( 'heading_weight', [ [ 300, '300' ], [ 400, '400' ], [ 500, '500' ], [ 600, '600' ], [ 700, '700' ], [ 800, '800' ] ] ) ) +
-			field( I.headingSpacing, sInput( 'heading_spacing', 'number', ' min="-10" max="60"' ) ) +
-			'</div>' +
-			toggleRow( 'heading_uppercase', I.headingUppercase ) +
-			'<p class="wonom-hint">' + esc( I.fontsHint ) + '</p>' +
-			'<div class="wonom-grid wonom-grid--2" style="margin-top:12px">' +
-			field( I.headingSize, sInput( 'heading_size', 'number', ' min="12" max="160"' ) ) +
-			field( I.headingSizeMobile, sInput( 'heading_size_mobile', 'number', ' min="12" max="100"' ) ) +
-			field( I.textSize, sInput( 'text_size', 'number', ' min="10" max="60"' ) ) +
-			field( I.textSizeMobile, sInput( 'text_size_mobile', 'number', ' min="10" max="40"' ) ) +
-			field( I.buttonRadius, sInput( 'button_radius', 'number', ' min="0" max="100"' ) ) +
 			field( I.headingTag, sSelect( 'heading_tag', [ [ 'h2', 'H2' ], [ 'h1', 'H1' ], [ 'h3', 'H3' ], [ 'p', 'P' ] ] ), esc( I.headingTagHint ) ) +
 			'</div>' );
 

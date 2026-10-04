@@ -317,6 +317,7 @@ class Wonom_Slider_Data {
 			'heading_spacing'     => array( 'int', -10, 60 ),
 			'gap'                 => array( 'int', 0, 80 ),  // space between heading, eyebrow and text
 			'gap_button'          => array( 'int', 0, 100 ), // space above the buttons
+			'button_radius'       => array( 'int', 0, 100 ),
 		);
 	}
 

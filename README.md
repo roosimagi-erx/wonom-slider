@@ -44,7 +44,7 @@ ja „ainult pilt“ – kõik seaded on vaikimisi „sama mis arvutis“. Fooku
 
 **Taustavärv:** slaidi taustavärv on näha pildi taga ja üksinda, kui pilti polegi – ainult tekstiga slaid.
 
-**Fondid:** Seaded → Tüpograafia annab vaikimisi stiili kogu slaiderile: pealkirja ning teksti/nupu font eraldi (saidi vaikefont, kureeritud veebifondid Bunny Fontsist või oma CSS-väärtus), pealkirja paksus, suurtähed, tähevahe. Iga slaidi plokis **Tüpograafia (see slaid)** saab need slaidi kaupa üle kirjutada ning lisaks muuta ridade vahet ja vahet nupu ees; tühi väli = nagu seadetes.
+**Tüpograafia (slaidi kaupa):** iga slaidi plokis *Tüpograafia* on pealkirja ning teksti/nupu font eraldi (saidi vaikefont, kureeritud veebifondid Bunny Fontsist või oma CSS-väärtus), pealkirja ja teksti suurus arvutile ja mobiilile, paksus, suurtähed, tähevahe, ridade vahe, vahe nupu ees ja nupu nurgaraadius. Tühi väli = vaikeväärtus (kohatäitena näha). Iga muudatus on laval kohe näha.
 
 **Vahemälu:** Seaded → Lehe vahemälu: tühjendatakse automaatselt salvestamisel, ajastatud alguse/lõpu hetkel ja pärast plugina uuendust (FlyingPress, WP Rocket, LiteSpeed, W3TC jt; Cloudflare API võtmega). Nupp „Tühjenda vahemälu kohe”.
 
@@ -54,7 +54,7 @@ ja „ainult pilt“ – kõik seaded on vaikimisi „sama mis arvutis“. Fooku
 
 - *Esitus*: automaatne vahetus, aeg, kiirus, hajumine/libisemine, kordus, Ken Burns.
 - *Paigutus*: külgede suhe arvutis ja mobiilis (vaikimisi esimese pildi järgi), murdepunkt, maksimaalne laius.
-- *Tüpograafia*: pealkirja ja teksti suurused eraldi arvutile ja mobiilile, font, nupu nurgad, pealkirja tag (vaikimisi H2 – mitu H1-te kahjustab SEO-d).
+- *Paigutus*: lisaks pealkirja HTML-tag (vaikimisi H2 – mitu H1-te kahjustab SEO-d).
 - *Keeled ja tõlkimine*, *Automaatsed uuendused*, *Oma CSS*, *Andmed* (eksport/import JSON, kustutamine eemaldamisel).
 
 ## Arendajale

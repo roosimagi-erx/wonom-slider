@@ -357,6 +357,7 @@ class Wonom_Slider_Frontend {
 			'heading_spacing'     => array( '--ws-h-spacing', 'em100' ),
 			'gap'                 => array( '--ws-gap', 'px' ),
 			'gap_button'          => array( '--ws-gap-btn', 'px' ),
+			'button_radius'       => array( '--ws-btn-radius', 'px' ),
 		);
 		$out = '';
 		foreach ( $map as $k => $def ) {
