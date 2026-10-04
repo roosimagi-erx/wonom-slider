@@ -90,6 +90,16 @@ return array(
 		'Background colour'                  => 'Taustavärv',
 		'Shown behind the image and on its own when the slide has no image – a slide can be text only.' => 'Näha pildi taga ja üksinda, kui slaidil pilti pole – slaid võib olla ka ainult tekstiga.',
 
+		// Per-slide typography.
+		'Typography (this slide)'            => 'Tüpograafia (see slaid)',
+		'Empty = as in Settings → Typography. Set only what this slide should do differently; the preview updates immediately.' => 'Tühi = nagu Seaded → Tüpograafia. Määra ainult see, mis sellel slaidil peab olema teisiti; eelvaade uueneb kohe.',
+		'As in settings'                     => 'Nagu seadetes',
+		'Space between lines (px)'           => 'Ridade vahe (px)',
+		'Space above buttons (px)'           => 'Vahe nupu ees (px)',
+		'Yes'                                => 'Jah',
+		'No'                                 => 'Ei',
+		'Reset to settings'                  => 'Taasta seadete järgi',
+
 		// Fonts.
 		'Heading font'                       => 'Pealkirja font',
 		'Text & button font'                 => 'Teksti ja nupu font',

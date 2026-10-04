@@ -197,13 +197,27 @@ class Wonom_Slider_Data {
 	/**
 	 * Stylesheet URL for the selected web fonts, or '' when only inherit/custom fonts are used.
 	 */
-	public static function font_stylesheet_url( $settings ) {
+	public static function font_stylesheet_url( $settings, $slides = null ) {
 		$fams = array();
-		foreach ( array( 'font_heading' => '400,500,600,700', 'font_text' => '400,500,700' ) as $key => $weights ) {
-			$f = isset( $settings[ $key ] ) ? $settings[ $key ] : 'inherit';
+		$add  = function ( $f, $weights ) use ( &$fams ) {
 			if ( isset( self::fonts()[ $f ] ) ) {
-				$slug = self::fonts()[ $f ];
+				$slug          = self::fonts()[ $f ];
 				$fams[ $slug ] = isset( $fams[ $slug ] ) ? '400,500,600,700' : $weights;
+			}
+		};
+		foreach ( array( 'font_heading' => '400,500,600,700', 'font_text' => '400,500,700' ) as $key => $weights ) {
+			$add( isset( $settings[ $key ] ) ? $settings[ $key ] : 'inherit', $weights );
+		}
+		if ( null === $slides ) {
+			$slides = self::get_slides();
+		}
+		foreach ( (array) $slides as $s ) {
+			if ( ! empty( $s['typo'] ) && is_array( $s['typo'] ) ) {
+				foreach ( array( 'font_heading' => '400,500,600,700', 'font_text' => '400,500,700' ) as $key => $weights ) {
+					if ( ! empty( $s['typo'][ $key ] ) ) {
+						$add( $s['typo'][ $key ], $weights );
+					}
+				}
 			}
 		}
 		if ( empty( $fams ) ) {
@@ -280,8 +294,59 @@ class Wonom_Slider_Data {
 			'mobile_pos_x'        => 50,
 			'mobile_pos_y'        => 50,
 			'mobile_pos_w'        => 90,
+			// Per-slide typography overrides. '' / null = use the global setting.
+			'typo'                => array(),
 			'i18n'                => array(), // lang => array( field => value )
 		);
+	}
+
+	/**
+	 * Per-slide typography keys → [type, min, max].
+	 * font_* accept font settings; numbers are px except heading_spacing (1/100 em).
+	 */
+	public static function typo_fields() {
+		return array(
+			'font_heading'        => array( 'font' ),
+			'font_text'           => array( 'font' ),
+			'heading_size'        => array( 'int', 12, 160 ),
+			'heading_size_mobile' => array( 'int', 12, 100 ),
+			'text_size'           => array( 'int', 10, 60 ),
+			'text_size_mobile'    => array( 'int', 10, 40 ),
+			'heading_weight'      => array( 'int', 300, 800 ),
+			'heading_uppercase'   => array( 'bool' ),
+			'heading_spacing'     => array( 'int', -10, 60 ),
+			'gap'                 => array( 'int', 0, 80 ),  // space between heading, eyebrow and text
+			'gap_button'          => array( 'int', 0, 100 ), // space above the buttons
+		);
+	}
+
+	/**
+	 * Sanitise the per-slide typography array; only explicitly set keys are kept.
+	 */
+	public static function sanitize_typo( $in ) {
+		$out = array();
+		if ( ! is_array( $in ) ) {
+			return $out;
+		}
+		foreach ( self::typo_fields() as $k => $def ) {
+			if ( ! isset( $in[ $k ] ) || '' === $in[ $k ] || null === $in[ $k ] ) {
+				continue;
+			}
+			$v = $in[ $k ];
+			if ( 'font' === $def[0] ) {
+				$f = self::sanitize_font( $v, '' );
+				if ( '' !== $f && 'inherit' !== $f ) {
+					$out[ $k ] = $f;
+				} elseif ( 'inherit' === $f && 'inherit' === $v ) {
+					$out[ $k ] = 'inherit'; // explicitly "theme font" even if the global uses a web font.
+				}
+			} elseif ( 'bool' === $def[0] ) {
+				$out[ $k ] = self::to_bool( $v );
+			} elseif ( is_numeric( $v ) ) {
+				$out[ $k ] = max( $def[1], min( $def[2], (int) $v ) );
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -502,6 +567,8 @@ class Wonom_Slider_Data {
 
 		$out['start'] = isset( $in['start'] ) ? self::sanitize_datetime( $in['start'] ) : '';
 		$out['end']   = isset( $in['end'] ) ? self::sanitize_datetime( $in['end'] ) : '';
+
+		$out['typo'] = isset( $in['typo'] ) ? self::sanitize_typo( $in['typo'] ) : array();
 
 		// Translations.
 		$out['i18n'] = array();

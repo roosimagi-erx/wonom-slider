@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0 - 2026-10-04
+
+- Uus: tüpograafia slaidi kaupa – pealkirja ja teksti font, suurused (arvuti/mobiil), paksus, suurtähed, tähevahe ning kaks vahet: ridade vahe (silt/väike rida/pealkiri/tekst) ja vahe nupu ees. Tühi väli = nagu üldseadetes. Lava uueneb kohe.
+- Muudatus: tekstielementide vahed on nüüd CSS-muutujad (`--ws-gap`, `--ws-gap-btn`); mobiili pealkirja tähevahe järgib seadistatud tähevahet.
+
 ## 1.1.0 - 2026-10-04
 
 - Uus: slaidi redaktoris on lava – slaid kuvatakse täpselt nii nagu esilehel (sama server-render), arvuti- ja mobiilivaates, tekstid otse pildi peal.

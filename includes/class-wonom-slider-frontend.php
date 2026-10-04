@@ -12,6 +12,9 @@ class Wonom_Slider_Frontend {
 	/** @var bool Whether assets have been requested on this page. */
 	private static $assets_needed = false;
 
+	/** @var array|null Slides being rendered (so the font stylesheet covers per-slide fonts). */
+	private static $fonts_slides = null;
+
 	public static function init() {
 		add_shortcode( 'wonom_slider', array( __CLASS__, 'shortcode' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
@@ -43,7 +46,7 @@ class Wonom_Slider_Frontend {
 		if ( ! empty( $settings['custom_css'] ) ) {
 			wp_add_inline_style( 'wonom-slider', $settings['custom_css'] );
 		}
-		$fonts = Wonom_Slider_Data::font_stylesheet_url( $settings );
+		$fonts = Wonom_Slider_Data::font_stylesheet_url( $settings, self::$fonts_slides );
 		if ( $fonts ) {
 			wp_enqueue_style( 'wonom-slider-fonts', $fonts, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		}
@@ -130,6 +133,7 @@ class Wonom_Slider_Frontend {
 			$slides[ $k ] = Wonom_Slider_Data::localize_slide( $slide, $lang );
 		}
 
+		self::$fonts_slides = $slides;
 		self::enqueue_assets();
 
 		$count   = count( $slides );
@@ -243,6 +247,7 @@ class Wonom_Slider_Frontend {
 			(float) $m_w,
 			esc_attr( $slide['bg_color'] ? $slide['bg_color'] : 'transparent' )
 		);
+		$slide_style .= self::typo_style( isset( $slide['typo'] ) ? $slide['typo'] : array() );
 
 		$classes = array(
 			'wonom-slide',
@@ -334,6 +339,54 @@ class Wonom_Slider_Frontend {
 	}
 
 	/**
+	 * Per-slide typography overrides as CSS custom properties (only the keys that are set).
+	 */
+	public static function typo_style( $typo ) {
+		if ( empty( $typo ) || ! is_array( $typo ) ) {
+			return '';
+		}
+		$map = array(
+			'font_heading'        => array( '--ws-font-h', 'font' ),
+			'font_text'           => array( '--ws-font-t', 'font' ),
+			'heading_size'        => array( '--ws-h-size', 'px' ),
+			'heading_size_mobile' => array( '--ws-h-size-mobile', 'px' ),
+			'text_size'           => array( '--ws-t-size', 'px' ),
+			'text_size_mobile'    => array( '--ws-t-size-mobile', 'px' ),
+			'heading_weight'      => array( '--ws-h-weight', 'int' ),
+			'heading_uppercase'   => array( '--ws-h-transform', 'bool' ),
+			'heading_spacing'     => array( '--ws-h-spacing', 'em100' ),
+			'gap'                 => array( '--ws-gap', 'px' ),
+			'gap_button'          => array( '--ws-gap-btn', 'px' ),
+		);
+		$out = '';
+		foreach ( $map as $k => $def ) {
+			if ( ! isset( $typo[ $k ] ) || '' === $typo[ $k ] ) {
+				continue;
+			}
+			$v = $typo[ $k ];
+			switch ( $def[1] ) {
+				case 'font':
+					$v = Wonom_Slider_Data::font_css( $v );
+					break;
+				case 'px':
+					$v = (int) $v . 'px';
+					break;
+				case 'int':
+					$v = (int) $v;
+					break;
+				case 'bool':
+					$v = $v ? 'uppercase' : 'none';
+					break;
+				case 'em100':
+					$v = ( (int) $v / 100 ) . 'em';
+					break;
+			}
+			$out .= $def[0] . ':' . esc_attr( $v ) . ';';
+		}
+		return $out;
+	}
+
+	/**
 	 * CSS custom properties for the slider wrapper.
 	 */
 	private static function inline_style( $settings, $first ) {
@@ -387,8 +440,8 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slider__track{aspect-ratio:var(--ws-ratio-mobile)}"
 			. "{$s} .wonom-slide__img,{$s} .wonom-slide__media img{object-position:var(--ws-focal-m)}"
 			. "{$s} .wonom-slide__content{padding:var(--ws-pad-mobile)}"
-			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size-mobile);letter-spacing:.1em}"
-			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size-mobile);margin-bottom:16px}"
+			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size-mobile);letter-spacing:calc(var(--ws-h-spacing,.14em)*.75)}"
+			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size-mobile)}"
 			. "{$s} .wonom-slide__eyebrow{font-size:12px}"
 			. "{$s} .wonom-slide__button{padding:10px 20px;font-size:12px}"
 			. "{$s} .wonom-slide.m-align-left .wonom-slide__content{justify-content:flex-start;text-align:left}"
@@ -418,8 +471,8 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slider__track{aspect-ratio:var(--ws-ratio)}"
 			. "{$s} .wonom-slide__img,{$s} .wonom-slide__media img{object-position:var(--ws-focal)}"
 			. "{$s} .wonom-slide__content{padding:clamp(24px,5vw,72px)}"
-			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size);letter-spacing:.14em}"
-			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size);margin-bottom:22px}"
+			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size);letter-spacing:var(--ws-h-spacing,.14em)}"
+			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size)}"
 			. "{$s} .wonom-slide.m-hide-text .wonom-slide__content{display:flex}"
 			. "{$s} .wonom-slide.pos-free .wonom-slide__content{display:block;padding:0}"
 			. "{$s} .wonom-slide.pos-free .wonom-slide__inner{position:absolute;left:var(--ws-x);top:var(--ws-y);width:var(--ws-w);max-width:none;transform:translate(-50%,-50%)}"

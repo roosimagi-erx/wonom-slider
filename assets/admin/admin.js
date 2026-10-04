@@ -414,6 +414,41 @@
 		h += '</div>';
 		h += '</section>';
 
+		/* Typography for this slide (overrides the global settings) */
+		var T = s.typo || {}, G = state.settings;
+		function typoFont( key, label ) {
+			var v = T[ key ] == null ? '' : T[ key ], isCustom = String( v ).indexOf( 'custom:' ) === 0;
+			var h2 = '<div class="wonom-field"><label>' + esc( label ) + '</label><select data-typo="' + key + '">';
+			h2 += '<option value=""' + ( v === '' ? ' selected' : '' ) + '>' + esc( I.asSettings ) + '</option>';
+			h2 += '<option value="inherit"' + ( v === 'inherit' ? ' selected' : '' ) + '>' + esc( I.fontInherit ) + '</option>';
+			( state.fonts || [] ).forEach( function ( f ) { h2 += '<option value="' + esc( f ) + '"' + ( v === f ? ' selected' : '' ) + ' style="font-family:\'' + esc( f ) + '\'">' + esc( f ) + '</option>'; } );
+			h2 += '<option value="custom"' + ( isCustom ? ' selected' : '' ) + '>' + esc( I.fontCustom ) + '</option></select>';
+			h2 += '<input type="text" data-typo-custom="' + key + '" value="' + esc( isCustom ? v.slice( 7 ) : '' ) + '" placeholder="' + esc( I.fontCustomPh ) + '"' + ( isCustom ? '' : ' hidden' ) + ' style="margin-top:6px"></div>';
+			return h2;
+		}
+		function typoNum( key, label, min, max, globalVal ) {
+			return field( label, '<input type="number" data-typo="' + key + '" value="' + esc( T[ key ] == null ? '' : T[ key ] ) + '" min="' + min + '" max="' + max + '" placeholder="' + esc( globalVal ) + '">' );
+		}
+		function typoSelect( key, label, options ) {
+			var v = T[ key ] == null ? '' : String( T[ key ] );
+			var h2 = '<select data-typo="' + key + '"><option value="">' + esc( I.asSettings ) + '</option>';
+			options.forEach( function ( o ) { h2 += '<option value="' + esc( o[ 0 ] ) + '"' + ( v === String( o[ 0 ] ) ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } );
+			return field( label, h2 + '</select>' );
+		}
+		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-editor-paragraph"></span> ' + esc( I.secTypo ) + '</h3>';
+		h += '<p class="wonom-hint">' + esc( I.typoIntro ) + '</p>';
+		h += '<div class="wonom-grid wonom-grid--2">' + typoFont( 'font_heading', I.fontHeading ) + typoFont( 'font_text', I.fontText ) + '</div>';
+		h += '<div class="wonom-grid wonom-grid--3">';
+		h += typoNum( 'heading_size', I.headingSize, 12, 160, G.heading_size ) + typoNum( 'heading_size_mobile', I.headingSizeMobile, 12, 100, G.heading_size_mobile );
+		h += typoSelect( 'heading_weight', I.headingWeight, [ [ 300, '300' ], [ 400, '400' ], [ 500, '500' ], [ 600, '600' ], [ 700, '700' ], [ 800, '800' ] ] );
+		h += typoNum( 'text_size', I.textSize, 10, 60, G.text_size ) + typoNum( 'text_size_mobile', I.textSizeMobile, 10, 40, G.text_size_mobile );
+		h += typoSelect( 'heading_uppercase', I.headingUppercase, [ [ 1, I.yes ], [ 0, I.no ] ] );
+		h += typoNum( 'heading_spacing', I.headingSpacing, -10, 60, G.heading_spacing );
+		h += typoNum( 'gap', I.gap, 0, 80, 14 ) + typoNum( 'gap_button', I.gapButton, 0, 100, 22 );
+		h += '</div>';
+		h += '<button type="button" class="button-link" data-action="typo-reset">' + esc( I.typoReset ) + '</button>';
+		h += '</section>';
+
 		/* Mobile */
 		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-smartphone"></span> ' + esc( I.secMobile ) + '</h3>';
 		h += '<p class="wonom-hint">' + esc( I.mobileIntro ) + '</p>';
@@ -645,6 +680,32 @@
 			applyFree( s, slideEl, Math.max( 0, Math.min( 100, x + dx * step ) ), Math.max( 0, Math.min( 100, y + dy * step ) ), w );
 			commit();
 		} );
+	}
+
+	/**
+	 * Per-slide typography → CSS custom property on the stage's slide element.
+	 */
+	var TYPO_VARS = { font_heading: '--ws-font-h', font_text: '--ws-font-t', heading_size: '--ws-h-size', heading_size_mobile: '--ws-h-size-mobile', text_size: '--ws-t-size', text_size_mobile: '--ws-t-size-mobile', heading_weight: '--ws-h-weight', heading_uppercase: '--ws-h-transform', heading_spacing: '--ws-h-spacing', gap: '--ws-gap', gap_button: '--ws-gap-btn' };
+	var SERIF = [ 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display' ];
+	function fontCss( v ) {
+		if ( ! v || v === 'inherit' ) { return 'inherit'; }
+		if ( v.indexOf( 'custom:' ) === 0 ) { return v.slice( 7 ) || 'inherit'; }
+		return '"' + v + '", ' + ( SERIF.indexOf( v ) >= 0 ? 'Georgia, serif' : 'system-ui, sans-serif' );
+	}
+	function stageTypo( s, key ) {
+		if ( ! stage.iframe || stage.slideId !== s.id ) { return; }
+		var doc; try { doc = stage.iframe.contentDocument; } catch ( e ) { return; }
+		var el = doc && doc.querySelector( '.wonom-slide' );
+		if ( ! el || ! TYPO_VARS[ key ] ) { return; }
+		var v = s.typo ? s.typo[ key ] : undefined;
+		if ( v == null || v === '' ) { el.style.removeProperty( TYPO_VARS[ key ] ); }
+		else if ( /^font_/.test( key ) ) { el.style.setProperty( TYPO_VARS[ key ], fontCss( v ) ); }
+		else if ( key === 'heading_uppercase' ) { el.style.setProperty( TYPO_VARS[ key ], String( v ) === '1' || v === true ? 'uppercase' : 'none' ); }
+		else if ( key === 'heading_spacing' ) { el.style.setProperty( TYPO_VARS[ key ], ( parseInt( v, 10 ) / 100 ) + 'em' ); }
+		else if ( key === 'heading_weight' ) { el.style.setProperty( TYPO_VARS[ key ], parseInt( v, 10 ) ); }
+		else { el.style.setProperty( TYPO_VARS[ key ], parseInt( v, 10 ) + 'px' ); }
+		if ( /^font_/.test( key ) ) { scheduleStage( s, 900 ); } // server adds the web-font stylesheet
+		fitStage( stage.iframe );
 	}
 
 	/**
@@ -930,6 +991,7 @@
 				navigator.clipboard && navigator.clipboard.writeText( btn.getAttribute( 'data-copy' ) ).then( function () { toast( I.copied, 'ok' ); } ); break;
 			case 'check-updates': checkUpdates( btn ); break;
 			case 'stage-device': stage.device = btn.getAttribute( 'data-device' ); render(); break;
+			case 'typo-reset': s.typo = {}; markDirty( 'slides' ); render(); break;
 			case 'purge':
 				btn.disabled = true; var pl = btn.textContent; btn.textContent = I.purging;
 				api( '/purge', 'POST', {} ).then( function ( r ) {
@@ -975,6 +1037,19 @@
 			markDirty( 'settings' );
 			return;
 		}
+		if ( ( el.hasAttribute( 'data-typo' ) || el.hasAttribute( 'data-typo-custom' ) ) && card ) {
+			var ts = findSlide( card.getAttribute( 'data-id' ) );
+			ts.typo = ts.typo || {};
+			if ( el.hasAttribute( 'data-typo-custom' ) ) {
+				ts.typo[ el.getAttribute( 'data-typo-custom' ) ] = 'custom:' + el.value;
+				markDirty( 'slides' ); stageTypo( ts, el.getAttribute( 'data-typo-custom' ) ); return;
+			}
+			if ( el.tagName === 'SELECT' ) { return; } // handled on change
+			var tk = el.getAttribute( 'data-typo' );
+			if ( el.value === '' ) { delete ts.typo[ tk ]; } else { ts.typo[ tk ] = el.value; }
+			markDirty( 'slides' ); stageTypo( ts, tk );
+			return;
+		}
 		if ( el.hasAttribute( 'data-setting' ) ) {
 			var k = el.getAttribute( 'data-setting' );
 			state.settings[ k ] = el.type === 'checkbox' ? el.checked : ( el.type === 'number' ? parseInt( el.value, 10 ) || 0 : el.value );
@@ -1000,6 +1075,14 @@
 			var p = parseDisplay( el.value );
 			s2[ el.getAttribute( 'data-date' ) ] = p ? toIso( p ) : '';
 			markDirty( 'slides' ); render(); return;
+		}
+		if ( el.hasAttribute( 'data-typo' ) && el.tagName === 'SELECT' && card ) {
+			var ts2 = findSlide( card.getAttribute( 'data-id' ) ), tk2 = el.getAttribute( 'data-typo' );
+			ts2.typo = ts2.typo || {};
+			var customIn = el.parentNode.querySelector( '[data-typo-custom]' );
+			if ( el.value === 'custom' ) { if ( customIn ) { customIn.hidden = false; customIn.focus(); } ts2.typo[ tk2 ] = 'custom:' + ( customIn ? customIn.value : '' ); }
+			else { if ( customIn ) { customIn.hidden = true; } if ( el.value === '' ) { delete ts2.typo[ tk2 ]; } else { ts2.typo[ tk2 ] = el.value; } }
+			markDirty( 'slides' ); stageTypo( ts2, tk2 ); return;
 		}
 		if ( el.hasAttribute( 'data-font' ) ) {
 			var fk = el.getAttribute( 'data-font' );
@@ -1048,7 +1131,7 @@
 			overlay: 20, overlay_color: '#000000', bg_color: '#1d2433', badge: '', start: '', end: '',
 			focal_x: 50, focal_y: 50, mobile_focal_x: 50, mobile_focal_y: 50,
 			mobile_align: '', mobile_valign: '', mobile_hide_text: false,
-			pos_mode: 'grid', pos_x: 50, pos_y: 50, pos_w: 60, mobile_pos_mode: '', mobile_pos_x: 50, mobile_pos_y: 50, mobile_pos_w: 90, i18n: {}
+			pos_mode: 'grid', pos_x: 50, pos_y: 50, pos_w: 60, mobile_pos_mode: '', mobile_pos_x: 50, mobile_pos_y: 50, mobile_pos_w: 90, typo: {}, i18n: {}
 		};
 		// Campaign slides go first (they usually should be seen first) with a default 14-day window.
 		if ( s.type === 'campaign' ) {
