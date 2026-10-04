@@ -297,30 +297,44 @@
 
 /* --- navigation --- */
 
-.wonom-slider__arrow {
-	position: absolute;
-	top: 50%;
+/* Themes (WoodMart, Elementor kits…) style every <button>; the !important flags keep the controls intact. */
+.wonom-slider .wonom-slider__arrow {
+	position: absolute !important;
+	top: 50% !important;
+	bottom: auto !important;
 	z-index: 6;
-	display: flex;
+	display: flex !important;
 	align-items: center;
 	justify-content: center;
-	width: 48px;
-	height: 48px;
-	margin: 0;
-	padding: 0;
-	border: 0;
-	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.85);
-	color: #111;
+	width: 48px !important;
+	height: 48px !important;
+	min-width: 0 !important;
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	border-radius: 50% !important;
+	background: rgba(255, 255, 255, 0.85) !important;
+	color: #111 !important;
+	font-size: 0 !important;
+	line-height: 1 !important;
+	letter-spacing: 0 !important;
 	cursor: pointer;
-	transform: translateY(-50%);
+	transform: translateY(-50%) !important;
 	opacity: 0;
 	transition: opacity 0.25s ease, background 0.2s ease;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+	text-transform: none;
 }
 
-.wonom-slider__arrow--prev { left: 18px; }
-.wonom-slider__arrow--next { right: 18px; }
+.wonom-slider .wonom-slider__arrow svg {
+	width: 24px;
+	height: 24px;
+	display: block;
+}
+
+.wonom-slider .wonom-slider__arrow--prev { left: 18px !important; right: auto !important; }
+.wonom-slider .wonom-slider__arrow--next { right: 18px !important; left: auto !important; }
 
 .wonom-slider:hover .wonom-slider__arrow,
 .wonom-slider:focus-within .wonom-slider__arrow,
@@ -328,33 +342,45 @@
 	opacity: 1;
 }
 
-.wonom-slider__arrow:hover { background: #fff; }
-.wonom-slider__arrow:focus-visible { outline: 2px solid #fff; outline-offset: 2px; opacity: 1; }
+.wonom-slider .wonom-slider__arrow:hover { background: #fff !important; }
+.wonom-slider .wonom-slider__arrow:focus-visible { outline: 2px solid #fff; outline-offset: 2px; opacity: 1; }
 
-.wonom-slider__dots {
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 16px;
+.wonom-slider .wonom-slider__dots {
+	position: absolute !important;
+	left: 0 !important;
+	right: 0 !important;
+	top: auto !important;
+	bottom: 16px !important;
 	z-index: 6;
-	display: flex;
+	display: flex !important;
 	justify-content: center;
+	align-items: center;
 	gap: 8px;
+	margin: 0 !important;
+	padding: 0 !important;
+	line-height: 0;
 }
 
-.wonom-slider__dot {
-	width: 10px;
-	height: 10px;
-	padding: 0;
-	border: 0;
-	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.55);
+.wonom-slider .wonom-slider__dot {
+	position: static !important;
+	width: 10px !important;
+	height: 10px !important;
+	min-width: 0 !important;
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	border-radius: 50% !important;
+	background: rgba(255, 255, 255, 0.55) !important;
+	box-shadow: none !important;
+	font-size: 0 !important;
+	line-height: 0 !important;
 	cursor: pointer;
 	transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.wonom-slider__dot.is-active {
-	background: #fff;
+.wonom-slider .wonom-slider__dot.is-active {
+	background: #fff !important;
 	transform: scale(1.3);
 }
 
@@ -426,10 +452,10 @@
 
 	.wonom-slide.m-hide-text .wonom-slide__content { display: none; }
 
-	.wonom-slider__arrow { width: 38px; height: 38px; opacity: 1; background: rgba(255, 255, 255, 0.7); }
-	.wonom-slider__arrow--prev { left: 8px; }
-	.wonom-slider__arrow--next { right: 8px; }
-	.wonom-slider__dots { bottom: 10px; }
+	.wonom-slider .wonom-slider__arrow { width: 38px !important; height: 38px !important; opacity: 1; background: rgba(255, 255, 255, 0.7) !important; }
+	.wonom-slider .wonom-slider__arrow--prev { left: 8px !important; }
+	.wonom-slider .wonom-slider__arrow--next { right: 8px !important; }
+	.wonom-slider .wonom-slider__dots { bottom: 10px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

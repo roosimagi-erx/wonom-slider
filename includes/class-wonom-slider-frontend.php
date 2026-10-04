@@ -375,9 +375,9 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide.m-align-center .wonom-slide__actions{justify-content:center}"
 			. "{$s} .wonom-slide.m-align-right .wonom-slide__actions{justify-content:flex-end}"
 			. "{$s} .wonom-slide.m-hide-text .wonom-slide__content{display:none}"
-			. "{$s} .wonom-slider__arrow{width:38px;height:38px;opacity:1;background:rgba(255,255,255,.7)}"
-			. "{$s} .wonom-slider__arrow--prev{left:8px}{$s} .wonom-slider__arrow--next{right:8px}"
-			. "{$s} .wonom-slider__dots{bottom:10px}"
+			. "{$s} .wonom-slider__arrow{width:38px!important;height:38px!important;opacity:1;background:rgba(255,255,255,.7)!important}"
+			. "{$s} .wonom-slider__arrow--prev{left:8px!important}{$s} .wonom-slider__arrow--next{right:8px!important}"
+			. "{$s} .wonom-slider__dots{bottom:10px!important}"
 			. '}';
 		// Neutralise the stylesheet's default 767px block when the custom breakpoint is larger/smaller.
 		if ( $bp > 768 ) {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 - 2026-10-04
+
+- Parandus: teemad (nt WoodMart), mis kirjutavad kõigi nuppude stiilid üle, lükkasid nooled slaiderist välja ja tegid punktid kandiliseks. Noolte ja punktide stiilid on nüüd kaitstud.
+
 ## 1.0.0 - 2026-10-04
 
 - Esimene versioon.
