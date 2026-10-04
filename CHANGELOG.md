@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 - 2026-10-04
+
+- Parandus: mobiilis (Elementori veergsuunaline konteiner) ei andnud ainult külgede suhtest tulenev kõrgus vidinale mõõtu ja järgmine sektsioon joonistus bänneri peale. Slaideri rada saab nüüd JS-iga täpse pikslikõrguse (ResizeObserver).
+- Parandus: seadete lehe nupp „Uuenda kohe” andis vigase lingi (&amp;), WordPress teatas aegunud viitest.
+
 ## 1.0.1 - 2026-10-04
 
 - Parandus: teemad (nt WoodMart), mis kirjutavad kõigi nuppude stiilid üle, lükkasid nooled slaiderist välja ja tegid punktid kandiliseks. Noolte ja punktide stiilid on nüüd kaitstud.

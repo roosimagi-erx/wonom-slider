@@ -31,11 +31,14 @@
 		this.slides = [].slice.call( root.querySelectorAll( '.wonom-slide' ) );
 		this.dots = [].slice.call( root.querySelectorAll( '.wonom-slider__dot' ) );
 		this.progress = root.querySelector( '.wonom-slider__progress' );
+		this.track = root.querySelector( '.wonom-slider__track' );
 		this.index = 0;
 		this.timer = null;
 		this.paused = false;
 		this.animating = false;
 		this.count = this.slides.length;
+
+		this.sizeTrack();
 
 		if ( this.count < 2 ) {
 			root.classList.add( 'is-single' );
@@ -143,6 +146,38 @@
 			track.addEventListener( 'touchmove', function ( e ) { var t = e.touches[ 0 ]; onMove( { pointerId: 1, clientX: t.clientX, clientY: t.clientY, preventDefault: function () {} } ); }, { passive: true } );
 			track.addEventListener( 'touchend', function () { onUp( { pointerId: 1 } ); } );
 		}
+	};
+
+	/**
+	 * Give the track an explicit pixel height derived from the active aspect ratio.
+	 * In column-direction flex parents (e.g. Elementor containers on mobile) a purely
+	 * aspect-ratio based height does not contribute to the parent's size and the next
+	 * section would overlap the slider.
+	 */
+	Slider.prototype.sizeTrack = function () {
+		var self = this, track = this.track;
+		if ( ! track ) { return; }
+		function apply() {
+			var w = self.root.clientWidth;
+			if ( ! w ) { return; }
+			var cs = getComputedStyle( track );
+			var m = /([\d.]+)\s*\/\s*([\d.]+)/.exec( cs.aspectRatio || '' );
+			if ( ! m ) { return; }
+			var h = w * parseFloat( m[ 2 ] ) / parseFloat( m[ 1 ] );
+			var min = parseFloat( cs.minHeight ) || 0;
+			var max = parseFloat( cs.maxHeight );
+			if ( min ) { h = Math.max( h, min ); }
+			if ( max && cs.maxHeight !== 'none' ) { h = Math.min( h, max ); }
+			var px = Math.round( h * 100 ) / 100 + 'px';
+			if ( track.style.height !== px ) { track.style.height = px; }
+		}
+		apply();
+		if ( 'ResizeObserver' in window ) {
+			new ResizeObserver( apply ).observe( this.root );
+		} else {
+			window.addEventListener( 'resize', apply );
+		}
+		window.addEventListener( 'orientationchange', function () { setTimeout( apply, 50 ); } );
 	};
 
 	Slider.prototype.step = function ( dir, user ) {
