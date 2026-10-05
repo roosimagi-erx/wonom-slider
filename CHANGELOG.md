@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.4 - 2026-10-05
+
+- Parandus: slaidide nimekirja pisipilt on nüüd omaette dokument (sama meetod mis suurel eelvaatel ja laval): slaideri tegelik HTML ja stiilileht arvuti laiuses, vähendatult. Varem joonistus pisipilt lehe enda sees ja brauser võis sinna näidata vale sisu (nt lehe ülaosa teateid).
+- Uus: kollaaži piltide järjekorda saab muuta lohistades – võta kinni pesa pealkirjast („Pilt 1”, „Pilt 2” …).
+
 ## 1.6.3 - 2026-10-05
 
 - Uus: fookuspunkt eraldi arvutile ja mobiilile – nii ühe pildiga slaidil kui igal kollaaži pildil. Piltide plokis on lüliti „Fookuspunkt vaatele: Arvuti / Mobiil” (sama mis laval); sinine punkt = arvuti, lilla = mobiil. Lava uueneb kohe.

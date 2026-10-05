@@ -204,6 +204,11 @@ class Wonom_Slider_Rest {
 			'languages' => Wonom_Slider_Data::get_languages(),
 			'now'       => wp_date( 'Y-m-d\TH:i' ),
 			'timezone'  => wp_timezone_string(),
+			// Stylesheets the editor needs to render the card miniatures in their own documents.
+			'assets'    => array(
+				'css'   => add_query_arg( 'ver', WONOM_SLIDER_VERSION, WONOM_SLIDER_URL . 'assets/public/slider.css' ),
+				'fonts' => Wonom_Slider_Data::font_stylesheet_url( $settings, $slides ),
+			),
 		);
 	}
 

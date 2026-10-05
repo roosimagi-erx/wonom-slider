@@ -162,7 +162,7 @@ class Wonom_Slider_Admin {
 			'bgCollage'        => __( 'Collage (2–5 images)', 'wonom-slider' ),
 			'collageSlot'      => __( 'Image %d', 'wonom-slider' ),
 			'collageAdd'       => __( 'Add images', 'wonom-slider' ),
-			'collageHint'      => __( 'Pick 2–5 portrait photos of the same size (e.g. 800×1000 px); you can select several at once. Click a photo to set its focal point. The slider ratio follows the first photo × number of columns.', 'wonom-slider' ),
+			'collageHint'      => __( 'Pick 2–5 portrait photos of the same size (e.g. 800×1000 px); you can select several at once. Click a photo to set its focal point. Drag the slot header to change the order. The slider ratio follows the first photo × number of columns.', 'wonom-slider' ),
 			'seam'             => __( 'Seam between images', 'wonom-slider' ),
 			'seamHard'         => __( 'Sharp', 'wonom-slider' ),
 			'seamFade'         => __( 'Fade', 'wonom-slider' ),

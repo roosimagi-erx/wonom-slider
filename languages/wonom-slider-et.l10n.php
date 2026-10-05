@@ -97,7 +97,7 @@ return array(
 		'Collage (2–5 images)'               => 'Kollaaž (2–5 pilti)',
 		'Image %d'                           => 'Pilt %d',
 		'Add images'                         => 'Lisa pildid',
-		'Pick 2–5 portrait photos of the same size (e.g. 800×1000 px); you can select several at once. Click a photo to set its focal point. The slider ratio follows the first photo × number of columns.' => 'Vali 2–5 ühesuurust püstist fotot (nt 800×1000 px); korraga saab valida mitu. Klõps fotol määrab fookuspunkti. Slaideri külgede suhe tuleb esimesest fotost × veergude arv.',
+		'Pick 2–5 portrait photos of the same size (e.g. 800×1000 px); you can select several at once. Click a photo to set its focal point. Drag the slot header to change the order. The slider ratio follows the first photo × number of columns.' => 'Vali 2–5 ühesuurust püstist fotot (nt 800×1000 px); korraga saab valida mitu. Klõps fotol määrab fookuspunkti. Järjekorra muutmiseks lohista pesa pealkirjast. Slaideri külgede suhe tuleb esimesest fotost × veergude arv.',
 		'Seam between images'                => 'Piltide vaheline üleminek',
 		'Sharp'                              => 'Terav',
 		'Fade'                               => 'Sulandumine',

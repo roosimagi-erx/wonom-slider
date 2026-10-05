@@ -184,6 +184,7 @@
 		state.campaigns = res.campaigns !== undefined ? res.campaigns : state.campaigns;
 		state.fonts = res.fonts || state.fonts;
 		state.languages = res.languages || state.languages;
+		state.assets = res.assets || state.assets;
 		state.now = res.now || state.now;
 		loadedAt = Date.now();
 		openId = newOpen && findSlide( newOpen ) ? newOpen : null;
@@ -297,8 +298,8 @@
 		h += '<span class="wonom-order">' + ( i + 1 ) + '</span>';
 		var thumbInner;
 		if ( s.preview ) {
-			// Exact front-end markup, scaled down (480px virtual width → 160px).
-			thumbInner = '<div class="wonom-thumb__scale">' + s.preview + '</div>';
+			// Exact front-end output in its own document (same as the big preview), filled in by fitThumbs().
+			thumbInner = '';
 		} else if ( thumb ) {
 			thumbInner = '<img src="' + esc( thumb ) + '" alt="">';
 		} else if ( hasContent( s ) ) {
@@ -417,7 +418,7 @@
 			h += '<div class="wonom-grid wonom-grid--5 wonom-collage-slots">';
 			for ( var ci = 0; ci < 5; ci++ ) {
 				var it = col[ ci ];
-				h += '<div class="wonom-imgbox wonom-cslot" data-slot="' + ci + '"><label>' + esc( sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
+				h += '<div class="wonom-imgbox wonom-cslot' + ( it ? ' has-image' : '' ) + '" data-slot="' + ci + '"><label' + ( it ? ' class="wonom-cslot__handle" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span>' : '>' ) + esc( sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
 				if ( it ) {
 					var cm = stage.device === 'mobile';
 					var cfx = cm ? ( it.mfocal_x != null ? it.mfocal_x : it.focal_x ) : it.focal_x, cfy = cm ? ( it.mfocal_y != null ? it.mfocal_y : it.focal_y ) : it.focal_y;
@@ -637,27 +638,50 @@
 		} catch ( e ) { /* cross-origin – keep default height */ }
 	}
 
-	// Live miniatures: fit the scaled slide vertically and keep image requests small.
+	// Live miniatures: each card gets its own document (srcdoc iframe) with the exact front-end
+	// markup and stylesheet, rendered at desktop width and scaled down – the same pipeline as the
+	// big preview, so the card shows precisely what visitors see.
+	var THUMB_W = 960, THUMB_BOX_W = 160;
 	function fitThumbs() {
-		var capEl = document.getElementById( 'wonom-thumb-cap' );
-		if ( ! capEl ) { capEl = document.createElement( 'style' ); capEl.id = 'wonom-thumb-cap'; document.head.appendChild( capEl ); }
-		capEl.textContent = capStyle( 'desktop' ).replace( '.wonom-slider{', '.wonom-thumb__scale .wonom-slider{' );
-		[].forEach.call( app.querySelectorAll( '.wonom-thumb--live' ), function ( box ) {
-			var sc = box.querySelector( '.wonom-thumb__scale' ), sl = sc && sc.querySelector( '.wonom-slider' );
-			if ( ! sl ) { return; }
-			[].forEach.call( sc.querySelectorAll( 'img' ), function ( img ) {
-				// Resolve theme lazy-load placeholders (no theme JS runs in the admin).
-				var ds = img.getAttribute( 'data-src' ), dss = img.getAttribute( 'data-srcset' );
-				if ( ds ) { img.setAttribute( 'src', ds ); img.removeAttribute( 'data-src' ); }
-				if ( dss ) { img.setAttribute( 'srcset', dss ); img.removeAttribute( 'data-srcset' ); }
-				img.classList.remove( 'wd-lazy-fade' );
-				img.setAttribute( 'sizes', '480px' ); img.loading = 'lazy';
+		var assets = ( state.assets || ( WONOM_SLIDER.state && WONOM_SLIDER.state.assets ) || {} );
+		var scale = THUMB_BOX_W / THUMB_W;
+		[].forEach.call( app.querySelectorAll( '.wonom-slide-card' ), function ( card ) {
+			var box = card.querySelector( '.wonom-thumb--live' ), s = findSlide( card.getAttribute( 'data-id' ) );
+			if ( ! box || ! s || ! s.preview || box.querySelector( 'iframe' ) ) { return; }
+			var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+				+ '<link rel="stylesheet" href="' + esc( assets.css || '' ) + '">'
+				+ ( assets.fonts ? '<link rel="stylesheet" href="' + esc( assets.fonts ) + '">' : '' )
+				+ '<style>html,body{margin:0;background:#e9e9e9;overflow:hidden}' + capStyle( 'desktop' )
+				+ '.wonom-slider{margin:0;max-width:none}'
+				+ '.wonom-slider__arrow,.wonom-slider__dots,.wonom-slider__progress{display:none!important}'
+				+ '.wonom-slide__badge,.wonom-slide__eyebrow,.wonom-slide__heading,.wonom-slide__text,.wonom-slide__actions{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}'
+				+ ( state.settings && state.settings.custom_css ? state.settings.custom_css : '' )
+				+ '</style></head><body>' + s.preview + '</body></html>';
+			var iframe = document.createElement( 'iframe' );
+			iframe.className = 'wonom-thumb__frame';
+			iframe.setAttribute( 'title', s.name || '' );
+			iframe.setAttribute( 'tabindex', '-1' );
+			iframe.style.width = THUMB_W + 'px';
+			iframe.style.transform = 'scale(' + scale + ')';
+			box.innerHTML = '';
+			box.appendChild( iframe );
+			iframe.addEventListener( 'load', function () {
+				var d = iframe.contentDocument, sl = d && d.querySelector( '.wonom-slider' );
+				if ( ! sl ) { return; }
+				[].forEach.call( d.images, function ( img ) {
+					// Resolve theme lazy-load placeholders (no theme JS runs here).
+					var ds = img.getAttribute( 'data-src' ), dss = img.getAttribute( 'data-srcset' );
+					if ( ds ) { img.setAttribute( 'src', ds ); img.removeAttribute( 'data-src' ); }
+					if ( dss ) { img.setAttribute( 'srcset', dss ); img.removeAttribute( 'data-srcset' ); }
+					img.classList.remove( 'wd-lazy-fade' );
+					img.setAttribute( 'sizes', THUMB_W + 'px' );
+				} );
+				[].forEach.call( d.querySelectorAll( 'source[data-srcset]' ), function ( so ) { so.setAttribute( 'srcset', so.getAttribute( 'data-srcset' ) ); so.removeAttribute( 'data-srcset' ); } );
+				var h = sl.offsetHeight || Math.round( THUMB_W * 0.34 );
+				iframe.style.height = h + 'px';
+				box.style.height = Math.max( 44, Math.min( 90, Math.round( h * scale ) ) ) + 'px';
 			} );
-			[].forEach.call( sc.querySelectorAll( 'source[data-srcset]' ), function ( so ) { so.setAttribute( 'srcset', so.getAttribute( 'data-srcset' ) ); so.removeAttribute( 'data-srcset' ); } );
-			var scale = 160 / 480;
-			sc.style.transform = 'scale(' + scale + ')';
-			// offsetHeight is the untransformed layout height of the 480px-wide slide.
-			box.style.height = Math.max( 44, Math.min( 90, Math.round( sl.offsetHeight * scale ) ) ) + 'px';
+			iframe.srcdoc = doc;
 		} );
 	}
 
@@ -682,6 +706,25 @@
 		}
 		var open = app.querySelector( '.wonom-slide-card.is-open' );
 		if ( open ) { mountStage( findSlide( open.getAttribute( 'data-id' ) ) ); }
+		// Collage images: drag the slot header to change the order of the photos.
+		var slots = app.querySelector( '.wonom-collage-slots' );
+		if ( slots && open && $.fn.sortable ) {
+			$( slots ).sortable( {
+				items: '.wonom-cslot.has-image',
+				handle: '.wonom-cslot__handle',
+				placeholder: 'wonom-cslot wonom-placeholder',
+				tolerance: 'pointer',
+				update: function () {
+					var s = findSlide( open.getAttribute( 'data-id' ) );
+					if ( ! s || ! Array.isArray( s.collage ) ) { return; }
+					var order = $( slots ).children( '.has-image' ).map( function () { return parseInt( this.getAttribute( 'data-slot' ), 10 ); } ).get();
+					var col = s.collage.slice();
+					s.collage = order.map( function ( i ) { return col[ i ]; } ).filter( Boolean );
+					markDirty( 'slides' );
+					render();
+				}
+			} );
+		}
 	}
 
 	/* ---------- height cap for previews ----------
