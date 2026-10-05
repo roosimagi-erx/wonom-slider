@@ -106,6 +106,7 @@ body.wonom-app .button-link.is-danger { color: var(--w-danger); }
 .wonom-pill--active { background: var(--w-ok-soft); color: var(--w-ok); }
 .wonom-pill--scheduled { background: var(--w-warn-soft); color: var(--w-warn); }
 .wonom-pill--expired, .wonom-pill--disabled, .wonom-pill--noimage { background: #eef0f5; color: var(--w-muted); }
+.wonom-pill--waiting { background: var(--w-primary-soft); color: var(--w-primary); }
 .wonom-pill--noimage { background: var(--w-danger-soft); color: var(--w-danger); }
 .wonom-tag { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; vertical-align: 1px; }
 .wonom-tag--campaign { background: var(--w-campaign-soft); color: var(--w-campaign); }

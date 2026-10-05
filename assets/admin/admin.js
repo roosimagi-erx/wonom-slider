@@ -74,6 +74,7 @@
 		return !! ( s.image_url || s.heading || s.text || s.eyebrow || s.button_text );
 	}
 	function slideStatus( s ) {
+		if ( s.source === 'auto' && s.campaign_none ) { return 'waiting'; }
 		if ( ! s.enabled ) { return 'disabled'; }
 		if ( ! hasContent( s ) ) { return 'noimage'; }
 		var now = siteNow();
@@ -83,7 +84,7 @@
 		return 'active';
 	}
 	function statusLabel( st ) {
-		return { active: I.stActive, scheduled: I.stScheduled, expired: I.stExpired, disabled: I.stDisabled, noimage: I.stNoimage }[ st ] || st;
+		return { active: I.stActive, scheduled: I.stScheduled, expired: I.stExpired, disabled: I.stDisabled, noimage: I.stNoimage, waiting: I.stWaiting }[ st ] || st;
 	}
 	function scheduleSummary( s ) {
 		var st = isoToDate( s.start ), en = isoToDate( s.end ), now = siteNow();
@@ -316,7 +317,8 @@
 			h += '<strong class="js-name">' + esc( s.name || s.heading || I.untitled ) + '</strong>';
 		}
 		if ( s.type === 'campaign' ) { h += ' <span class="wonom-tag wonom-tag--campaign">' + esc( I.typeCampaign ) + '</span>'; }
-		if ( s.source === 'campaign' && s.campaign_id ) { h += ' <span class="wonom-tag wonom-tag--linked" title="' + esc( sprintf( I.linkedFromCampaign, s.campaign_title || s.campaign_id ) ) + '"><span class="dashicons dashicons-admin-links"></span> ' + esc( I.gCampaigns ) + '</span>'; }
+		if ( s.source === 'auto' ) { h += ' <span class="wonom-tag wonom-tag--linked" title="' + esc( s.campaign_title ? sprintf( I.autoUsing, s.campaign_title ) : I.autoNone ) + '"><span class="dashicons dashicons-update"></span> ' + esc( I.sourceAuto ) + '</span>'; }
+		else if ( s.source === 'campaign' && s.campaign_id ) { h += ' <span class="wonom-tag wonom-tag--linked" title="' + esc( sprintf( I.linkedFromCampaign, s.campaign_title || s.campaign_id ) ) + '"><span class="dashicons dashicons-admin-links"></span> ' + esc( I.gCampaigns ) + '</span>'; }
 		h += '</div>';
 		h += '<div class="wonom-slide-sub"><span class="wonom-pill wonom-pill--' + st + ' js-status">' + esc( statusLabel( st ) ) + '</span> <span class="js-sched">' + esc( scheduleSummary( s ) ) + '</span></div>';
 		h += '</div>';
@@ -465,10 +467,19 @@
 		var L = cur === defaultLang() ? '' : cur;
 
 		/* Content source: own texts or a Kampaaniariba campaign (locks texts, link and schedule). */
-		var linked = s.source === 'campaign' && s.campaign_id > 0;
+		var linked = ( s.source === 'campaign' && s.campaign_id > 0 ) || s.source === 'auto';
 		if ( state.campaigns ) {
-			h += field( I.source, segmented( 'source', s.source || 'own', [ [ 'own', I.sourceOwn ], [ 'campaign', I.sourceCampaign ] ] ) );
-			if ( s.source === 'campaign' ) {
+			h += field( I.source, segmented( 'source', s.source || 'own', [ [ 'own', I.sourceOwn ], [ 'campaign', I.sourceCampaign ], [ 'auto', I.sourceAuto ] ] ) );
+			if ( s.source === 'auto' ) {
+				h += '<p class="wonom-hint">' + esc( I.autoHint ) + '</p>';
+				if ( s.campaign_none ) {
+					h += '<p class="wonom-hint wonom-warn">' + esc( I.autoNone ) + '</p>';
+				} else if ( s.campaign_title ) {
+					var cst = { live: I.cLive, upcoming: I.cUpcoming, ended: I.cEnded, off: I.cOff }[ s.campaign_status ] || '';
+					h += '<p class="wonom-hint"><strong>' + esc( sprintf( I.autoUsing, s.campaign_title + ( cst ? ' (' + cst + ')' : '' ) ) ) + '</strong>' + ( s.campaign_edit_url ? ' · <a href="' + esc( s.campaign_edit_url ) + '" target="_blank" rel="noopener">' + esc( I.editCampaign ) + ' ↗</a>' : '' ) + '</p>';
+				}
+				h += '<p class="wonom-hint">' + esc( I.campaignLocked ) + '</p>';
+			} else if ( s.source === 'campaign' ) {
 				if ( ! state.campaigns.length ) {
 					h += '<p class="wonom-hint wonom-warn">' + esc( I.campaignNone ) + '</p>';
 				} else {
@@ -589,7 +600,9 @@
 
 		/* Schedule */
 		h += '<section class="wonom-sec wonom-sec--schedule"><h3><span class="dashicons dashicons-calendar-alt"></span> ' + esc( I.secSchedule ) + '</h3>';
-		if ( linked ) {
+		if ( linked && s.source === 'auto' && s.campaign_none ) {
+			h += '<p class="wonom-hint wonom-warn">' + esc( I.autoNone ) + '</p>';
+		} else if ( linked ) {
 			h += '<p class="wonom-hint">' + esc( sprintf( I.linkedFromCampaign, s.campaign_title || s.campaign_id ) ) + ' – ' + esc( I.start ) + ': <strong>' + esc( s.start ? toDisplay( s.start ) : I.noStart ) + '</strong>, ' + esc( I.end ) + ': <strong>' + esc( s.end ? toDisplay( s.end ) : I.noEnd ) + '</strong>' + ( s.campaign_edit_url ? ' · <a href="' + esc( s.campaign_edit_url ) + '" target="_blank" rel="noopener">' + esc( I.editCampaign ) + ' ↗</a>' : '' ) + '</p>';
 		} else {
 			h += '<p class="wonom-hint">' + esc( I.scheduleIntro ) + ' ' + esc( sprintf( I.scheduleTz, state.timezone || '' ) ) + '</p>';
@@ -1169,8 +1182,11 @@
 		var s = card ? findSlide( card.getAttribute( 'data-id' ) ) : null;
 
 		if ( btn.hasAttribute( 'data-seg' ) && s ) {
-			s[ btn.getAttribute( 'data-seg' ) ] = btn.getAttribute( 'data-value' );
-			markDirty( 'slides' ); render(); return;
+			var segKey = btn.getAttribute( 'data-seg' ), segVal = btn.getAttribute( 'data-value' );
+			s[ segKey ] = segVal;
+			markDirty( 'slides' );
+			if ( segKey === 'source' && segVal === 'auto' ) { applyAutoCampaign( s ); return; }
+			render(); return;
 		}
 
 		var action = btn.getAttribute( 'data-action' );
@@ -1372,6 +1388,26 @@
 			preview.all = el.checked; refreshPreview();
 		}
 	} );
+
+	// "Current campaign (automatic)": fill the slide from whatever campaign is live/upcoming now,
+	// so the editor and stage show it before saving (the server re-resolves it on every render).
+	function applyAutoCampaign( cs ) {
+		cs.campaign_id = 0; cs.type = 'campaign';
+		api( '/campaign/current' ).then( function ( f ) {
+			if ( f.none ) {
+				cs.campaign_none = true; cs.campaign_title = ''; cs.campaign_status = 'none'; cs.campaign_edit_url = '';
+				cs.start = ''; cs.end = '';
+			} else {
+				cs.campaign_none = false;
+				Object.keys( f.base ).forEach( function ( k ) { cs[ k ] = f.base[ k ]; } );
+				cs.i18n = cs.i18n || {};
+				Object.keys( f.i18n || {} ).forEach( function ( lg ) { cs.i18n[ lg ] = Object.assign( {}, cs.i18n[ lg ] || {}, f.i18n[ lg ] ); } );
+				cs.start = f.start; cs.end = f.end;
+				cs.campaign_title = f.title; cs.campaign_status = f.status; cs.campaign_edit_url = f.edit_url;
+			}
+			render();
+		} ).catch( function ( e ) { toast( e.message || 'Error', 'err' ); render(); } );
+	}
 
 	function updateCardHeader( card, s ) {
 		var st = slideStatus( s );

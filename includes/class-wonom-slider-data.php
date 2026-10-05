@@ -613,10 +613,14 @@ class Wonom_Slider_Data {
 
 		$out['typo'] = isset( $in['typo'] ) ? self::sanitize_typo( $in['typo'] ) : array();
 
-		$out['source']      = ( isset( $in['source'] ) && 'campaign' === $in['source'] ) ? 'campaign' : 'own';
+		// own = own texts; campaign = one chosen campaign; auto = whichever campaign is live right now.
+		$out['source']      = ( isset( $in['source'] ) && in_array( $in['source'], array( 'campaign', 'auto' ), true ) ) ? $in['source'] : 'own';
 		$out['campaign_id'] = isset( $in['campaign_id'] ) ? absint( $in['campaign_id'] ) : 0;
 		if ( 'campaign' === $out['source'] && ! $out['campaign_id'] ) {
 			$out['source'] = 'own';
+		}
+		if ( 'auto' === $out['source'] ) {
+			$out['campaign_id'] = 0;
 		}
 
 		// Collage + frame.
@@ -873,6 +877,9 @@ class Wonom_Slider_Data {
 
 	public static function slide_status( $slide ) {
 		$now = self::now();
+		if ( ! empty( $slide['campaign_none'] ) && isset( $slide['source'] ) && 'auto' === $slide['source'] ) {
+			return 'waiting'; // automatic campaign slide with no live or upcoming campaign.
+		}
 		if ( empty( $slide['enabled'] ) ) {
 			return 'disabled';
 		}

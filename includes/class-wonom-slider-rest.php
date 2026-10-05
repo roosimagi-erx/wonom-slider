@@ -117,6 +117,17 @@ class Wonom_Slider_Rest {
 		);
 		register_rest_route(
 			self::NS,
+			'/campaign/current',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'campaign_current' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
 			'/campaign/(?P<id>\d+)',
 			array(
 				array(
@@ -215,6 +226,10 @@ class Wonom_Slider_Rest {
 	/**
 	 * Fields of one campaign, mapped to slide fields (editor applies them when a campaign is picked).
 	 */
+	public static function campaign_current() {
+		return rest_ensure_response( Wonom_Slider_Campaigns::current_fields() );
+	}
+
 	public static function campaign( WP_REST_Request $req ) {
 		$f = Wonom_Slider_Campaigns::fields( (int) $req['id'] );
 		if ( ! $f ) {

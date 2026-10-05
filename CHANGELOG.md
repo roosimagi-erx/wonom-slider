@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0 - 2026-10-05
+
+- Uus: sisuallikas „Praegu eetris olev kampaania (automaatne)”. Slaid võtab alati Kampaaniaribal parasjagu eetris oleva kampaania (tekstid, sooduskood, link, ajakava), kampaaniat ei pea valima. Kui ühtki eetris pole, võtab slaid järgmise ajastatud kampaania ja on kuni selle alguseni peidetud (olek „Ootab kampaaniat”); kui ka tulemas pole ühtki, on slaid peidetud. Kampaania muutmine, kustutamine või lisamine Kampaaniaribal tühjendab vahemälu ja planeerib ajastuse ümber.
+
 ## 1.6.6 - 2026-10-05
 
 - Parandus: 1.6.5 edasilükatud piltide atribuut `data-src` võeti WoodMarti enda lazy-load skripti poolt üle ja kõik pildid laaditi ikkagi kohe. Nüüd on atribuudid `data-wonom-src` / `data-wonom-srcset`, mida teised skriptid ei puutu.

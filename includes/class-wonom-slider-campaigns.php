@@ -29,6 +29,82 @@ class Wonom_Slider_Campaigns {
 		add_action( 'trashed_post', array( __CLASS__, 'on_remove' ) );
 		add_action( 'before_delete_post', array( __CLASS__, 'on_remove' ) );
 		add_action( 'untrashed_post', array( __CLASS__, 'on_untrash' ) );
+		// Automatic slides follow whichever campaign is live: any campaign change must purge
+		// the page cache and re-plan the schedule tick.
+		add_action( 'save_post_' . self::CPT, array( __CLASS__, 'on_campaign_change' ), 30 );
+		add_action( 'trashed_post', array( __CLASS__, 'on_campaign_change' ) );
+		add_action( 'untrashed_post', array( __CLASS__, 'on_campaign_change' ) );
+	}
+
+	/**
+	 * Fire the plugin's "saved" hook (cache purge + schedule tick) when a campaign changes and
+	 * an automatic campaign slide exists.
+	 */
+	public static function on_campaign_change( $post_id ) {
+		if ( self::CPT !== get_post_type( $post_id ) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
+			return;
+		}
+		foreach ( (array) get_option( 'wonom_slider_slides', array() ) as $raw ) {
+			if ( isset( $raw['source'] ) && 'auto' === $raw['source'] ) {
+				do_action( 'wonom_slider_saved' );
+				return;
+			}
+		}
+	}
+
+	/**
+	 * The campaign an automatic slide should show right now: the live one (latest start wins
+	 * when several overlap), otherwise the next upcoming one (so the slide is pre-scheduled and
+	 * the cache tick fires at its start). 0 when there is none.
+	 */
+	public static function current() {
+		$posts = get_posts(
+			array(
+				'post_type'      => self::CPT,
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'fields'         => 'ids',
+			)
+		);
+		$now  = time();
+		$live = null;
+		$next = null;
+		foreach ( $posts as $id ) {
+			if ( ! (int) get_post_meta( $id, '_wkr_enabled', true ) ) {
+				continue;
+			}
+			$s = (int) get_post_meta( $id, '_wkr_start_utc', true );
+			$e = (int) get_post_meta( $id, '_wkr_end_utc', true );
+			if ( ! $s || ! $e || $e < $s ) {
+				continue;
+			}
+			if ( $s <= $now && $now <= $e ) {
+				if ( null === $live || $s > $live[1] ) {
+					$live = array( $id, $s );
+				}
+			} elseif ( $s > $now ) {
+				if ( null === $next || $s < $next[1] ) {
+					$next = array( $id, $s );
+				}
+			}
+		}
+		if ( $live ) {
+			return (int) $live[0];
+		}
+		return $next ? (int) $next[0] : 0;
+	}
+
+	/**
+	 * Fields of the current campaign for the editor (REST /campaign/current).
+	 */
+	public static function current_fields() {
+		$id = self::current();
+		if ( ! $id ) {
+			return array( 'none' => true );
+		}
+		$f       = self::fields( $id );
+		$f['id'] = $id;
+		return $f;
 	}
 
 	public static function available() {
@@ -154,10 +230,25 @@ class Wonom_Slider_Campaigns {
 	 * Merge campaign data into a linked slide (idempotent). Unlinked slides pass through.
 	 */
 	public static function apply( $slide ) {
-		if ( empty( $slide['source'] ) || 'campaign' !== $slide['source'] || empty( $slide['campaign_id'] ) ) {
+		if ( ! empty( $slide['source'] ) && 'auto' === $slide['source'] ) {
+			$cid = self::current();
+			if ( ! $cid ) {
+				// Nothing live or upcoming: the slide waits, hidden.
+				$slide['enabled']         = false;
+				$slide['campaign_none']   = true;
+				$slide['campaign_status'] = 'none';
+				$slide['start']           = '';
+				$slide['end']             = '';
+				return $slide;
+			}
+			$slide['campaign_none']     = false;
+			$slide['campaign_resolved'] = $cid;
+		} elseif ( ! empty( $slide['source'] ) && 'campaign' === $slide['source'] && ! empty( $slide['campaign_id'] ) ) {
+			$cid = (int) $slide['campaign_id'];
+		} else {
 			return $slide;
 		}
-		$f = self::fields( (int) $slide['campaign_id'] );
+		$f = self::fields( $cid );
 		if ( ! $f ) {
 			$slide['enabled']          = false;
 			$slide['campaign_missing'] = true;
@@ -219,7 +310,7 @@ class Wonom_Slider_Campaigns {
 			<select name="wonom_slider_template" id="wonom_slider_template" style="width:100%">
 				<option value=""><?php esc_html_e( 'Default (from slider settings)', 'wonom-slider' ); ?></option>
 				<?php foreach ( Wonom_Slider_Data::get_slides() as $s ) : ?>
-					<?php if ( ! empty( $s['source'] ) && 'campaign' === $s['source'] ) { continue; } ?>
+					<?php if ( ! empty( $s['source'] ) && 'own' !== $s['source'] ) { continue; } ?>
 					<option value="<?php echo esc_attr( $s['id'] ); ?>" <?php selected( $tpl, $s['id'] ); ?>><?php echo esc_html( $s['name'] ? $s['name'] : ( $s['heading'] ? $s['heading'] : $s['id'] ) ); ?></option>
 				<?php endforeach; ?>
 			</select>
