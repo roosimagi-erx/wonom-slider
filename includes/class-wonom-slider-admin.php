@@ -188,7 +188,7 @@ class Wonom_Slider_Admin {
 			'stWaiting'        => __( 'Waiting for a campaign', 'wonom-slider' ),
 			'campaignSelect'   => __( 'Campaign', 'wonom-slider' ),
 			'campaignPick'     => __( '— choose a campaign —', 'wonom-slider' ),
-			'campaignLocked'   => __( 'Heading, text, small line, badge (coupon), button link and schedule come from the campaign and are locked here. Images, position, typography and the button text stay editable.', 'wonom-slider' ),
+			'campaignLocked'   => __( 'All content comes from the campaign only: heading, text, small line, badge (coupon), link and schedule – in every language. Fields the campaign does not have stay empty. There is no button; when the campaign has a link, the whole slide links there. Images, position, colours and typography stay editable.', 'wonom-slider' ),
 			'editCampaign'     => __( 'Edit in Kampaaniariba', 'wonom-slider' ),
 			'campaignMissing'  => __( 'The linked campaign no longer exists – the slide is hidden.', 'wonom-slider' ),
 			'campaignNone'     => __( 'No campaigns yet – create one in Kampaaniariba first.', 'wonom-slider' ),

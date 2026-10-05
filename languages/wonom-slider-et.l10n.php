@@ -123,7 +123,7 @@ return array(
 		'Waiting for a campaign'             => 'Ootab kampaaniat',
 		'Campaign'                           => 'Kampaania',
 		'— choose a campaign —'              => '— vali kampaania —',
-		'Heading, text, small line, badge (coupon), button link and schedule come from the campaign and are locked here. Images, position, typography and the button text stay editable.' => 'Pealkiri, tekst, väike rida, silt (sooduskood), nupu link ja ajakava tulevad kampaaniast ja on siin lukus. Pildid, asukoht, tüpograafia ja nupu tekst jäävad muudetavaks.',
+		'All content comes from the campaign only: heading, text, small line, badge (coupon), link and schedule – in every language. Fields the campaign does not have stay empty. There is no button; when the campaign has a link, the whole slide links there. Images, position, colours and typography stay editable.' => 'Kogu sisu tuleb ainult kampaaniast: pealkiri, tekst, väike rida, silt (sooduskood), link ja ajakava – igas keeles. Väljad, mida kampaanial pole, jäävad tühjaks. Nuppu ei ole; kui kampaanial on link, on kogu slaid klõpsatav. Pildid, asukoht, värvid ja tüpograafia jäävad muudetavaks.',
 		'Edit in Kampaaniariba'              => 'Muuda Kampaaniaribal',
 		'The linked campaign no longer exists – the slide is hidden.' => 'Seotud kampaaniat enam pole – slaid on peidus.',
 		'No campaigns yet – create one in Kampaaniariba first.' => 'Kampaaniaid veel pole – loo esmalt Kampaaniaribal.',

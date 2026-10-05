@@ -570,11 +570,11 @@
 			look( typoFont( 'font_text', I.tFont ), typoNum( 'text_size', I.tSize, 10, 60, G.text_size ), typoNum( 'text_size_mobile', I.tSizeMobile, 10, 40, G.text_size_mobile ) )
 		);
 		h += pair(
-			field( I.buttonText, input( s, 'button_text', { lang: L } ) ) + field( I.buttonUrl, input( s, 'button_url', { lang: L, type: 'url', placeholder: L ? ( s.button_url || CFG.homeUrl ) : CFG.homeUrl, attrs: lock } ) ),
+			field( I.buttonText, input( s, 'button_text', { lang: L, attrs: lock } ) ) + field( I.buttonUrl, input( s, 'button_url', { lang: L, type: 'url', placeholder: L ? ( s.button_url || CFG.homeUrl ) : CFG.homeUrl, attrs: lock } ) ),
 			look( field( I.tBg, color( s, 'button_bg' ) ), field( I.tColor, color( s, 'button_color' ) ), typoNum( 'button_radius', I.tRadius, 0, 100, G.button_radius ), typoNum( 'gap_button', I.tGapAbove, 0, 100, 22 ) )
 		);
 		h += pair(
-			field( I.button2Text, input( s, 'button2_text', { lang: L } ) ) + field( I.button2Url, input( s, 'button2_url', { lang: L, type: 'url' } ) ),
+			field( I.button2Text, input( s, 'button2_text', { lang: L, attrs: lock } ) ) + field( I.button2Url, input( s, 'button2_url', { lang: L, type: 'url', attrs: lock } ) ),
 			lookHint( I.button2TypoHint )
 		);
 		h += pair( field( I.alt, input( s, 'alt', { lang: L } ) ), '' );
@@ -634,7 +634,7 @@
 		/* Advanced */
 		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-admin-generic"></span> ' + esc( I.secAdvanced ) + '</h3>';
 		h += field( I.typeLabel, segmented( 'type', s.type, [ [ 'regular', I.typeRegular ], [ 'campaign', I.typeCampaign ] ] ), esc( I.typeHint ) );
-		h += '<label class="wonom-check"><input type="checkbox" data-field="link_whole_slide"' + ( s.link_whole_slide ? ' checked' : '' ) + '> ' + esc( I.linkWhole ) + '</label>';
+		h += '<label class="wonom-check"><input type="checkbox" data-field="link_whole_slide"' + ( s.link_whole_slide ? ' checked' : '' ) + lock + '> ' + esc( I.linkWhole ) + '</label>';
 		h += '<label class="wonom-check"><input type="checkbox" data-field="button_new_tab"' + ( s.button_new_tab ? ' checked' : '' ) + '> ' + esc( I.newTab ) + '</label>';
 		h += '</section>';
 
@@ -1381,9 +1381,7 @@
 			markDirty( 'slides' );
 			if ( ! cid ) { render(); return; }
 			api( '/campaign/' + cid ).then( function ( f ) {
-				Object.keys( f.base ).forEach( function ( k ) { cs[ k ] = f.base[ k ]; } );
-				cs.i18n = cs.i18n || {};
-				Object.keys( f.i18n || {} ).forEach( function ( lg ) { cs.i18n[ lg ] = Object.assign( {}, cs.i18n[ lg ] || {}, f.i18n[ lg ] ); } );
+				applyCampaignContent( cs, f );
 				cs.start = f.start; cs.end = f.end; cs.type = 'campaign';
 				if ( ! cs.name ) { cs.name = f.title; }
 				cs.campaign_title = f.title; cs.campaign_status = f.status; cs.campaign_edit_url = f.edit_url;
@@ -1411,6 +1409,18 @@
 		}
 	} );
 
+	// Campaign content is the only content (mirrors Wonom_Slider_Campaigns::apply on the server):
+	// base fields from the campaign, no buttons, whole slide linked, per-language texts reset.
+	var CAMPAIGN_KEYS = [ 'heading', 'text', 'eyebrow', 'badge', 'button_url', 'button_text', 'button2_text', 'button2_url' ];
+	function applyCampaignContent( cs, f ) {
+		Object.keys( f.base ).forEach( function ( k ) { cs[ k ] = f.base[ k ]; } );
+		cs.button_text = ''; cs.button2_text = ''; cs.button2_url = '';
+		cs.link_whole_slide = !! cs.button_url;
+		cs.i18n = cs.i18n || {};
+		Object.keys( cs.i18n ).forEach( function ( lg ) { CAMPAIGN_KEYS.forEach( function ( k ) { if ( cs.i18n[ lg ] ) { delete cs.i18n[ lg ][ k ]; } } ); } );
+		Object.keys( f.i18n || {} ).forEach( function ( lg ) { cs.i18n[ lg ] = Object.assign( {}, cs.i18n[ lg ] || {}, f.i18n[ lg ] ); } );
+	}
+
 	// "Current campaign (automatic)": fill the slide from whatever campaign is live/upcoming now,
 	// so the editor and stage show it before saving (the server re-resolves it on every render).
 	function applyAutoCampaign( cs ) {
@@ -1421,9 +1431,7 @@
 				cs.start = ''; cs.end = '';
 			} else {
 				cs.campaign_none = false;
-				Object.keys( f.base ).forEach( function ( k ) { cs[ k ] = f.base[ k ]; } );
-				cs.i18n = cs.i18n || {};
-				Object.keys( f.i18n || {} ).forEach( function ( lg ) { cs.i18n[ lg ] = Object.assign( {}, cs.i18n[ lg ] || {}, f.i18n[ lg ] ); } );
+				applyCampaignContent( cs, f );
 				cs.start = f.start; cs.end = f.end;
 				cs.campaign_title = f.title; cs.campaign_status = f.status; cs.campaign_edit_url = f.edit_url;
 			}

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2 - 2026-10-05
+
+- Muudatus: kampaaniaga seotud slaidil (valitud kampaania või automaatne) tuleb kogu sisu ainult kampaaniast. Slaidi enda varasemad tekstid (nt ingliskeelne väike rida või nupu tekst) ei jää enam alles: väljad, mida kampaanial pole, on tühjad igas keeles. Nuppu kampaaniaslaidil ei ole; kui kampaanial on link, on kogu slaid klõpsatav.
+
 ## 1.7.1 - 2026-10-05
 
 - Uus: silt (sooduskoodi pill) on slaidi kaupa eraldi seadistatav: font, suurus arvutis ja mobiilis, paksus, suurtähed, tähevahe, tausta- ja tekstivärv, polsterdus ja nurgad. Tühi = senine vaikimisi (nupu värvid). Muudatus on laval kohe näha; värvi saab ✕-ga vaikimisi tagasi panna.

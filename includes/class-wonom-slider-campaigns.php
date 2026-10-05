@@ -254,19 +254,24 @@ class Wonom_Slider_Campaigns {
 			$slide['campaign_missing'] = true;
 			return $slide;
 		}
+		// The campaign is the only source of content: whatever it does not define is empty, in
+		// every language. No button – when the campaign has a link, the whole slide links there.
+		$content_keys = array( 'heading', 'text', 'eyebrow', 'badge', 'button_url', 'button_text', 'button2_text', 'button2_url' );
 		foreach ( $f['base'] as $k => $v ) {
 			$slide[ $k ] = $v;
 		}
-		$slide['i18n'] = is_array( $slide['i18n'] ) ? $slide['i18n'] : array();
+		$slide['button_text']      = '';
+		$slide['button2_text']     = '';
+		$slide['button2_url']      = '';
+		$slide['link_whole_slide'] = '' !== $slide['button_url'];
+		$slide['i18n']             = is_array( $slide['i18n'] ) ? $slide['i18n'] : array();
+		foreach ( array_keys( $slide['i18n'] ) as $lang ) {
+			foreach ( $content_keys as $k ) {
+				unset( $slide['i18n'][ $lang ][ $k ] );
+			}
+		}
 		foreach ( $f['i18n'] as $lang => $t ) {
 			$slide['i18n'][ $lang ] = array_merge( isset( $slide['i18n'][ $lang ] ) && is_array( $slide['i18n'][ $lang ] ) ? $slide['i18n'][ $lang ] : array(), $t );
-		}
-		foreach ( array_keys( $slide['i18n'] ) as $lang ) {
-			if ( ! isset( $f['i18n'][ $lang ] ) ) {
-				foreach ( array( 'heading', 'text', 'eyebrow', 'badge', 'button_url' ) as $k ) {
-					unset( $slide['i18n'][ $lang ][ $k ] );
-				}
-			}
 		}
 		$slide['start']   = $f['start'];
 		$slide['end']     = $f['end'];
