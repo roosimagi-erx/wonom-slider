@@ -623,12 +623,12 @@ class Wonom_Slider_Data {
 		$out['bg_mode']        = ( isset( $in['bg_mode'] ) && 'collage' === $in['bg_mode'] ) ? 'collage' : 'image';
 		$out['collage_seam']   = ( isset( $in['collage_seam'] ) && in_array( $in['collage_seam'], array( 'hard', 'fade', 'blur' ), true ) ) ? $in['collage_seam'] : $d['collage_seam'];
 		$out['collage_gap']    = isset( $in['collage_gap'] ) ? max( 0, min( 60, absint( $in['collage_gap'] ) ) ) : $d['collage_gap'];
-		$out['collage_mobile'] = ( isset( $in['collage_mobile'] ) && in_array( $in['collage_mobile'], array( 'all', 'first2', 'first1' ), true ) ) ? $in['collage_mobile'] : $d['collage_mobile'];
+		$out['collage_mobile'] = ( isset( $in['collage_mobile'] ) && in_array( $in['collage_mobile'], array( 'all', 'first3', 'first2', 'first1' ), true ) ) ? $in['collage_mobile'] : $d['collage_mobile'];
 		$out['frame_width']    = isset( $in['frame_width'] ) ? max( 0, min( 80, absint( $in['frame_width'] ) ) ) : 0;
 		$out['frame_radius']   = isset( $in['frame_radius'] ) ? max( 0, min( 80, absint( $in['frame_radius'] ) ) ) : 0;
 		$out['collage']        = array();
 		if ( isset( $in['collage'] ) && is_array( $in['collage'] ) ) {
-			foreach ( array_slice( array_values( $in['collage'] ), 0, 4 ) as $item ) {
+			foreach ( array_slice( array_values( $in['collage'] ), 0, 5 ) as $item ) {
 				if ( ! is_array( $item ) ) {
 					continue;
 				}

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.2 - 2026-10-05
+
+- Parandus: eelvaade, lava ja pisipildid arvutavad kõrguse piirangu („% ekraanist”) tüüpilise ekraani järgi (arvuti 1080, tahvel 1024, mobiil 812 px), mitte iframe’i enda kõrgusest – 1.6.1-s kukkusid eelvaated seetõttu kokku.
+- Uus: kollaažis kuni 5 pilti; mobiilis valik „kolme esimest”.
+
 ## 1.6.1 - 2026-10-05
 
 - Uus: Seaded → Paigutus: maksimaalne kõrgus arvutile ja mobiilile (% ekraanist või px). Vaikimisi arvutis 40 % ekraanist; pilti kärbitakse slaidi fookuspunkti ümber, tekst jääb paigas. Suurel ekraanil ei võta slaider enam 70 % ekraanist.

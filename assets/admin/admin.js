@@ -281,7 +281,7 @@
 			var body = res.html || '<p style="font:14px/1.5 system-ui,sans-serif;color:#555;padding:40px;text-align:center">' + esc( I.stageEmpty ) + '</p>';
 			f.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">' + ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
-				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6}' + ( res.custom_css || '' ) + '</style></head><body>' + body
+				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6}' + capStyle( preview.device ) + ( res.custom_css || '' ) + '</style></head><body>' + body
 				+ '<script src="' + esc( res.js ) + '"><\/script></body></html>';
 		} ).catch( function ( e ) { toast( e && e.message ? e.message : 'Preview error', 'err' ); } );
 	}
@@ -400,8 +400,8 @@
 		h += field( I.bgMode, segmented( 'bg_mode', s.bg_mode || 'image', [ [ 'image', I.bgImage ], [ 'collage', I.bgCollage ] ] ) );
 		if ( s.bg_mode === 'collage' ) {
 			var col = Array.isArray( s.collage ) ? s.collage : [];
-			h += '<div class="wonom-grid wonom-grid--4 wonom-collage-slots">';
-			for ( var ci = 0; ci < 4; ci++ ) {
+			h += '<div class="wonom-grid wonom-grid--5 wonom-collage-slots">';
+			for ( var ci = 0; ci < 5; ci++ ) {
 				var it = col[ ci ];
 				h += '<div class="wonom-imgbox wonom-cslot" data-slot="' + ci + '"><label>' + esc( sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
 				if ( it ) {
@@ -418,7 +418,7 @@
 			h += '<div class="wonom-grid wonom-grid--3">';
 			h += field( I.seam, '<select data-field="collage_seam">' + [ [ 'hard', I.seamHard ], [ 'fade', I.seamFade ], [ 'blur', I.seamBlur ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_seam === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
 			h += field( I.collageGap, numInput( s, 'collage_gap', 0, 60, 1 ) );
-			h += field( I.collageMobile, '<select data-field="collage_mobile">' + [ [ 'all', I.mAll ], [ 'first2', I.mFirst2 ], [ 'first1', I.mFirst1 ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_mobile === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
+			h += field( I.collageMobile, '<select data-field="collage_mobile">' + [ [ 'all', I.mAll ], [ 'first3', I.mFirst3 ], [ 'first2', I.mFirst2 ], [ 'first1', I.mFirst1 ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_mobile === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
 			h += '</div>';
 		} else {
 			h += '<div class="wonom-grid wonom-grid--2">';
@@ -623,6 +623,9 @@
 
 	// Live miniatures: fit the scaled slide vertically and keep image requests small.
 	function fitThumbs() {
+		var capEl = document.getElementById( 'wonom-thumb-cap' );
+		if ( ! capEl ) { capEl = document.createElement( 'style' ); capEl.id = 'wonom-thumb-cap'; document.head.appendChild( capEl ); }
+		capEl.textContent = capStyle( 'desktop' ).replace( '.wonom-slider{', '.wonom-thumb__scale .wonom-slider{' );
 		[].forEach.call( app.querySelectorAll( '.wonom-thumb--live' ), function ( box ) {
 			var sc = box.querySelector( '.wonom-thumb__scale' ), sl = sc && sc.querySelector( '.wonom-slider' );
 			if ( ! sl ) { return; }
@@ -665,6 +668,25 @@
 		if ( open ) { mountStage( findSlide( open.getAttribute( 'data-id' ) ) ); }
 	}
 
+	/* ---------- height cap for previews ----------
+	 * The front end caps the slider at e.g. 40vh of the visitor's window. Inside a preview iframe
+	 * "vh" would refer to the iframe itself (which is sized by the slider → feedback loop), so the
+	 * previews resolve the cap against a typical screen height per device instead. */
+	var REF_H = { desktop: 1080, tablet: 1024, mobile: 812 };
+	function capPx( device ) {
+		var S = state.settings || {};
+		var v = parseInt( S.max_height, 10 ) || 0, u = S.max_height_unit === 'px' ? 'px' : 'vh';
+		var vm = parseInt( S.max_height_mobile, 10 ) || 0, um = S.max_height_mobile_unit === 'px' ? 'px' : 'vh';
+		var refH = REF_H[ device ] || REF_H.desktop;
+		if ( device === 'mobile' && vm ) { return um === 'vh' ? Math.round( vm / 100 * refH ) : vm; }
+		if ( ! v ) { return 0; }
+		return u === 'vh' ? Math.round( v / 100 * refH ) : v;
+	}
+	function capStyle( device ) {
+		var d = capPx( device ), m = capPx( 'mobile' );
+		return '.wonom-slider{--ws-cap:' + ( d ? d + 'px' : 'none' ) + ' !important;--ws-cap-m:' + ( m ? m + 'px' : 'none' ) + ' !important}';
+	}
+
 	/* ---------- stage: live preview rendered by the server, text block draggable ---------- */
 
 	var stage = { device: 'desktop', iframe: null, slideId: null, timer: null, req: 0 };
@@ -696,7 +718,7 @@
 			var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">'
 				+ ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
-				+ '<style>html,body{margin:0;background:#eceff4;overflow:hidden}'
+				+ '<style>html,body{margin:0;background:#eceff4;overflow:hidden}' + capStyle( stage.device )
 				+ '.wonom-slide__badge,.wonom-slide__eyebrow,.wonom-slide__heading,.wonom-slide__text,.wonom-slide__actions{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}'
 				+ '.wonom-slide__inner{outline:1px dashed rgba(255,255,255,.75);outline-offset:8px;cursor:move;user-select:none;-webkit-user-select:none}'
 				+ '.wonom-slide__inner:hover,.wonom-slide__inner:focus{outline:2px solid #2563eb;outline-offset:8px}'
@@ -1369,7 +1391,7 @@
 			s.collage = Array.isArray( s.collage ) ? s.collage : [];
 			picked.forEach( function ( a, i ) {
 				var idx = slot + i;
-				if ( idx > 3 ) { return; }
+				if ( idx > 4 ) { return; }
 				var th = ( a.sizes && ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ) ) ? ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ).url : a.url;
 				var prev = s.collage[ idx ] || {};
 				s.collage[ idx ] = { id: a.id, url: a.url, width: a.width || 0, height: a.height || 0, focal_x: prev.focal_x || 50, focal_y: prev.focal_y || 50, thumb: th };

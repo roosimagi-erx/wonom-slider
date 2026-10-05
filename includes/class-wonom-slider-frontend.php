@@ -338,7 +338,7 @@ class Wonom_Slider_Frontend {
 						'alt'      => 0 === $ci ? ( $slide['alt'] ? $slide['alt'] : $slide['heading'] ) : '',
 						'loading'  => $eager ? 'eager' : 'lazy',
 						'decoding' => 'async',
-						'sizes'    => '(max-width: ' . (int) $bp . 'px) ' . ( 'first1' === $slide['collage_mobile'] ? '100vw' : ( 'first2' === $slide['collage_mobile'] ? '50vw' : $sizes ) ) . ', ' . $sizes,
+						'sizes'    => '(max-width: ' . (int) $bp . 'px) ' . ( 'first1' === $slide['collage_mobile'] ? '100vw' : ( 'first2' === $slide['collage_mobile'] ? '50vw' : ( 'first3' === $slide['collage_mobile'] ? '34vw' : $sizes ) ) ) . ', ' . $sizes,
 					);
 					if ( $is_first && 0 === $ci ) {
 						$attr['fetchpriority'] = 'high';
@@ -484,7 +484,7 @@ class Wonom_Slider_Frontend {
 			// Collage: N same-height images side by side → ratio = (N × w) / h.
 			$main    = Wonom_Slider_Data::slide_main_image( $first );
 			$n       = count( $first['collage'] );
-			$n_m     = 'all' === $first['collage_mobile'] ? $n : ( 'first2' === $first['collage_mobile'] ? min( 2, $n ) : 1 );
+			$n_m     = 'all' === $first['collage_mobile'] ? $n : ( 'first3' === $first['collage_mobile'] ? min( 3, $n ) : ( 'first2' === $first['collage_mobile'] ? min( 2, $n ) : 1 ) );
 			$ratio_d = self::ratio_value( $settings['ratio_desktop'], $main['width'] * $n, $main['height'], '1920 / 660' );
 			$ratio_m = self::ratio_value( $settings['ratio_mobile'], $main['width'] * $n_m, $main['height'], $ratio_d );
 		} else {
@@ -562,6 +562,7 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide.m-pos-grid .wonom-slide__inner{position:static;width:auto;max-width:var(--ws-content-width);transform:none}"
 			. "{$s} .wonom-slide.m-hide-text.m-pos-free .wonom-slide__content{display:none}"
 			. "{$s} .wonom-collage{--ws-seam:40px}"
+			. "{$s} .wonom-collage.m-first3 .wonom-collage__item:nth-child(n+4){display:none}"
 			. "{$s} .wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3){display:none}"
 			. "{$s} .wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2){display:none}"
 			. "{$s} .wonom-slide.has-frame{--ws-frame:calc(var(--ws-frame-d,0px) * .5)}"
