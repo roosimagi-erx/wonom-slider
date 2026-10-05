@@ -67,3 +67,7 @@ Esileht on veel Slider Revolutioniga, seega saab vahemälu käitumist testida oh
 - [ ] Inkognito kontroll ET/EN, arvuti/telefon
 - [ ] PageSpeed enne/pärast kirjas
 - [ ] SR jääb aktiivseks nädalaks, siis välja
+
+## Seis 05.10.2026
+
+Sammud 0–3 on tehtud: plugin 1.6.4 live'is, slaidid imporditud, vahemälu ja ajastus live'is testitud (FlyingPress ja Cloudflare tühjenevad salvestamisel ja ajastatud hetkedel), Elementoris vahetatud SR-vidin Wonom Slideri vastu ET ja EN esilehel. Slider Revolution on veel aktiivne (tagasivõtt: Elementor → History). Järgmised: PageSpeed enne/pärast, nädala pärast SR välja.
