@@ -71,3 +71,26 @@ Esileht on veel Slider Revolutioniga, seega saab vahemälu käitumist testida oh
 ## Seis 05.10.2026
 
 Sammud 0–3 on tehtud: plugin 1.6.4 live'is, slaidid imporditud, vahemälu ja ajastus live'is testitud (FlyingPress ja Cloudflare tühjenevad salvestamisel ja ajastatud hetkedel), Elementoris vahetatud SR-vidin Wonom Slideri vastu ET ja EN esilehel. Slider Revolution on veel aktiivne (tagasivõtt: Elementor → History). Järgmised: PageSpeed enne/pärast, nädala pärast SR välja.
+
+## PageSpeed enne/pärast (05.10.2026)
+
+Mõõdetud PageSpeed Insightsiga kahel peidetud esilehe koopial (sama sisu, ainult slaider erinev; kumbki FlyingPressi vahemälus ei olnud) ja päris esilehel. Lighthouse'i üksikmõõtmised kõiguvad palju, sellepärast on mobiilis 3 mõõtmise mediaan.
+
+| Mobiil (mediaan 3 mõõtmisest) | Slider Revolution | Wonom Slider 1.6.6 |
+|---|---|---|
+| Jõudlusskoor | 44 | 40 |
+| FCP | 2,9 s | 2,9 s |
+| LCP | 12,6 s | 7,6 s |
+| TBT | 420 ms | 640 ms |
+| CLS | 0,165 | 0,195 |
+| Speed Index | 7,5 s | 5,8 s |
+
+| Töölaud (1 mõõtmine) | Slider Revolution | Wonom Slider 1.6.6 |
+|---|---|---|
+| Jõudlusskoor | 41 | 77 |
+| LCP | 5,9 s | 0,9 s |
+| TBT | 840 ms | 460 ms |
+| CLS | 0,048 | 0,005 |
+| Speed Index | 3,0 s | 1,5 s |
+
+Leid: 1.6.4 laadis kõigi slaidide täispildid korraga (7,7 MB), sest läbipaistvad slaidid on vaate sees. 1.6.5/1.6.6 lükkab teiste slaidide pildid edasi (`data-wonom-src`). Mobiilis on LCP element küpsisebänner, mitte slaider. Suurim järgmine võit: slaidipildid on 2–4 MB PNG-d (nt Kodulehe-slaider_2048x710_ENG.png 2,3 MB), JPG/WebP-na oleks neist igaüks ~10× väiksem.
