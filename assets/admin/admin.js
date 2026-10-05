@@ -1429,6 +1429,7 @@
 			if ( f.none ) {
 				cs.campaign_none = true; cs.campaign_title = ''; cs.campaign_status = 'none'; cs.campaign_edit_url = '';
 				cs.start = ''; cs.end = '';
+				applyCampaignContent( cs, { base: { heading: '', text: '', eyebrow: '', badge: '', button_url: '' }, i18n: {} } );
 			} else {
 				cs.campaign_none = false;
 				applyCampaignContent( cs, f );

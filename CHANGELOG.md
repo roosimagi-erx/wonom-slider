@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.3 - 2026-10-05
+
+- Parandus: kui automaatsel kampaaniaslaidil pole ühtki kampaaniat võtta, tühjendatakse ka redaktoris slaidi varasemad tekstid, et vana sisu ei jääks kuhugi alles.
+
 ## 1.7.2 - 2026-10-05
 
 - Muudatus: kampaaniaga seotud slaidil (valitud kampaania või automaatne) tuleb kogu sisu ainult kampaaniast. Slaidi enda varasemad tekstid (nt ingliskeelne väike rida või nupu tekst) ei jää enam alles: väljad, mida kampaanial pole, on tühjad igas keeles. Nuppu kampaaniaslaidil ei ole; kui kampaanial on link, on kogu slaid klõpsatav.

@@ -233,12 +233,23 @@ class Wonom_Slider_Campaigns {
 		if ( ! empty( $slide['source'] ) && 'auto' === $slide['source'] ) {
 			$cid = self::current();
 			if ( ! $cid ) {
-				// Nothing live or upcoming: the slide waits, hidden.
+				// Nothing live or upcoming: the slide waits, hidden, with no leftover content.
 				$slide['enabled']         = false;
 				$slide['campaign_none']   = true;
 				$slide['campaign_status'] = 'none';
 				$slide['start']           = '';
 				$slide['end']             = '';
+				foreach ( array( 'heading', 'text', 'eyebrow', 'badge', 'button_url', 'button_text', 'button2_text', 'button2_url' ) as $k ) {
+					$slide[ $k ] = '';
+				}
+				$slide['link_whole_slide'] = false;
+				if ( is_array( $slide['i18n'] ) ) {
+					foreach ( array_keys( $slide['i18n'] ) as $lang ) {
+						foreach ( array( 'heading', 'text', 'eyebrow', 'badge', 'button_url', 'button_text', 'button2_text', 'button2_url' ) as $k ) {
+							unset( $slide['i18n'][ $lang ][ $k ] );
+						}
+					}
+				}
 				return $slide;
 			}
 			$slide['campaign_none']     = false;

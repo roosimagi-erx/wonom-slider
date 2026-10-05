@@ -276,6 +276,7 @@ class Wonom_Slider_Rest {
 			return new WP_Error( 'wonom_invalid', __( 'Invalid payload.', 'wonom-slider' ), array( 'status' => 400 ) );
 		}
 		$slide    = wp_parse_args( Wonom_Slider_Data::sanitize_slide( $slide ), Wonom_Slider_Data::default_slide() );
+		$slide    = Wonom_Slider_Campaigns::apply( $slide ); // linked/automatic slides: content from the campaign, exactly as on the front end.
 		$settings = is_array( $settings ) ? Wonom_Slider_Data::sanitize_settings( $settings ) : Wonom_Slider_Data::get_settings();
 
 		$html = '';
