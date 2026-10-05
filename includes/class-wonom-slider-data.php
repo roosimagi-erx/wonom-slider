@@ -641,6 +641,9 @@ class Wonom_Slider_Data {
 					'focal_x' => isset( $item['focal_x'] ) ? max( 0, min( 100, absint( $item['focal_x'] ) ) ) : 50,
 					'focal_y' => isset( $item['focal_y'] ) ? max( 0, min( 100, absint( $item['focal_y'] ) ) ) : 50,
 				);
+				// Separate focal point for the mobile crop; defaults to the desktop one.
+				$slot['mfocal_x'] = isset( $item['mfocal_x'] ) && '' !== $item['mfocal_x'] ? max( 0, min( 100, absint( $item['mfocal_x'] ) ) ) : $slot['focal_x'];
+				$slot['mfocal_y'] = isset( $item['mfocal_y'] ) && '' !== $item['mfocal_y'] ? max( 0, min( 100, absint( $item['mfocal_y'] ) ) ) : $slot['focal_y'];
 				if ( $id ) {
 					$src = wp_get_attachment_image_src( $id, 'full' );
 					if ( $src ) {

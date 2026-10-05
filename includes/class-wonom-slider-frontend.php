@@ -344,7 +344,7 @@ class Wonom_Slider_Frontend {
 						$attr['fetchpriority'] = 'high';
 					}
 					?>
-					<div class="wonom-collage__item" style="--ws-cf:<?php echo (int) $c['focal_x']; ?>% <?php echo (int) $c['focal_y']; ?>%">
+					<div class="wonom-collage__item" style="--ws-cf:<?php echo (int) $c['focal_x']; ?>% <?php echo (int) $c['focal_y']; ?>%;--ws-cfm:<?php echo (int) ( isset( $c['mfocal_x'] ) ? $c['mfocal_x'] : $c['focal_x'] ); ?>% <?php echo (int) ( isset( $c['mfocal_y'] ) ? $c['mfocal_y'] : $c['focal_y'] ); ?>%">
 						<?php
 						if ( ! empty( $c['id'] ) ) {
 							echo wp_get_attachment_image( $c['id'], 'large', false, $attr );
@@ -562,6 +562,7 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide.m-pos-grid .wonom-slide__inner{position:static;width:auto;max-width:var(--ws-content-width);transform:none}"
 			. "{$s} .wonom-slide.m-hide-text.m-pos-free .wonom-slide__content{display:none}"
 			. "{$s} .wonom-collage{--ws-seam:40px}"
+			. "{$s} .wonom-collage__item img{object-position:var(--ws-cfm,var(--ws-cf,50% 50%))}"
 			. "{$s} .wonom-collage.m-first3 .wonom-collage__item:nth-child(n+4){display:none}"
 			. "{$s} .wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3){display:none}"
 			. "{$s} .wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2){display:none}"
@@ -582,6 +583,7 @@ class Wonom_Slider_Frontend {
 		$css .= "@media (min-width:{$bp}px) and (max-width:767px){"
 			. "{$s} .wonom-slider__track{aspect-ratio:var(--ws-ratio)}"
 			. "{$s} .wonom-slide__img,{$s} .wonom-slide__media img{object-position:var(--ws-focal)}"
+			. "{$s} .wonom-collage__item img{object-position:var(--ws-cf,50% 50%)}"
 			. "{$s} .wonom-slide__content{padding:clamp(24px,5vw,72px)}"
 			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size);letter-spacing:var(--ws-h-spacing,.14em)}"
 			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size)}"

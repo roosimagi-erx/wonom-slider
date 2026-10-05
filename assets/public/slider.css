@@ -569,6 +569,7 @@
 	.wonom-slide.m-hide-text .wonom-slide__content { display: none !important; }
 
 	.wonom-collage { --ws-seam: 40px; }
+	.wonom-collage__item img { object-position: var(--ws-cfm, var(--ws-cf, 50% 50%)); }
 	.wonom-collage.m-first3 .wonom-collage__item:nth-child(n+4) { display: none; }
 	.wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3) { display: none; }
 	.wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2) { display: none; }

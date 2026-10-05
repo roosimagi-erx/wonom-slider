@@ -359,15 +359,24 @@
 		} );
 		return h + '</div>';
 	}
+	// Which focal point a click on the desktop image sets: desktop (blue) or, when the stage is in
+	// mobile mode and there is no separate mobile image, the mobile one (purple).
+	function focalMode( s, base ) {
+		if ( base === 'mobile_image' ) { return 'mobile'; }
+		return ( stage.device === 'mobile' && ! s.mobile_image_url ) ? 'mobile' : 'desktop';
+	}
+	function focalDot( s, base ) {
+		var m = focalMode( s, base ) === 'mobile';
+		var fx = m ? s.mobile_focal_x : s.focal_x, fy = m ? s.mobile_focal_y : s.focal_y;
+		return '<span class="wonom-focal' + ( m ? ' is-mobile' : '' ) + '" style="left:' + fx + '%;top:' + fy + '%"></span>';
+	}
 	function imageBox( s, base, label, hint ) {
 		var url = s[ base + '_url' ];
 		var thumb = base === 'image' ? ( s.thumb || url ) : ( s.mobile_thumb || url );
-		var fx = base === 'image' ? s.focal_x : s.mobile_focal_x;
-		var fy = base === 'image' ? s.focal_y : s.mobile_focal_y;
 		var h = '<div class="wonom-imgbox" data-base="' + base + '">';
 		h += '<label>' + esc( label ) + '</label>';
 		if ( url ) {
-			h += '<div class="wonom-imgwrap" data-action="focal" title="' + esc( I.focalHint ) + '"><img src="' + esc( thumb ) + '" alt=""><span class="wonom-focal" style="left:' + fx + '%;top:' + fy + '%"></span></div>';
+			h += '<div class="wonom-imgwrap" data-action="focal" title="' + esc( I.focalHint ) + '"><img src="' + esc( thumb ) + '" alt="">' + focalDot( s, base ) + '</div>';
 			h += '<div class="wonom-imgmeta">' + ( s[ base + '_width' ] ? esc( sprintf( I.imageSize, s[ base + '_width' ], s[ base + '_height' ] ) ) : '' ) + '</div>';
 			h += '<div class="wonom-imgactions"><button type="button" class="button" data-action="pick-image">' + esc( I.replace ) + '</button> <button type="button" class="button-link is-danger" data-action="remove-image">' + esc( I.remove ) + '</button></div>';
 		} else {
@@ -398,6 +407,11 @@
 		/* Images */
 		h += '<section class="wonom-sec"><h3><span class="dashicons dashicons-format-image"></span> ' + esc( I.secImages ) + '</h3>';
 		h += field( I.bgMode, segmented( 'bg_mode', s.bg_mode || 'image', [ [ 'image', I.bgImage ], [ 'collage', I.bgCollage ] ] ) );
+		h += '<div class="wonom-focalbar"><span class="wonom-focalbar__label">' + esc( I.focalFor ) + '</span><div class="wonom-switch" role="group">';
+		[ [ 'desktop', I.desktop, 'desktop' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
+			h += '<button type="button" data-action="stage-device" data-device="' + d[ 0 ] + '" aria-pressed="' + ( stage.device === d[ 0 ] ) + '"><span class="dashicons dashicons-' + d[ 2 ] + '"></span> ' + esc( d[ 1 ] ) + '</button>';
+		} );
+		h += '</div><span class="wonom-focal-legend"><i class="wonom-focal-sample"></i> ' + esc( I.desktop ) + ' <i class="wonom-focal-sample is-mobile"></i> ' + esc( I.mobile ) + '</span></div>';
 		if ( s.bg_mode === 'collage' ) {
 			var col = Array.isArray( s.collage ) ? s.collage : [];
 			h += '<div class="wonom-grid wonom-grid--5 wonom-collage-slots">';
@@ -405,7 +419,9 @@
 				var it = col[ ci ];
 				h += '<div class="wonom-imgbox wonom-cslot" data-slot="' + ci + '"><label>' + esc( sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
 				if ( it ) {
-					h += '<div class="wonom-imgwrap is-portrait" data-action="focal-collage" title="' + esc( I.focalHint ) + '"><img src="' + esc( it.thumb || it.url ) + '" alt=""><span class="wonom-focal" style="left:' + ( it.focal_x || 50 ) + '%;top:' + ( it.focal_y || 50 ) + '%"></span></div>';
+					var cm = stage.device === 'mobile';
+					var cfx = cm ? ( it.mfocal_x != null ? it.mfocal_x : it.focal_x ) : it.focal_x, cfy = cm ? ( it.mfocal_y != null ? it.mfocal_y : it.focal_y ) : it.focal_y;
+					h += '<div class="wonom-imgwrap is-portrait" data-action="focal-collage" title="' + esc( I.focalHint ) + '"><img src="' + esc( it.thumb || it.url ) + '" alt=""><span class="wonom-focal' + ( cm ? ' is-mobile' : '' ) + '" style="left:' + ( cfx == null ? 50 : cfx ) + '%;top:' + ( cfy == null ? 50 : cfy ) + '%"></span></div>';
 					h += '<div class="wonom-imgmeta">' + ( it.width ? esc( sprintf( I.imageSize, it.width, it.height ) ) : '' ) + '</div>';
 					h += '<div class="wonom-imgactions"><button type="button" class="button" data-action="pick-collage">' + esc( I.replace ) + '</button> <button type="button" class="button-link is-danger" data-action="remove-collage">' + esc( I.remove ) + '</button></div>';
 				} else {
@@ -1140,7 +1156,8 @@
 				var slotIdx = parseInt( cw.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 );
 				var cfx = Math.round( Math.min( 100, Math.max( 0, ( e.clientX - cr.left ) / cr.width * 100 ) ) );
 				var cfy = Math.round( Math.min( 100, Math.max( 0, ( e.clientY - cr.top ) / cr.height * 100 ) ) );
-				s.collage[ slotIdx ].focal_x = cfx; s.collage[ slotIdx ].focal_y = cfy;
+				if ( stage.device === 'mobile' ) { s.collage[ slotIdx ].mfocal_x = cfx; s.collage[ slotIdx ].mfocal_y = cfy; }
+				else { s.collage[ slotIdx ].focal_x = cfx; s.collage[ slotIdx ].focal_y = cfy; }
 				var cdot = cw.querySelector( '.wonom-focal' ); cdot.style.left = cfx + '%'; cdot.style.top = cfy + '%';
 				markDirty( 'slides' ); stageCollageFocal( s, slotIdx ); break;
 			case 'remove-image':
@@ -1153,9 +1170,9 @@
 				var fx = Math.round( Math.min( 100, Math.max( 0, ( e.clientX - r.left ) / r.width * 100 ) ) );
 				var fy = Math.round( Math.min( 100, Math.max( 0, ( e.clientY - r.top ) / r.height * 100 ) ) );
 				var b2 = wrap.closest( '.wonom-imgbox' ).getAttribute( 'data-base' );
-				if ( b2 === 'image' ) { s.focal_x = fx; s.focal_y = fy; } else { s.mobile_focal_x = fx; s.mobile_focal_y = fy; }
+				if ( focalMode( s, b2 ) === 'mobile' ) { s.mobile_focal_x = fx; s.mobile_focal_y = fy; } else { s.focal_x = fx; s.focal_y = fy; }
 				var dot = wrap.querySelector( '.wonom-focal' ); dot.style.left = fx + '%'; dot.style.top = fy + '%';
-				markDirty( 'slides' ); break;
+				markDirty( 'slides' ); stageFocal( s ); break;
 			case 'lang': langTab[ s.id ] = btn.getAttribute( 'data-lang' ); render(); break;
 			case 'translate': translateSlide( s, btn.getAttribute( 'data-lang' ), btn ); break;
 			case 'cal': openCalendarPopup( s, btn.getAttribute( 'data-date' ), btn ); break;
@@ -1411,8 +1428,21 @@
 	function stageCollageFocal( s, idx ) {
 		if ( ! stage.iframe || stage.slideId !== s.id ) { return; }
 		try {
-			var items = stage.iframe.contentDocument.querySelectorAll( '.wonom-collage__item' );
-			if ( items[ idx ] ) { items[ idx ].style.setProperty( '--ws-cf', s.collage[ idx ].focal_x + '% ' + s.collage[ idx ].focal_y + '%' ); }
+			var items = stage.iframe.contentDocument.querySelectorAll( '.wonom-collage__item' ), c = s.collage[ idx ];
+			if ( items[ idx ] ) {
+				items[ idx ].style.setProperty( '--ws-cf', c.focal_x + '% ' + c.focal_y + '%' );
+				items[ idx ].style.setProperty( '--ws-cfm', ( c.mfocal_x != null ? c.mfocal_x : c.focal_x ) + '% ' + ( c.mfocal_y != null ? c.mfocal_y : c.focal_y ) + '%' );
+			}
+		} catch ( e ) { /* ignore */ }
+	}
+	function stageFocal( s ) {
+		if ( ! stage.iframe || stage.slideId !== s.id ) { return; }
+		try {
+			var el = stage.iframe.contentDocument.querySelector( '.wonom-slide' );
+			if ( el ) {
+				el.style.setProperty( '--ws-focal', s.focal_x + '% ' + s.focal_y + '%' );
+				el.style.setProperty( '--ws-focal-m', s.mobile_focal_x + '% ' + s.mobile_focal_y + '%' );
+			}
 		} catch ( e ) { /* ignore */ }
 	}
 

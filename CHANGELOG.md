@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.3 - 2026-10-05
+
+- Uus: fookuspunkt eraldi arvutile ja mobiilile – nii ühe pildiga slaidil kui igal kollaaži pildil. Piltide plokis on lüliti „Fookuspunkt vaatele: Arvuti / Mobiil” (sama mis laval); sinine punkt = arvuti, lilla = mobiil. Lava uueneb kohe.
+
 ## 1.6.2 - 2026-10-05
 
 - Parandus: eelvaade, lava ja pisipildid arvutavad kõrguse piirangu („% ekraanist”) tüüpilise ekraani järgi (arvuti 1080, tahvel 1024, mobiil 812 px), mitte iframe’i enda kõrgusest – 1.6.1-s kukkusid eelvaated seetõttu kokku.
