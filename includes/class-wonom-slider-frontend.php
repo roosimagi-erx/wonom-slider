@@ -343,25 +343,25 @@ class Wonom_Slider_Frontend {
 					if ( $is_first && 0 === $ci ) {
 						$attr['fetchpriority'] = 'high';
 					}
+					if ( ! empty( $c['id'] ) ) {
+						$img_html = wp_get_attachment_image( $c['id'], 'large', false, $attr );
+					} else {
+						$img_html = sprintf(
+							'<img src="%s" alt="%s" class="wonom-collage__img" loading="%s" decoding="async">',
+							esc_url( $c['url'] ),
+							esc_attr( $attr['alt'] ),
+							esc_attr( $attr['loading'] )
+						);
+					}
 					?>
 					<div class="wonom-collage__item" style="--ws-cf:<?php echo (int) $c['focal_x']; ?>% <?php echo (int) $c['focal_y']; ?>%;--ws-cfm:<?php echo (int) ( isset( $c['mfocal_x'] ) ? $c['mfocal_x'] : $c['focal_x'] ); ?>% <?php echo (int) ( isset( $c['mfocal_y'] ) ? $c['mfocal_y'] : $c['focal_y'] ); ?>%">
-						<?php
-						if ( ! empty( $c['id'] ) ) {
-							echo wp_get_attachment_image( $c['id'], 'large', false, $attr );
-						} else {
-							printf(
-								'<img src="%s" alt="%s" class="wonom-collage__img" loading="%s" decoding="async">',
-								esc_url( $c['url'] ),
-								esc_attr( $attr['alt'] ),
-								esc_attr( $attr['loading'] )
-							);
-						}
-						?>
+						<?php echo $is_first ? $img_html : self::lazy_markup( $img_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 				<?php endforeach; ?>
 			</div>
 			<div class="wonom-slide__overlay" aria-hidden="true"></div>
 			<?php elseif ( ! empty( $slide['image_url'] ) ) : ?>
+			<?php ob_start(); ?>
 			<picture class="wonom-slide__media">
 				<?php if ( ! empty( $slide['mobile_image_url'] ) ) : ?>
 					<source media="(max-width: <?php echo (int) $bp; ?>px)" srcset="<?php echo esc_url( $slide['mobile_image_url'] ); ?>"<?php echo $slide['mobile_image_width'] ? ' width="' . (int) $slide['mobile_image_width'] . '" height="' . (int) $slide['mobile_image_height'] . '"' : ''; ?>>
@@ -390,6 +390,13 @@ class Wonom_Slider_Frontend {
 				}
 				?>
 			</picture>
+			<?php
+			$picture = ob_get_clean();
+			// Only the first slide loads its image right away. The others sit in the viewport
+			// (stacked, transparent), so loading="lazy" would not stop the browser: their
+			// sources are held in data-* attributes and resolved by the script just in time.
+			echo $is_first ? $picture : self::lazy_markup( $picture ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			?>
 			<div class="wonom-slide__overlay" aria-hidden="true"></div>
 			<?php endif; ?>
 			<?php if ( $has_content ) : ?>
@@ -594,6 +601,24 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide.pos-grid .wonom-slide__inner{position:static;width:auto;max-width:var(--ws-content-width);transform:none}"
 			. '}';
 		return $css;
+	}
+
+	/**
+	 * Defer the images of a non-active slide: src/srcset become data-src/data-srcset with a
+	 * transparent placeholder, and <source srcset> becomes <source data-srcset>. slider.js
+	 * (hydrate) restores them for the active slide and the next one.
+	 *
+	 * @param string $html Image or <picture> markup.
+	 * @return string
+	 */
+	public static function lazy_markup( $html ) {
+		$placeholder = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+		$html        = preg_replace( '/<source\b([^>]*?)\ssrcset=/i', '<source$1 data-srcset=', $html );
+		$html        = preg_replace( '/<img\b([^>]*?)\ssrcset=/i', '<img$1 data-srcset=', $html );
+		$html        = preg_replace( '/<img\b([^>]*?)\ssrc="([^"]*)"/i', '<img$1 src="' . $placeholder . '" data-src="$2"', $html );
+		$html        = preg_replace( '/<img\b([^>]*?)\sfetchpriority="[^"]*"/i', '<img$1', $html );
+		$html        = preg_replace( '/<img\b/i', '<img data-wonom-lazy="1"', $html );
+		return $html;
 	}
 
 	private static function ratio_value( $setting, $w, $h, $fallback ) {

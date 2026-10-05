@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.5 - 2026-10-05
+
+- Jõudlus: ainult esimese slaidi pildid laaditakse kohe. Teiste slaidide pildid (sh kollaaži pildid ja mobiilipilt) on HTML-is edasi lükatud (data-src) ja skript laadib need just enne näitamist: teine slaid brauseri jõudehetkel, ülejäänud vahetuse eel. Varem laadis leht kõigi slaidide täispildid korraga (esilehel 7,7 MB), sest läbipaistvad slaidid on vaate sees ja loading=lazy neid ei peatanud.
+
 ## 1.6.4 - 2026-10-05
 
 - Parandus: slaidide nimekirja pisipilt on nüüd omaette dokument (sama meetod mis suurel eelvaatel ja laval): slaideri tegelik HTML ja stiilileht arvuti laiuses, vähendatult. Varem joonistus pisipilt lehe enda sees ja brauser võis sinna näidata vale sisu (nt lehe ülaosa teateid).

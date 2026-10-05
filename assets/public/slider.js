@@ -75,6 +75,11 @@
 			return;
 		}
 
+		// Slides 2…n ship their images deferred (data-src). Fetch the second slide once the
+		// browser is idle so the first transition is never blank; the rest follow one by one.
+		var second = this.slides[ 1 ];
+		( window.requestIdleCallback || function ( f ) { setTimeout( f, 1500 ); } )( function () { hydrate( second ); } );
+
 		this.bind();
 		this.go( 0, 0, true );
 		this.play();
