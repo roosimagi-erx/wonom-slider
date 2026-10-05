@@ -371,3 +371,9 @@ body.wonom-app .wonom-settings textarea.wonom-code { width: 100%; font-family: u
 .wonom-cslot__handle .dashicons { font-size: 16px; width: 16px; height: 16px; color: var(--w-muted); }
 .wonom-cslot.ui-sortable-helper { box-shadow: 0 10px 28px rgba(0,0,0,0.18); background: #fff; }
 .wonom-cslot.wonom-placeholder { border: 2px dashed var(--w-primary); background: rgba(37,99,235,0.05); min-height: 120px; }
+
+/* typography colour with "back to default" */
+.wonom-typocolor { display: inline-flex; align-items: center; gap: 6px; }
+.wonom-typocolor input[type=color] { width: 44px; height: 30px; padding: 2px; border: 1px solid var(--w-border); border-radius: 6px; background: #fff; }
+.wonom-typocolor input[data-unset] { opacity: 0.55; }
+.wonom-typocolor .button-link { color: var(--w-muted); text-decoration: none; font-size: 12px; }

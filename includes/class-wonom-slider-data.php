@@ -221,7 +221,7 @@ class Wonom_Slider_Data {
 		}
 		foreach ( (array) $slides as $s ) {
 			if ( ! empty( $s['typo'] ) && is_array( $s['typo'] ) ) {
-				foreach ( array( 'font_heading' => '400,500,600,700', 'font_text' => '400,500,700' ) as $key => $weights ) {
+				foreach ( array( 'font_heading' => '400,500,600,700', 'font_text' => '400,500,700', 'badge_font' => '400,600,700' ) as $key => $weights ) {
 					if ( ! empty( $s['typo'][ $key ] ) ) {
 						$add( $s['typo'][ $key ], $weights );
 					}
@@ -340,6 +340,17 @@ class Wonom_Slider_Data {
 			'button_radius'       => array( 'int', 0, 100 ),
 			'eyebrow_size'        => array( 'int', 8, 40 ),
 			'eyebrow_size_mobile' => array( 'int', 8, 30 ),
+			// Badge (coupon pill): styled on its own, defaults follow the button colours.
+			'badge_font'          => array( 'font' ),
+			'badge_size'          => array( 'int', 8, 60 ),
+			'badge_size_mobile'   => array( 'int', 8, 40 ),
+			'badge_weight'        => array( 'int', 300, 800 ),
+			'badge_uppercase'     => array( 'bool' ),
+			'badge_spacing'       => array( 'int', -10, 60 ),
+			'badge_bg'            => array( 'color' ),
+			'badge_color'         => array( 'color' ),
+			'badge_pad'           => array( 'int', 0, 40 ),  // vertical padding; horizontal = 3×
+			'badge_radius'        => array( 'int', 0, 999 ),
 		);
 	}
 
@@ -365,6 +376,11 @@ class Wonom_Slider_Data {
 				}
 			} elseif ( 'bool' === $def[0] ) {
 				$out[ $k ] = self::to_bool( $v );
+			} elseif ( 'color' === $def[0] ) {
+				$c = sanitize_hex_color( $v );
+				if ( $c ) {
+					$out[ $k ] = $c;
+				}
 			} elseif ( is_numeric( $v ) ) {
 				$out[ $k ] = max( $def[1], min( $def[2], (int) $v ) );
 			}

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1 - 2026-10-05
+
+- Uus: silt (sooduskoodi pill) on slaidi kaupa eraldi seadistatav: font, suurus arvutis ja mobiilis, paksus, suurtähed, tähevahe, tausta- ja tekstivärv, polsterdus ja nurgad. Tühi = senine vaikimisi (nupu värvid). Muudatus on laval kohe näha; värvi saab ✕-ga vaikimisi tagasi panna.
+
 ## 1.7.0 - 2026-10-05
 
 - Uus: sisuallikas „Praegu eetris olev kampaania (automaatne)”. Slaid võtab alati Kampaaniaribal parasjagu eetris oleva kampaania (tekstid, sooduskood, link, ajakava), kampaaniat ei pea valima. Kui ühtki eetris pole, võtab slaid järgmise ajastatud kampaania ja on kuni selle alguseni peidetud (olek „Ootab kampaaniat”); kui ka tulemas pole ühtki, on slaid peidetud. Kampaania muutmine, kustutamine või lisamine Kampaaniaribal tühjendab vahemälu ja planeerib ajastuse ümber.

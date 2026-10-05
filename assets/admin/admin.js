@@ -519,6 +519,11 @@
 			options.forEach( function ( o ) { h2 += '<option value="' + esc( o[ 0 ] ) + '"' + ( v === String( o[ 0 ] ) ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } );
 			return field( label, h2 + '</select>' );
 		}
+		function typoColor( key, label, fallback ) {
+			var v = T[ key ] == null ? '' : String( T[ key ] );
+			return field( label, '<span class="wonom-typocolor"><input type="color" data-typo="' + key + '" value="' + esc( v || fallback || '#000000' ) + '"' + ( v ? '' : ' data-unset="1"' ) + '>'
+				+ '<button type="button" class="button-link" data-action="typo-clear" data-key="' + key + '" title="' + esc( I.asSettings ) + '"' + ( v ? '' : ' hidden' ) + '>✕</button></span>' );
+		}
 		function pair( left, right ) {
 			return '<div class="wonom-pair"><div class="wonom-pair__main">' + left + '</div><div class="wonom-pair__look">' + right + '</div></div>';
 		}
@@ -530,7 +535,18 @@
 
 		h += pair(
 			field( I.badge, input( s, 'badge', { lang: L, attrs: lock } ) ),
-			lookHint( I.badgeTypoHint )
+			look(
+				typoFont( 'badge_font', I.tFont ),
+				typoNum( 'badge_size', I.tSize, 8, 60, 13 ),
+				typoNum( 'badge_size_mobile', I.tSizeMobile, 8, 40, 12 ),
+				typoSelect( 'badge_weight', I.tWeight, [ [ 300, '300' ], [ 400, '400' ], [ 500, '500' ], [ 600, '600' ], [ 700, '700' ], [ 800, '800' ] ] ),
+				typoSelect( 'badge_uppercase', I.tUpper, [ [ 1, I.yes ], [ 0, I.no ] ] ),
+				typoNum( 'badge_spacing', I.tSpacing, -10, 60, 6 ),
+				typoColor( 'badge_bg', I.tBg, s.button_bg ),
+				typoColor( 'badge_color', I.tColor, s.button_color ),
+				typoNum( 'badge_pad', I.tPad, 0, 40, 4 ),
+				typoNum( 'badge_radius', I.tRadius, 0, 999, 999 )
+			) + lookHint( I.badgeTypoHint )
 		);
 		h += pair(
 			field( I.eyebrow, input( s, 'eyebrow', { lang: L, attrs: lock } ) ),
@@ -927,7 +943,8 @@
 	/**
 	 * Per-slide typography → CSS custom property on the stage's slide element.
 	 */
-	var TYPO_VARS = { font_heading: '--ws-font-h', font_text: '--ws-font-t', heading_size: '--ws-h-size', heading_size_mobile: '--ws-h-size-mobile', text_size: '--ws-t-size', text_size_mobile: '--ws-t-size-mobile', heading_weight: '--ws-h-weight', heading_uppercase: '--ws-h-transform', heading_spacing: '--ws-h-spacing', gap: '--ws-gap', gap_button: '--ws-gap-btn', button_radius: '--ws-btn-radius', eyebrow_size: '--ws-e-size', eyebrow_size_mobile: '--ws-e-size-mobile' };
+	var TYPO_VARS = { font_heading: '--ws-font-h', font_text: '--ws-font-t', heading_size: '--ws-h-size', heading_size_mobile: '--ws-h-size-mobile', text_size: '--ws-t-size', text_size_mobile: '--ws-t-size-mobile', heading_weight: '--ws-h-weight', heading_uppercase: '--ws-h-transform', heading_spacing: '--ws-h-spacing', gap: '--ws-gap', gap_button: '--ws-gap-btn', button_radius: '--ws-btn-radius', eyebrow_size: '--ws-e-size', eyebrow_size_mobile: '--ws-e-size-mobile',
+		badge_font: '--ws-font-b', badge_size: '--ws-b-size', badge_size_mobile: '--ws-b-size-mobile', badge_weight: '--ws-b-weight', badge_uppercase: '--ws-b-transform', badge_spacing: '--ws-b-spacing', badge_bg: '--ws-b-bg', badge_color: '--ws-b-color', badge_pad: '--ws-b-pad', badge_radius: '--ws-b-radius' };
 	var SERIF = [ 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display' ];
 	function fontCss( v ) {
 		if ( ! v || v === 'inherit' ) { return 'inherit'; }
@@ -941,12 +958,13 @@
 		if ( ! el || ! TYPO_VARS[ key ] ) { return; }
 		var v = s.typo ? s.typo[ key ] : undefined;
 		if ( v == null || v === '' ) { el.style.removeProperty( TYPO_VARS[ key ] ); }
-		else if ( /^font_/.test( key ) ) { el.style.setProperty( TYPO_VARS[ key ], fontCss( v ) ); }
-		else if ( key === 'heading_uppercase' ) { el.style.setProperty( TYPO_VARS[ key ], String( v ) === '1' || v === true ? 'uppercase' : 'none' ); }
-		else if ( key === 'heading_spacing' ) { el.style.setProperty( TYPO_VARS[ key ], ( parseInt( v, 10 ) / 100 ) + 'em' ); }
-		else if ( key === 'heading_weight' ) { el.style.setProperty( TYPO_VARS[ key ], parseInt( v, 10 ) ); }
+		else if ( /^font_|_font$/.test( key ) ) { el.style.setProperty( TYPO_VARS[ key ], fontCss( v ) ); }
+		else if ( /_uppercase$/.test( key ) ) { el.style.setProperty( TYPO_VARS[ key ], String( v ) === '1' || v === true ? 'uppercase' : 'none' ); }
+		else if ( /_spacing$/.test( key ) ) { el.style.setProperty( TYPO_VARS[ key ], ( parseInt( v, 10 ) / 100 ) + 'em' ); }
+		else if ( /_weight$/.test( key ) ) { el.style.setProperty( TYPO_VARS[ key ], parseInt( v, 10 ) ); }
+		else if ( /_bg$|_color$/.test( key ) ) { el.style.setProperty( TYPO_VARS[ key ], String( v ) ); }
 		else { el.style.setProperty( TYPO_VARS[ key ], parseInt( v, 10 ) + 'px' ); }
-		if ( /^font_/.test( key ) ) { scheduleStage( s, 900 ); } // server adds the web-font stylesheet
+		if ( /^font_|_font$/.test( key ) ) { scheduleStage( s, 900 ); } // server adds the web-font stylesheet
 		fitStage( stage.iframe );
 	}
 
@@ -1205,6 +1223,9 @@
 			case 'delete':
 				if ( window.confirm( I.confirmDelete ) ) { state.slides.splice( state.slides.indexOf( s ), 1 ); if ( openId === s.id ) { openId = null; } markDirty( 'slides' ); render(); }
 				break;
+			case 'typo-clear':
+				if ( s && s.typo ) { delete s.typo[ btn.getAttribute( 'data-key' ) ]; markDirty( 'slides' ); stageTypo( s, btn.getAttribute( 'data-key' ) ); render(); }
+				break;
 			case 'pick-image': pickImage( s, btn.closest( '.wonom-imgbox' ).getAttribute( 'data-base' ) ); break;
 			case 'pick-collage': pickCollage( s, parseInt( btn.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 ) ); break;
 			case 'remove-collage':
@@ -1309,6 +1330,7 @@
 			if ( el.tagName === 'SELECT' ) { return; } // handled on change
 			var tk = el.getAttribute( 'data-typo' );
 			if ( el.value === '' ) { delete ts.typo[ tk ]; } else { ts.typo[ tk ] = el.value; }
+			if ( el.type === 'color' ) { el.removeAttribute( 'data-unset' ); var cb = el.parentNode.querySelector( '[data-action="typo-clear"]' ); if ( cb ) { cb.hidden = false; } }
 			markDirty( 'slides' ); stageTypo( ts, tk );
 			return;
 		}
