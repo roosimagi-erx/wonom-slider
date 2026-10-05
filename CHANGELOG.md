@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1 - 2026-10-05
+
+- Uus: Seaded → Paigutus: maksimaalne kõrgus arvutile ja mobiilile (% ekraanist või px). Vaikimisi arvutis 40 % ekraanist; pilti kärbitakse slaidi fookuspunkti ümber, tekst jääb paigas. Suurel ekraanil ei võta slaider enam 70 % ekraanist.
+- Muudatus: maksimaalne laius vaikimisi 1920 px (kõige levinum monitorilaius): sülearvutil täislaius, suuremal monitoril keskel.
+
 ## 1.6.0 - 2026-10-04
 
 - Uus: sidumine Wonom Kampaaniaribaga. Slaidi sisu allikaks saab valida Kampaaniariba kampaania: pealkiri (1. rida), tekst (2. rida), väike rida (3. rida), silt (sooduskood), nupu link (koos automaatse kupongi rakendamisega) ja ajakava tulevad kampaaniast ning on slaidil lukus; mõlemad keeled kaasa. Pildid, asukoht, tüpograafia, värvid ja nupu tekst jäävad slaidil muudetavaks. Kampaania muutmine Kampaaniaribal muudab slaidi kohe.

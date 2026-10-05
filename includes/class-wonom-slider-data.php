@@ -117,7 +117,11 @@ class Wonom_Slider_Data {
 			'ken_burns'           => false,
 			'ratio_desktop'       => 'auto', // auto | "1920x660"
 			'ratio_mobile'        => 'auto',
-			'max_width'           => 0, // 0 = container width
+			'max_width'           => 1920, // px, 0 = container width; 1920 = the most common monitor width
+			'max_height'          => 40, // cap for the slider height on desktop (0 = none)
+			'max_height_unit'     => 'vh', // vh (% of the screen height) | px
+			'max_height_mobile'   => 0,
+			'max_height_mobile_unit' => 'vh',
 			'mobile_breakpoint'   => 768,
 			'content_max_width'   => 720,
 			'heading_size'        => 56,
@@ -465,6 +469,16 @@ class Wonom_Slider_Data {
 		$out['ratio_mobile']  = self::sanitize_ratio( isset( $in['ratio_mobile'] ) ? $in['ratio_mobile'] : $d['ratio_mobile'] );
 
 		$out['max_width']           = isset( $in['max_width'] ) ? min( 4000, absint( $in['max_width'] ) ) : $d['max_width'];
+		$out['max_height']          = isset( $in['max_height'] ) ? min( 2000, absint( $in['max_height'] ) ) : $d['max_height'];
+		$out['max_height_unit']     = ( isset( $in['max_height_unit'] ) && 'px' === $in['max_height_unit'] ) ? 'px' : 'vh';
+		$out['max_height_mobile']   = isset( $in['max_height_mobile'] ) ? min( 2000, absint( $in['max_height_mobile'] ) ) : $d['max_height_mobile'];
+		$out['max_height_mobile_unit'] = ( isset( $in['max_height_mobile_unit'] ) && 'px' === $in['max_height_mobile_unit'] ) ? 'px' : 'vh';
+		if ( 'vh' === $out['max_height_unit'] ) {
+			$out['max_height'] = min( 100, $out['max_height'] );
+		}
+		if ( 'vh' === $out['max_height_mobile_unit'] ) {
+			$out['max_height_mobile'] = min( 100, $out['max_height_mobile'] );
+		}
 		$out['mobile_breakpoint']   = isset( $in['mobile_breakpoint'] ) ? max( 320, min( 1400, absint( $in['mobile_breakpoint'] ) ) ) : $d['mobile_breakpoint'];
 		$out['content_max_width']   = isset( $in['content_max_width'] ) ? max( 200, min( 2000, absint( $in['content_max_width'] ) ) ) : $d['content_max_width'];
 		$out['heading_size']        = isset( $in['heading_size'] ) ? max( 12, min( 160, absint( $in['heading_size'] ) ) ) : $d['heading_size'];

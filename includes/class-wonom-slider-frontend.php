@@ -504,6 +504,8 @@ class Wonom_Slider_Frontend {
 			'--ws-speed'          => (int) $settings['speed'] . 'ms',
 			'--ws-interval'       => (int) $settings['interval'] . 'ms',
 			'--ws-max-width'      => $settings['max_width'] ? (int) $settings['max_width'] . 'px' : 'none',
+			'--ws-cap'            => $settings['max_height'] ? (int) $settings['max_height'] . $settings['max_height_unit'] : 'none',
+			'--ws-cap-m'          => $settings['max_height_mobile'] ? (int) $settings['max_height_mobile'] . $settings['max_height_mobile_unit'] : ( $settings['max_height'] ? (int) $settings['max_height'] . $settings['max_height_unit'] : 'none' ),
 			'--ws-content-width'  => (int) $settings['content_max_width'] . 'px',
 			'--ws-h-size'         => (int) $settings['heading_size'] . 'px',
 			'--ws-h-size-mobile'  => (int) $settings['heading_size_mobile'] . 'px',
@@ -537,7 +539,7 @@ class Wonom_Slider_Frontend {
 		$max = (int) $bp - 1;
 		$s   = $sel;
 		$css = "@media (max-width:{$max}px){"
-			. "{$s} .wonom-slider__track{aspect-ratio:var(--ws-ratio-mobile)}"
+			. "{$s} .wonom-slider__track{aspect-ratio:var(--ws-ratio-mobile);max-height:var(--ws-max-height,var(--ws-cap-m,none))}"
 			. "{$s} .wonom-slide__img,{$s} .wonom-slide__media img{object-position:var(--ws-focal-m)}"
 			. "{$s} .wonom-slide__content{padding:var(--ws-pad-mobile)}"
 			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size-mobile);letter-spacing:calc(var(--ws-h-spacing,.14em)*.75)}"

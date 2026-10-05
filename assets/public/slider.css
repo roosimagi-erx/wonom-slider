@@ -14,7 +14,7 @@
 	--ws-font: inherit;
 	--ws-btn-radius: 0;
 	--ws-min-height: 0;
-	--ws-max-height: none;
+	/* --ws-max-height is only set by the Elementor widget controls; --ws-cap/--ws-cap-m come from the plugin settings. */
 
 	position: relative;
 	width: 100%;
@@ -40,7 +40,7 @@
 	width: 100%;
 	aspect-ratio: var(--ws-ratio);
 	min-height: var(--ws-min-height);
-	max-height: var(--ws-max-height);
+	max-height: var(--ws-max-height, var(--ws-cap, none));
 }
 
 /* Fallback for browsers without aspect-ratio support. */
@@ -536,7 +536,7 @@
 /* --- mobile (breakpoint comes from settings; 768 is the default fallback) --- */
 
 @media (max-width: 767px) {
-	.wonom-slider__track { aspect-ratio: var(--ws-ratio-mobile); }
+	.wonom-slider__track { aspect-ratio: var(--ws-ratio-mobile); max-height: var(--ws-max-height, var(--ws-cap-m, none)); }
 
 	@supports not (aspect-ratio: 1 / 1) {
 		.wonom-slider__track { padding-bottom: calc(100% / (var(--ws-ratio-mobile))); }

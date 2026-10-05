@@ -1003,8 +1003,12 @@
 		h += group( I.gLayout, 'align-wide',
 			'<div class="wonom-grid wonom-grid--2">' + ratioField( 'ratio_desktop', I.ratioDesktop ) + ratioField( 'ratio_mobile', I.ratioMobile ) + '</div>' +
 			'<p class="wonom-hint">' + esc( I.ratioHint ) + '</p>' +
+			'<div class="wonom-grid wonom-grid--2">' +
+			field( I.maxHeight, '<span class="wonom-inline">' + sInput( 'max_height', 'number', ' min="0" max="2000"' ) + sSelect( 'max_height_unit', [ [ 'vh', I.unitVh ], [ 'px', I.unitPx ] ] ) + '</span>' ) +
+			field( I.maxHeightMobile, '<span class="wonom-inline">' + sInput( 'max_height_mobile', 'number', ' min="0" max="2000"' ) + sSelect( 'max_height_mobile_unit', [ [ 'vh', I.unitVh ], [ 'px', I.unitPx ] ] ) + '</span>' ) +
+			'</div><p class="wonom-hint">' + esc( I.maxHeightHint ) + '</p>' +
 			'<div class="wonom-grid wonom-grid--3">' +
-			field( I.maxWidth, sInput( 'max_width', 'number', ' min="0" max="4000" step="10"' ) ) +
+			field( I.maxWidth, sInput( 'max_width', 'number', ' min="0" max="4000" step="10"' ), esc( I.maxWidthHint ) ) +
 			field( I.breakpoint, sInput( 'mobile_breakpoint', 'number', ' min="320" max="1400" step="1"' ), esc( I.breakpointHint ) ) +
 			field( I.contentWidth, sInput( 'content_max_width', 'number', ' min="200" max="2000" step="10"' ) ) +
 			field( I.paddingMobile, sInput( 'padding_mobile', 'number', ' min="0" max="100"' ) ) +
