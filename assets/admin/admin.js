@@ -669,14 +669,14 @@
 				var d = iframe.contentDocument, sl = d && d.querySelector( '.wonom-slider' );
 				if ( ! sl ) { return; }
 				[].forEach.call( d.images, function ( img ) {
-					// Resolve theme lazy-load placeholders (no theme JS runs here).
-					var ds = img.getAttribute( 'data-src' ), dss = img.getAttribute( 'data-srcset' );
-					if ( ds ) { img.setAttribute( 'src', ds ); img.removeAttribute( 'data-src' ); }
-					if ( dss ) { img.setAttribute( 'srcset', dss ); img.removeAttribute( 'data-srcset' ); }
+					// Resolve deferred sources (slider's own data-wonom-* and theme lazy-load placeholders).
+					var ds = img.getAttribute( 'data-wonom-src' ) || img.getAttribute( 'data-src' ), dss = img.getAttribute( 'data-wonom-srcset' ) || img.getAttribute( 'data-srcset' );
+					if ( ds ) { img.setAttribute( 'src', ds ); img.removeAttribute( 'data-wonom-src' ); img.removeAttribute( 'data-src' ); }
+					if ( dss ) { img.setAttribute( 'srcset', dss ); img.removeAttribute( 'data-wonom-srcset' ); img.removeAttribute( 'data-srcset' ); }
 					img.classList.remove( 'wd-lazy-fade' );
 					img.setAttribute( 'sizes', THUMB_W + 'px' );
 				} );
-				[].forEach.call( d.querySelectorAll( 'source[data-srcset]' ), function ( so ) { so.setAttribute( 'srcset', so.getAttribute( 'data-srcset' ) ); so.removeAttribute( 'data-srcset' ); } );
+				[].forEach.call( d.querySelectorAll( 'source[data-wonom-srcset], source[data-srcset]' ), function ( so ) { so.setAttribute( 'srcset', so.getAttribute( 'data-wonom-srcset' ) || so.getAttribute( 'data-srcset' ) ); so.removeAttribute( 'data-wonom-srcset' ); so.removeAttribute( 'data-srcset' ); } );
 				var h = sl.offsetHeight || Math.round( THUMB_W * 0.34 );
 				iframe.style.height = h + 'px';
 				box.style.height = Math.max( 44, Math.min( 90, Math.round( h * scale ) ) ) + 'px';

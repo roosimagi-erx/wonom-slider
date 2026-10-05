@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.6 - 2026-10-05
+
+- Parandus: 1.6.5 edasilükatud piltide atribuut `data-src` võeti WoodMarti enda lazy-load skripti poolt üle ja kõik pildid laaditi ikkagi kohe. Nüüd on atribuudid `data-wonom-src` / `data-wonom-srcset`, mida teised skriptid ei puutu.
+
 ## 1.6.5 - 2026-10-05
 
 - Jõudlus: ainult esimese slaidi pildid laaditakse kohe. Teiste slaidide pildid (sh kollaaži pildid ja mobiilipilt) on HTML-is edasi lükatud (data-src) ja skript laadib need just enne näitamist: teine slaid brauseri jõudehetkel, ülejäänud vahetuse eel. Varem laadis leht kõigi slaidide täispildid korraga (esilehel 7,7 MB), sest läbipaistvad slaidid on vaate sees ja loading=lazy neid ei peatanud.

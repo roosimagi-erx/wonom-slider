@@ -613,9 +613,11 @@ class Wonom_Slider_Frontend {
 	 */
 	public static function lazy_markup( $html ) {
 		$placeholder = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-		$html        = preg_replace( '/<source\b([^>]*?)\ssrcset=/i', '<source$1 data-srcset=', $html );
-		$html        = preg_replace( '/<img\b([^>]*?)\ssrcset=/i', '<img$1 data-srcset=', $html );
-		$html        = preg_replace( '/<img\b([^>]*?)\ssrc="([^"]*)"/i', '<img$1 src="' . $placeholder . '" data-src="$2"', $html );
+		// Attribute names are prefixed on purpose: theme/optimiser lazy-loaders (WoodMart,
+		// FlyingPress…) grab plain data-src and would load every slide at once.
+		$html        = preg_replace( '/<source\b([^>]*?)\ssrcset=/i', '<source$1 data-wonom-srcset=', $html );
+		$html        = preg_replace( '/<img\b([^>]*?)\ssrcset=/i', '<img$1 data-wonom-srcset=', $html );
+		$html        = preg_replace( '/<img\b([^>]*?)\ssrc="([^"]*)"/i', '<img$1 src="' . $placeholder . '" data-wonom-src="$2"', $html );
 		$html        = preg_replace( '/<img\b([^>]*?)\sfetchpriority="[^"]*"/i', '<img$1', $html );
 		$html        = preg_replace( '/<img\b/i', '<img data-wonom-lazy="1"', $html );
 		return $html;
