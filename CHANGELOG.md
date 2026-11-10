@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.8 - 2026-11-10
+
+- Uus: kollaaži valik „Fotode paigutus“. „Näita fotosid tervena“ hoiab iga foto oma kujus ja ei kärbi midagi: fotod on slaidi kõrgused (või veidi madalamad, kui need kokku slaiderist laiemaks läheksid) ja paigutatakse keskele, vaba ruum on slaidi taustavärviga. Redaktor näitab, mitu protsenti laiusest fotod suurel monitoril ja sülearvutil täidavad ning mitu fotot lisada, et laius täituks. Senine „Täida slaid (fotosid kärbitakse)“ jääb vaikimisi.
+- Uus: kollaažis võib olla kuni 7 fotot (enne 5). Uus pesa tekib, kui eelmised on täis.
+- Parandus: kui slaideri esimene slaid on kollaaž, arvutatakse slaideri kuju nüüd kõigi fotode tegelikest mõõtudest, mitte ainult esimese foto järgi.
+
 ## 1.7.7 - 2026-11-10
 
 - Muudatus: arvutipildi juhend lähtub nüüd sellest, et slaider on igal ekraanil täies kõrguses (40 % ekraanist, nagu enne). Soovitus on kaks mõõtu: kogu pilt 2400 × 650 px (suurel monitoril paistab tervena) ja turvaala keskel 2400 × 460 px, mis paistab igal ekraanil. Turvaala on juhendis joonisel näha. Näod, tooted ja tekst käivad turvaala sisse, ülemisse ja alumisse ribasse ainult taevas, põrand või taust. 1.7.6 soovitatud 2400 × 460 tegi slaideri suurel monitoril madalaks ja kollaažidest lõigati liiga palju.

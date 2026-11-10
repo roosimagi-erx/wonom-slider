@@ -13,6 +13,9 @@ class Wonom_Slider_Data {
 	const OPTION_SETTINGS = 'wonom_slider_settings';
 	const OPTION_ADVANCED = 'wonom_slider_advanced';
 
+	/** Most photos in one collage. */
+	const COLLAGE_MAX = 7;
+
 	/**
 	 * Advanced options (updates, translation, uninstall).
 	 *
@@ -302,12 +305,13 @@ class Wonom_Slider_Data {
 			'mobile_pos_x'        => 50,
 			'mobile_pos_y'        => 50,
 			'mobile_pos_w'        => 90,
-			// Background: a single image (image_* fields) or a collage of 2–4 images built in the browser.
+			// Background: a single image (image_* fields) or a collage of 2–7 images built in the browser.
 			'bg_mode'             => 'image', // image | collage
 			'collage'             => array(), // list of { id, url, width, height, focal_x, focal_y }
 			'collage_seam'        => 'fade',  // hard | fade | blur
 			'collage_gap'         => 0,       // px, used with the hard seam
-			'collage_mobile'      => 'first2', // all | first2 | first1
+			'collage_mobile'      => 'first2', // all | first3 | first2 | first1
+			'collage_fit'         => 'cover',  // cover (fill, crop) | contain (every photo whole)
 			// Frame: inset from the slide edge + corner radius; the background colour shows around it.
 			'frame_width'         => 0,
 			'frame_radius'        => 0,
@@ -644,11 +648,13 @@ class Wonom_Slider_Data {
 		$out['collage_seam']   = ( isset( $in['collage_seam'] ) && in_array( $in['collage_seam'], array( 'hard', 'fade', 'blur' ), true ) ) ? $in['collage_seam'] : $d['collage_seam'];
 		$out['collage_gap']    = isset( $in['collage_gap'] ) ? max( 0, min( 60, absint( $in['collage_gap'] ) ) ) : $d['collage_gap'];
 		$out['collage_mobile'] = ( isset( $in['collage_mobile'] ) && in_array( $in['collage_mobile'], array( 'all', 'first3', 'first2', 'first1' ), true ) ) ? $in['collage_mobile'] : $d['collage_mobile'];
+		// cover = photos fill the slide (cropped to fit); contain = every photo whole, free space shows the slide background.
+		$out['collage_fit']    = ( isset( $in['collage_fit'] ) && 'contain' === $in['collage_fit'] ) ? 'contain' : 'cover';
 		$out['frame_width']    = isset( $in['frame_width'] ) ? max( 0, min( 80, absint( $in['frame_width'] ) ) ) : 0;
 		$out['frame_radius']   = isset( $in['frame_radius'] ) ? max( 0, min( 80, absint( $in['frame_radius'] ) ) ) : 0;
 		$out['collage']        = array();
 		if ( isset( $in['collage'] ) && is_array( $in['collage'] ) ) {
-			foreach ( array_slice( array_values( $in['collage'] ), 0, 5 ) as $item ) {
+			foreach ( array_slice( array_values( $in['collage'] ), 0, self::COLLAGE_MAX ) as $item ) {
 				if ( ! is_array( $item ) ) {
 					continue;
 				}

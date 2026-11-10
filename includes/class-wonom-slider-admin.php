@@ -162,7 +162,15 @@ class Wonom_Slider_Admin {
 			'bgCollage'        => __( 'Collage (2–5 images)', 'wonom-slider' ),
 			'collageSlot'      => __( 'Image %d', 'wonom-slider' ),
 			'collageAdd'       => __( 'Add images', 'wonom-slider' ),
-			'collageHint'      => __( 'Pick 2–5 portrait photos of the same size (e.g. 800×1000 px); you can select several at once. Click a photo to set its focal point. Drag the slot header to change the order. The slider ratio follows the first photo × number of columns.', 'wonom-slider' ),
+			'collageHint'      => __( 'Pick 2–7 portrait photos of the same size (e.g. 1080×1350 px); you can select several at once. Click a photo to set its focal point. Drag the slot header to change the order.', 'wonom-slider' ),
+			'collageFit'       => __( 'Photo layout', 'wonom-slider' ),
+			'fitCover'         => __( 'Fill the slide (crop photos)', 'wonom-slider' ),
+			'fitContain'       => __( 'Show photos whole', 'wonom-slider' ),
+			/* translators: 1: % of the width filled on a large monitor, 2: % on a laptop */
+			'collageFill'      => __( 'Photos are shown whole. They fill about %1$s % of the slider width on a large monitor and %2$s % on a laptop; the rest shows the slide background colour (Design → Background colour).', 'wonom-slider' ),
+			/* translators: %s: number of photos */
+			'collageFillAdd'   => __( 'Add %s more photo(s) to fill the width on a laptop too.', 'wonom-slider' ),
+			'collageFillLower' => __( 'On a large monitor the photos are wider than the slider, so the row is a little lower than the slide.', 'wonom-slider' ),
 			'seam'             => __( 'Seam between images', 'wonom-slider' ),
 			'seamHard'         => __( 'Sharp', 'wonom-slider' ),
 			'seamFade'         => __( 'Fade', 'wonom-slider' ),

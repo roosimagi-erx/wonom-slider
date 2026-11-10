@@ -419,8 +419,11 @@
 		h += '</div><span class="wonom-focal-legend"><i class="wonom-focal-sample"></i> ' + esc( I.desktop ) + ' <i class="wonom-focal-sample is-mobile"></i> ' + esc( I.mobile ) + '</span></div>';
 		if ( s.bg_mode === 'collage' ) {
 			var col = Array.isArray( s.collage ) ? s.collage : [];
-			h += '<div class="wonom-grid wonom-grid--5 wonom-collage-slots">';
-			for ( var ci = 0; ci < 5; ci++ ) {
+			h += field( I.collageFit, segmented( 'collage_fit', s.collage_fit || 'cover', [ [ 'cover', I.fitCover ], [ 'contain', I.fitContain ] ] ) );
+			if ( s.collage_fit === 'contain' && col.length ) { h += '<p class="wonom-hint wonom-fill-hint">' + esc( collageFillText( s ) ) + '</p>'; }
+			var slotCount = Math.min( COLLAGE_MAX, Math.max( 5, col.length + 1 ) );   // show one free slot, at least 5
+			h += '<div class="wonom-grid wonom-grid--' + slotCount + ' wonom-collage-slots">';
+			for ( var ci = 0; ci < slotCount; ci++ ) {
 				var it = col[ ci ];
 				h += '<div class="wonom-imgbox wonom-cslot' + ( it ? ' has-image' : '' ) + '" data-slot="' + ci + '"><label' + ( it ? ' class="wonom-cslot__handle" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span>' : '>' ) + esc( sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
 				if ( it ) {
@@ -786,6 +789,36 @@
 		iframe.style.height = h + 'px';
 		iframe.style.transform = scale < 1 ? 'scale(' + scale + ')' : '';
 		wrap.style.height = Math.ceil( h * scale ) + 'px';
+	}
+
+	/* Collages: up to 7 photos; "show photos whole" fills part of the width – tell how much. */
+	var COLLAGE_MAX = 7;
+	function photoRatio( c ) { return c && c.width && c.height ? c.width / c.height : 0.75; }
+	function collageRatio( s, count ) {
+		var list = ( Array.isArray( s.collage ) ? s.collage : [] ).slice( 0, count || COLLAGE_MAX ), sum = 0;
+		list.forEach( function ( c ) { sum += photoRatio( c ); } );
+		return sum || 0.75;
+	}
+	// Shape of the slider itself on a device: the first slide with a picture sets its natural shape,
+	// the height limit can make it wider (lower).
+	function sliderBoxRatio( device ) {
+		var first = null;
+		( state.slides || [] ).some( function ( x ) { if ( ( x.bg_mode === 'collage' && x.collage && x.collage.length ) || x.image_url ) { first = x; return true; } return false; } );
+		var r = ! first ? 3 : ( first.bg_mode === 'collage' && first.collage && first.collage.length ? collageRatio( first ) : ( first.image_width && first.image_height ? first.image_width / first.image_height : 3 ) );
+		var S = state.settings || {}, vp = VIEWPORT[ device ] || VIEWPORT.desktop;
+		var w = Math.min( vp.w, parseInt( S.max_width, 10 ) || vp.w ), cap = capPx( device ), h = w / r;
+		if ( cap && h > cap ) { h = cap; }
+		return w / h;
+	}
+	function collageFillText( s ) {
+		var rc = collageRatio( s );
+		var pct = function ( dev ) { return Math.min( 100, Math.round( rc / sliderBoxRatio( dev ) * 100 ) ); };
+		var wide = pct( 'wide' ), lap = pct( 'desktop' );
+		var need = Math.max( 0, Math.ceil( ( sliderBoxRatio( 'desktop' ) - rc ) / ( rc / Math.max( 1, s.collage.length ) ) ) );
+		var t = sprintf( I.collageFill, wide, lap );
+		if ( lap < 100 && need > 0 && s.collage.length + need <= COLLAGE_MAX ) { t += ' ' + sprintf( I.collageFillAdd, need ); }
+		if ( wide >= 100 ) { t += ' ' + I.collageFillLower; }
+		return t;
 	}
 
 	/* Ideal image sizes for the current height limits (shown in Settings and under the image fields). */
@@ -1612,7 +1645,7 @@
 			s.collage = Array.isArray( s.collage ) ? s.collage : [];
 			picked.forEach( function ( a, i ) {
 				var idx = slot + i;
-				if ( idx > 4 ) { return; }
+				if ( idx > COLLAGE_MAX - 1 ) { return; }
 				var th = ( a.sizes && ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ) ) ? ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ).url : a.url;
 				var prev = s.collage[ idx ] || {};
 				s.collage[ idx ] = { id: a.id, url: a.url, width: a.width || 0, height: a.height || 0, focal_x: prev.focal_x || 50, focal_y: prev.focal_y || 50, thumb: th };

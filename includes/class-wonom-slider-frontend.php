@@ -325,11 +325,27 @@ class Wonom_Slider_Frontend {
 			<?php endif; ?>
 			<?php if ( $is_collage ) : ?>
 				<?php
-				$items = array_values( $slide['collage'] );
-				$n     = count( $items );
-				$sizes = (int) round( 100 / max( 1, $n ) ) . 'vw';
+				$items   = array_values( $slide['collage'] );
+				$n       = count( $items );
+				$sizes   = (int) round( 100 / max( 1, $n ) ) . 'vw';
+				$contain = isset( $slide['collage_fit'] ) && 'contain' === $slide['collage_fit'];
+				$cstyle  = '--ws-cgap:' . (int) $slide['collage_gap'] . 'px';
+				if ( $contain ) {
+					// Whole photos: the row is as tall as the slide (or narrower than it) – CSS needs the
+					// sum of the photo shapes and the total gap, for desktop and for the mobile subset.
+					$n_m    = self::collage_mobile_count( $slide['collage_mobile'], $n );
+					$gap    = 'hard' === $slide['collage_seam'] ? (int) $slide['collage_gap'] : 0;
+					$cstyle .= sprintf(
+						';--ws-cr:%1$s;--ws-cr-m:%2$s;--ws-gaps:%3$dpx;--ws-gaps-m:%4$dpx',
+						self::num( self::collage_ratio_sum( $items, $n ) ),
+						self::num( self::collage_ratio_sum( $items, $n_m ) ),
+						$gap * max( 0, $n - 1 ),
+						$gap * max( 0, $n_m - 1 )
+					);
+				}
 				?>
-			<div class="wonom-slide__media wonom-collage cols-<?php echo (int) $n; ?> seam-<?php echo esc_attr( $slide['collage_seam'] ); ?> m-<?php echo esc_attr( $slide['collage_mobile'] ); ?>" style="--ws-cgap:<?php echo (int) $slide['collage_gap']; ?>px">
+			<div class="wonom-slide__media wonom-collage cols-<?php echo (int) $n; ?> seam-<?php echo esc_attr( $slide['collage_seam'] ); ?> m-<?php echo esc_attr( $slide['collage_mobile'] ); ?> fit-<?php echo $contain ? 'contain' : 'cover'; ?>" style="<?php echo esc_attr( $cstyle ); ?>">
+				<?php if ( $contain ) : ?><div class="wonom-collage__row"><?php endif; ?>
 				<?php foreach ( $items as $ci => $c ) : ?>
 					<?php
 					$eager = $is_first && $ci < 2;
@@ -354,10 +370,11 @@ class Wonom_Slider_Frontend {
 						);
 					}
 					?>
-					<div class="wonom-collage__item" style="--ws-cf:<?php echo (int) $c['focal_x']; ?>% <?php echo (int) $c['focal_y']; ?>%;--ws-cfm:<?php echo (int) ( isset( $c['mfocal_x'] ) ? $c['mfocal_x'] : $c['focal_x'] ); ?>% <?php echo (int) ( isset( $c['mfocal_y'] ) ? $c['mfocal_y'] : $c['focal_y'] ); ?>%">
+					<div class="wonom-collage__item" style="--ws-cf:<?php echo (int) $c['focal_x']; ?>% <?php echo (int) $c['focal_y']; ?>%;--ws-cfm:<?php echo (int) ( isset( $c['mfocal_x'] ) ? $c['mfocal_x'] : $c['focal_x'] ); ?>% <?php echo (int) ( isset( $c['mfocal_y'] ) ? $c['mfocal_y'] : $c['focal_y'] ); ?>%<?php echo $contain ? ';--ws-ir:' . esc_attr( self::num( self::photo_ratio( $c ) ) ) : ''; ?>">
 						<?php echo $is_first ? $img_html : self::lazy_markup( $img_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 				<?php endforeach; ?>
+				<?php if ( $contain ) : ?></div><?php endif; ?>
 			</div>
 			<div class="wonom-slide__overlay" aria-hidden="true"></div>
 			<?php elseif ( ! empty( $slide['image_url'] ) ) : ?>
@@ -502,14 +519,38 @@ class Wonom_Slider_Frontend {
 	/**
 	 * CSS custom properties for the slider wrapper.
 	 */
+	/** Width/height of one collage photo (portrait 3:4 when its size is unknown). */
+	public static function photo_ratio( $c ) {
+		return ( ! empty( $c['width'] ) && ! empty( $c['height'] ) ) ? $c['width'] / $c['height'] : 0.75;
+	}
+
+	/** Sum of the shapes of the first $count photos = shape of the row they form side by side. */
+	public static function collage_ratio_sum( $items, $count ) {
+		$sum = 0;
+		foreach ( array_slice( array_values( $items ), 0, max( 1, $count ) ) as $c ) {
+			$sum += self::photo_ratio( $c );
+		}
+		return $sum > 0 ? $sum : 0.75;
+	}
+
+	/** How many collage photos the mobile view shows. */
+	public static function collage_mobile_count( $mode, $n ) {
+		$map = array( 'first3' => 3, 'first2' => 2, 'first1' => 1 );
+		return isset( $map[ $mode ] ) ? min( $map[ $mode ], $n ) : $n;
+	}
+
+	/** Locale-independent number for CSS. */
+	private static function num( $v ) {
+		return rtrim( rtrim( number_format( (float) $v, 4, '.', '' ), '0' ), '.' );
+	}
+
 	private static function inline_style( $settings, $first ) {
 		if ( Wonom_Slider_Data::slide_is_collage( $first ) ) {
-			// Collage: N same-height images side by side → ratio = (N × w) / h.
-			$main    = Wonom_Slider_Data::slide_main_image( $first );
+			// Collage: images side by side → ratio = sum of the photo shapes (N × w / h for equal photos).
 			$n       = count( $first['collage'] );
-			$n_m     = 'all' === $first['collage_mobile'] ? $n : ( 'first3' === $first['collage_mobile'] ? min( 3, $n ) : ( 'first2' === $first['collage_mobile'] ? min( 2, $n ) : 1 ) );
-			$ratio_d = self::ratio_value( $settings['ratio_desktop'], $main['width'] * $n, $main['height'], '1920 / 660' );
-			$ratio_m = self::ratio_value( $settings['ratio_mobile'], $main['width'] * $n_m, $main['height'], $ratio_d );
+			$n_m     = self::collage_mobile_count( $first['collage_mobile'], $n );
+			$ratio_d = self::ratio_value( $settings['ratio_desktop'], (int) round( self::collage_ratio_sum( $first['collage'], $n ) * 1000 ), 1000, '1920 / 660' );
+			$ratio_m = self::ratio_value( $settings['ratio_mobile'], (int) round( self::collage_ratio_sum( $first['collage'], $n_m ) * 1000 ), 1000, $ratio_d );
 		} else {
 			$ratio_d = self::ratio_value( $settings['ratio_desktop'], $first['image_width'], $first['image_height'], '1920 / 660' );
 			$ratio_m = self::ratio_value(
@@ -590,6 +631,7 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-collage.m-first3 .wonom-collage__item:nth-child(n+4){display:none}"
 			. "{$s} .wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3){display:none}"
 			. "{$s} .wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2){display:none}"
+			. "{$s} .wonom-collage.fit-contain .wonom-collage__row{height:min(100cqh,calc((100cqw - var(--ws-gaps-m,0px)) / var(--ws-cr-m,var(--ws-cr,1))))}"
 			. "{$s} .wonom-slide.has-frame{--ws-frame:calc(var(--ws-frame-d,0px) * .5)}"
 			. "{$s} .wonom-slider__arrow{width:38px!important;height:38px!important;opacity:1;background:rgba(255,255,255,.7)!important}"
 			. "{$s} .wonom-slider__arrow--prev{left:8px!important}{$s} .wonom-slider__arrow--next{right:8px!important}"
@@ -608,6 +650,7 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slider__track{aspect-ratio:var(--ws-ratio)}"
 			. "{$s} .wonom-slide__img,{$s} .wonom-slide__media img{object-position:var(--ws-focal)}"
 			. "{$s} .wonom-collage__item img{object-position:var(--ws-cf,50% 50%)}"
+			. "{$s} .wonom-collage.fit-contain .wonom-collage__row{height:min(100cqh,calc((100cqw - var(--ws-gaps,0px)) / var(--ws-cr,1)))}"
 			. "{$s} .wonom-slide__content{padding:clamp(24px,5vw,72px)}"
 			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size);letter-spacing:var(--ws-h-spacing,.14em)}"
 			. "{$s} .wonom-slide__text{font-size:var(--ws-t-size)}"

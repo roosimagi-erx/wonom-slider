@@ -202,6 +202,33 @@
 	mask-image: linear-gradient(90deg, #000 40%, transparent);
 }
 
+/* --- collage "show photos whole": every photo keeps its own shape, nothing is cropped ---
+ * The row is as tall as the slide, or lower when the photos would be wider than the slide.
+ * --ws-cr = sum of the photo shapes (width/height), --ws-gaps = total gap width, --ws-ir = one photo's shape.
+ * Free space around the row shows the slide background colour. */
+.wonom-slide__media.wonom-collage.fit-contain {
+	container-type: size;
+	justify-content: center;
+	align-items: center;
+	gap: 0;
+}
+
+.wonom-collage.fit-contain .wonom-collage__row {
+	display: flex;
+	gap: var(--ws-cgap, 0);
+	height: min(100cqh, calc((100cqw - var(--ws-gaps, 0px)) / var(--ws-cr, 1)));
+	max-width: 100%;
+}
+
+.wonom-collage.fit-contain.seam-fade .wonom-collage__row,
+.wonom-collage.fit-contain.seam-blur .wonom-collage__row { gap: 0; }
+
+.wonom-collage.fit-contain .wonom-collage__item {
+	flex: none;
+	height: 100%;
+	aspect-ratio: var(--ws-ir, 0.75);
+}
+
 /* --- frame: media inset from the slide edge, rounded corners, background colour around --- */
 
 .wonom-slide.has-frame {
@@ -576,6 +603,7 @@
 	.wonom-collage.m-first3 .wonom-collage__item:nth-child(n+4) { display: none; }
 	.wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3) { display: none; }
 	.wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2) { display: none; }
+	.wonom-collage.fit-contain .wonom-collage__row { height: min(100cqh, calc((100cqw - var(--ws-gaps-m, 0px)) / var(--ws-cr-m, var(--ws-cr, 1)))); }
 	.wonom-slide.has-frame { --ws-frame: calc(var(--ws-frame-d, 0px) * 0.5); }
 
 	.wonom-slider .wonom-slider__arrow { width: 38px !important; height: 38px !important; opacity: 1; background: rgba(255, 255, 255, 0.7) !important; }
