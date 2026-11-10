@@ -440,8 +440,9 @@
 			h += '</div>';
 			h += '<p class="wonom-hint">' + esc( I.collageHint ) + '</p>';
 			h += '<div class="wonom-grid wonom-grid--3">';
-			h += field( I.seam, '<select data-field="collage_seam">' + [ [ 'hard', I.seamHard ], [ 'fade', I.seamFade ], [ 'blur', I.seamBlur ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_seam === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
-			h += field( I.collageGap, numInput( s, 'collage_gap', 0, 60, 1 ) );
+			var whole = s.collage_fit === 'contain';
+			h += field( I.seam, '<select data-field="collage_seam"' + ( whole ? ' disabled title="' + esc( I.seamWholeHint ) + '"' : '' ) + '>' + [ [ 'hard', I.seamHard ], [ 'fade', I.seamFade ], [ 'blur', I.seamBlur ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_seam === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>', whole ? esc( I.seamWholeHint ) : '' );
+			h += field( whole ? I.collageGapWhole : I.collageGap, numInput( s, 'collage_gap', 0, 60, 1 ) );
 			h += field( I.collageMobile, '<select data-field="collage_mobile">' + [ [ 'all', I.mAll ], [ 'first3', I.mFirst3 ], [ 'first2', I.mFirst2 ], [ 'first1', I.mFirst1 ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_mobile === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
 			h += '</div>';
 		} else {

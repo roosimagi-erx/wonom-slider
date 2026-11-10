@@ -99,6 +99,8 @@ return array(
 		'Add images'                         => 'Lisa pildid',
 		'Pick 2–7 portrait photos of the same size (e.g. 1080×1350 px); you can select several at once. Click a photo to set its focal point. Drag the slot header to change the order.' => 'Vali 2–7 ühesuurust püstist fotot (nt 1080×1350 px); korraga saab valida mitu. Klõps fotol määrab fookuspunkti. Järjekorra muutmiseks lohista pesa pealkirjast.',
 		'Photo layout'                       => 'Fotode paigutus',
+		'Gap between photos (px)'            => 'Fotode vahe (px)',
+		'Not used when photos are shown whole: they sit side by side so no edge is hidden.' => 'Tervena näitamisel ei kasutata: fotod on kõrvuti, et ükski serv ei jääks peitu.',
 		'Fill the slide (crop photos)'       => 'Täida slaid (fotosid kärbitakse)',
 		'Show photos whole'                  => 'Näita fotosid tervena',
 		'Photos are shown whole. They fill about %1$s % of the slider width on a large monitor and %2$s % on a laptop; the rest shows the slide background colour (Design → Background colour).' => 'Fotod on tervena. Suurel monitoril täidavad need umbes %1$s % slaideri laiusest ja sülearvutil %2$s %; ülejäänud osas paistab slaidi taustavärv (Kujundus → Taustavärv).',

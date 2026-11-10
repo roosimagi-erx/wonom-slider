@@ -334,7 +334,7 @@ class Wonom_Slider_Frontend {
 					// Whole photos: the row is as tall as the slide (or narrower than it) – CSS needs the
 					// sum of the photo shapes and the total gap, for desktop and for the mobile subset.
 					$n_m    = self::collage_mobile_count( $slide['collage_mobile'], $n );
-					$gap    = 'hard' === $slide['collage_seam'] ? (int) $slide['collage_gap'] : 0;
+					$gap    = (int) $slide['collage_gap'];   // whole photos never overlap, the gap applies with every seam
 					$cstyle .= sprintf(
 						';--ws-cr:%1$s;--ws-cr-m:%2$s;--ws-gaps:%3$dpx;--ws-gaps-m:%4$dpx',
 						self::num( self::collage_ratio_sum( $items, $n ) ),

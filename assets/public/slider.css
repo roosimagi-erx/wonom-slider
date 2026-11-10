@@ -220,14 +220,20 @@
 	max-width: 100%;
 }
 
-.wonom-collage.fit-contain.seam-fade .wonom-collage__row,
-.wonom-collage.fit-contain.seam-blur .wonom-collage__row { gap: 0; }
-
 .wonom-collage.fit-contain .wonom-collage__item {
 	flex: none;
 	height: 100%;
 	aspect-ratio: var(--ws-ir, 0.75);
 }
+
+/* Whole photos sit side by side: no overlapping fade or blur seam (it would hide their edges). */
+.wonom-collage.fit-contain .wonom-collage__item + .wonom-collage__item {
+	margin-left: 0;
+	-webkit-mask-image: none;
+	mask-image: none;
+}
+
+.wonom-collage.fit-contain .wonom-collage__item + .wonom-collage__item::before { display: none; }
 
 /* --- frame: media inset from the slide edge, rounded corners, background colour around --- */
 

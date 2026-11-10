@@ -176,6 +176,8 @@ class Wonom_Slider_Admin {
 			'seamFade'         => __( 'Fade', 'wonom-slider' ),
 			'seamBlur'         => __( 'Blur', 'wonom-slider' ),
 			'collageGap'       => __( 'Gap between images (px, sharp seam only)', 'wonom-slider' ),
+			'collageGapWhole'  => __( 'Gap between photos (px)', 'wonom-slider' ),
+			'seamWholeHint'    => __( 'Not used when photos are shown whole: they sit side by side so no edge is hidden.', 'wonom-slider' ),
 			'collageMobile'    => __( 'On mobile show', 'wonom-slider' ),
 			'mAll'             => __( 'All images', 'wonom-slider' ),
 			'mFirst3'          => __( 'First three', 'wonom-slider' ),
