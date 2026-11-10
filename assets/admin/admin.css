@@ -395,3 +395,7 @@ body.wonom-app .wonom-settings textarea.wonom-code { width: 100%; font-family: u
 .wonom-size p { margin: 0; font-size: 12px; color: var(--w-muted); line-height: 1.5; }
 .wonom-size-rules { margin: 0; padding-left: 18px; font-size: 13px; color: var(--w-text); line-height: 1.6; }
 @media (max-width: 900px) { .wonom-sizes { grid-template-columns: 1fr; } }
+.wonom-size__shape { position: relative; display: flex; align-items: center; }
+.wonom-size__safe { display: block; width: 100%; background: rgba(37, 99, 235, 0.14); border-top: 1px dashed var(--w-primary); border-bottom: 1px dashed var(--w-primary); }
+.wonom-size__safe-label { font-size: 12px; color: var(--w-text); margin: -2px 0 8px; display: flex; align-items: center; gap: 6px; }
+.wonom-size__safe-label i { display: inline-block; width: 12px; height: 8px; background: rgba(37, 99, 235, 0.22); border: 1px dashed var(--w-primary); }

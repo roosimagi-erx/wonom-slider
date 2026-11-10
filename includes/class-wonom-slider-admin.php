@@ -296,6 +296,16 @@ class Wonom_Slider_Admin {
 			'recommendedFmt'   => __( 'Ideal size with your settings: desktop %1$s px, mobile %2$s px. JPG or WebP. Details: Settings → Image sizes.', 'wonom-slider' ),
 			/* translators: 1: virtual width, 2: virtual height in px */
 			'previewWidthNote' => __( 'Shown as on a typical laptop (%1$s × %2$s px browser area), the most cropped common screen, and scaled down. What you see here is what visitors see; on larger screens the image is cropped less, never more.', 'wonom-slider' ),
+			'wideScreen'       => __( 'Large screen', 'wonom-slider' ),
+			'laptop'           => __( 'Laptop', 'wonom-slider' ),
+			/* translators: 1: virtual width, 2: virtual height in px */
+			'previewWideNote'  => __( 'Shown as on a large monitor (%1$s × %2$s px browser area) and scaled down. Here the slider is at its full width and most of the image is visible.', 'wonom-slider' ),
+			/* translators: 1: full desktop size, 2: safe-area height, 3: mobile size */
+			'recommendedSafeFmt' => __( 'Ideal size with your settings: desktop %1$s px with faces and text inside the middle %2$s px band, mobile %3$s px. JPG or WebP. Details: Settings → Image sizes.', 'wonom-slider' ),
+			/* translators: 1: safe-area size, 2: its aspect ratio */
+			'sizesSafe'        => __( 'Safe area in the middle: %1$s px (%2$s) – visible on every screen', 'wonom-slider' ),
+			/* translators: 1: slider height on a large monitor, 2: slider height on a laptop (px) */
+			'sizesDesktopSafeNote' => __( 'Fills the slider at its full height on every common screen: on a large monitor the whole image shows (about %1$s px high). Laptops and 1080p screens show a wider, lower slider (about %2$s px high) and cut the top and bottom strips off – put only sky, floor or background there and keep faces and text inside the safe area.', 'wonom-slider' ),
 			'gImageSizes'      => __( 'Image sizes', 'wonom-slider' ),
 			'sizesIntro'       => __( 'Ideal sizes when you make your own banner images, calculated from the height limits under Layout. Other sizes work too – the slider then crops them around the focal point.', 'wonom-slider' ),
 			'sizesDesktop'     => __( 'Desktop image', 'wonom-slider' ),
@@ -309,7 +319,7 @@ class Wonom_Slider_Admin {
 			'sizesMobileNote'  => __( 'Fills a phone screen well and stays within the mobile height limit (about %s px on a typical phone), so nothing is cropped. For a lower banner, 1080 × 1080 px (1 : 1) also works.', 'wonom-slider' ),
 			'sizesMobileNoCap' => __( 'Fills a phone screen well. For a lower banner, 1080 × 1080 px (1 : 1) also works.', 'wonom-slider' ),
 			'sizesRuleSame'    => __( 'Use the same shape for every desktop image and the same shape for every mobile image: the slider height comes from the first slide with an image, other shapes are cropped to fit it.', 'wonom-slider' ),
-			'sizesRuleSafe'    => __( 'Keep text and faces in the middle: on some screens up to about 8 % at the top and bottom, or a little at the sides, can be cut off.', 'wonom-slider' ),
+			'sizesRuleSafe'    => __( 'Keep faces, products and text inside the safe area. The strips above and below it are shown only on large monitors – use them for sky, floor or background.', 'wonom-slider' ),
 			'sizesRuleText'    => __( 'If the text is part of the image, always make a separate mobile image – desktop text becomes too small to read on a phone.', 'wonom-slider' ),
 			'sizesRuleFormat'  => __( 'Save as JPG or WebP: desktop under 400 kB, mobile under 250 kB. PNG only when you need transparency – a PNG photo is often 2 MB or more and slows the page down.', 'wonom-slider' ),
 			'sizesRuleCollage' => __( 'Collage photos: portrait 4 : 5 (e.g. 1080 × 1350 px), all the same size.', 'wonom-slider' ),

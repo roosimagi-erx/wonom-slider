@@ -250,7 +250,7 @@
 		var h = '<div class="wonom-card wonom-preview">';
 		h += '<div class="wonom-preview-tools">';
 		h += '<div class="wonom-switch" role="group">';
-		[ [ 'desktop', I.desktop, 'desktop' ], [ 'tablet', I.tablet, 'tablet' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
+		[ [ 'wide', I.wideScreen, 'welcome-view-site' ], [ 'desktop', I.laptop, 'laptop' ], [ 'tablet', I.tablet, 'tablet' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
 			h += '<button type="button" data-action="preview-device" data-device="' + d[ 0 ] + '" aria-pressed="' + ( preview.device === d[ 0 ] ) + '"><span class="dashicons dashicons-' + d[ 2 ] + '"></span> ' + esc( d[ 1 ] ) + '</button>';
 		} );
 		h += '</div>';
@@ -267,9 +267,9 @@
 		h += '<span class="wonom-hint">' + esc( I.previewHint ) + '</span>';
 		h += '<button type="button" class="button" data-action="preview-refresh"><span class="dashicons dashicons-update"></span> ' + esc( I.refresh ) + '</button>';
 		h += '</div>';
-		var scaled = preview.device === 'desktop';
-		h += '<div class="wonom-preview-stage is-' + preview.device + '"><div class="wonom-vp' + ( scaled ? ' is-scaled' : '' ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="width:' + VIEWPORT.desktop.w + 'px"' : '' ) + '></iframe></div></div>';
-		if ( scaled ) { h += '<p class="wonom-hint wonom-preview-note">' + esc( sprintf( I.previewWidthNote, VIEWPORT.desktop.w, VIEWPORT.desktop.h ) ) + '</p>'; }
+		var scaled = preview.device === 'desktop' || preview.device === 'wide', pv = VIEWPORT[ preview.device ] || VIEWPORT.desktop;
+		h += '<div class="wonom-preview-stage is-' + ( scaled ? 'desktop' : preview.device ) + '"><div class="wonom-vp' + ( scaled ? ' is-scaled' : '' ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="width:' + pv.w + 'px"' : '' ) + '></iframe></div></div>';
+		if ( scaled ) { h += '<p class="wonom-hint wonom-preview-note">' + esc( sprintf( preview.device === 'wide' ? I.previewWideNote : I.previewWidthNote, pv.w, pv.h ) ) + '</p>'; }
 		h += '</div>';
 		return h;
 	}
@@ -444,7 +444,9 @@
 		} else {
 			h += '<div class="wonom-grid wonom-grid--2">';
 			var ia = imageAdvice();
-			h += imageBox( s, 'image', I.desktopImage, sprintf( I.recommendedFmt, ia.dW + ' × ' + ia.dH, ia.mW + ' × ' + ia.mH ) );
+			h += imageBox( s, 'image', I.desktopImage, ia.sH < ia.dH
+				? sprintf( I.recommendedSafeFmt, ia.dW + ' × ' + ia.dH, ia.sH, ia.mW + ' × ' + ia.mH )
+				: sprintf( I.recommendedFmt, ia.dW + ' × ' + ia.dH, ia.mW + ' × ' + ia.mH ) );
 			h += imageBox( s, 'mobile_image', I.mobileImage, I.mobileHint );
 			h += '</div>';
 			h += '<p class="wonom-hint">' + esc( I.focalHint ) + '</p>';
@@ -665,7 +667,7 @@
 			var d = f.contentDocument, sl = d && d.querySelector( '.wonom-slider' );
 			if ( sl ) {
 				var ph = Math.max( 120, Math.ceil( sl.getBoundingClientRect().height ) );
-				if ( f.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( f, VIEWPORT.desktop.w, ph ); }
+				if ( f.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( f, ( VIEWPORT[ preview.device ] || VIEWPORT.desktop ).w, ph ); }
 				else { f.style.height = ph + 'px'; }
 				[].forEach.call( d.images, function ( img ) { if ( ! img.complete ) { img.addEventListener( 'load', fitPreview ); } } );
 			}
@@ -770,8 +772,10 @@
 	// cropped, common case – an image that fits here is shown whole on every common screen
 	// (taller screens just show a lower slider). Desktop previews are rendered at this real width
 	// and scaled down, so the crop in the editor is what visitors see.
-	var VIEWPORT = { desktop: { w: 1536, h: 730 }, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 700 } };
-	var REF_H = { desktop: VIEWPORT.desktop.h, tablet: VIEWPORT.tablet.h, mobile: VIEWPORT.mobile.h };
+	// "wide" = a large monitor (2560 × 1440): the slider stops at its maximum width while the height
+	// limit keeps growing, so this is where the most of the image is shown.
+	var VIEWPORT = { desktop: { w: 1536, h: 730 }, wide: { w: 2560, h: 1300 }, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 700 } };
+	var REF_H = { desktop: VIEWPORT.desktop.h, wide: VIEWPORT.wide.h, tablet: VIEWPORT.tablet.h, mobile: VIEWPORT.mobile.h };
 
 	// Render an iframe at a virtual width and scale it into its wrapper (.wonom-vp.is-scaled).
 	function fitScaled( iframe, vw, h ) {
@@ -787,16 +791,21 @@
 	/* Ideal image sizes for the current height limits (shown in Settings and under the image fields). */
 	function imageAdvice() {
 		var S = state.settings || {};
-		var D = VIEWPORT.desktop, M = VIEWPORT.mobile;
-		var dw = Math.min( D.w, parseInt( S.max_width, 10 ) || D.w ), cap = capPx( 'desktop' );
-		var dRatio = cap ? dw / cap : 3;                       // no limit → the classic 3:1
-		dRatio = Math.max( 2, Math.min( 6, dRatio ) );
-		var dW = 2400, dH = Math.round( dW / dRatio / 10 ) * 10;
+		var D = VIEWPORT.desktop, Wd = VIEWPORT.wide, M = VIEWPORT.mobile;
+		var maxW = parseInt( S.max_width, 10 ) || 99999;
+		// Full image: fills the slider at its full height on a large monitor (where most of it shows).
+		// Safe area: the band a laptop shows (widest, most cropped) – faces and text belong in there.
+		var capWide = capPx( 'wide' ), cap = capPx( 'desktop' );
+		var fullRatio = capWide ? Math.min( Wd.w, maxW ) / capWide : 3;   // no limit → the classic 3:1
+		var safeRatio = cap ? Math.min( D.w, maxW ) / cap : fullRatio;
+		fullRatio = Math.max( 2, Math.min( 6, fullRatio ) );
+		safeRatio = Math.max( fullRatio, Math.min( 8, safeRatio ) );
+		var dW = 2400, dH = Math.round( dW / fullRatio / 10 ) * 10, sH = Math.round( dW / safeRatio / 10 ) * 10;
 		var capM = capPx( 'mobile' );
 		var mRatio = 0.8;                                      // 4:5 fills a phone nicely
 		if ( capM && M.w / capM > mRatio ) { mRatio = M.w / capM; } // never taller than the mobile limit
 		var mW = 1080, mH = Math.round( mW / mRatio / 10 ) * 10;
-		return { dW: dW, dH: dH, dRatio: ratioText( dW, dH ), mW: mW, mH: mH, mRatio: ratioText( mW, mH ), dCap: cap, mCap: capM };
+		return { dW: dW, dH: dH, sH: sH, dRatio: ratioText( dW, dH ), sRatio: ratioText( dW, sH ), mW: mW, mH: mH, mRatio: ratioText( mW, mH ), dCap: cap, dCapWide: capWide, mCap: capM };
 	}
 	// "5,2 : 1" / "4 : 5" in the admin language.
 	function ratioText( w, h ) {
@@ -1188,21 +1197,24 @@
 
 		/* Image sizes: a guide for making your own banners, calculated from the limits above. */
 		var A2 = imageAdvice();
-		function sizeCard( icon, title, w, hgt, ratioText, note ) {
+		function sizeCard( icon, title, w, hgt, ratioTxt, note, safeH, safeRatio ) {
 			var shapeW = 100, shapeH = Math.max( 18, Math.round( shapeW * hgt / w ) );
 			if ( shapeH > 125 ) { shapeW = Math.round( 125 * w / hgt ); shapeH = 125; }
+			var safe = safeH && safeH < hgt;
 			return '<div class="wonom-size"><h3><span class="dashicons dashicons-' + icon + '"></span> ' + esc( title ) + '</h3>'
 				+ '<div class="wonom-size__px">' + w + ' × ' + hgt + ' px</div>'
-				+ '<div class="wonom-size__ratio">' + esc( sprintf( I.sizesRatio, ratioText ) ) + '</div>'
-				+ '<div class="wonom-size__shape" style="width:' + ( shapeW * 2 ) + 'px;max-width:100%;aspect-ratio:' + w + ' / ' + hgt + '"></div>'
+				+ '<div class="wonom-size__ratio">' + esc( sprintf( I.sizesRatio, ratioTxt ) ) + '</div>'
+				+ '<div class="wonom-size__shape" style="width:' + ( shapeW * 2 ) + 'px;max-width:100%;aspect-ratio:' + w + ' / ' + hgt + '">'
+				+ ( safe ? '<span class="wonom-size__safe" style="height:' + ( safeH / hgt * 100 ).toFixed( 1 ) + '%"></span>' : '' ) + '</div>'
+				+ ( safe ? '<div class="wonom-size__safe-label"><i></i> ' + esc( sprintf( I.sizesSafe, w + ' × ' + safeH, safeRatio ) ) + '</div>' : '' )
 				+ '<p>' + esc( note ) + '</p></div>';
 		}
-		var dNote = A2.dCap ? sprintf( I.sizesDesktopNote, A2.dCap, VIEWPORT.desktop.w ) : I.sizesDesktopNoCap;
+		var dNote = A2.dCap ? ( A2.sH < A2.dH ? sprintf( I.sizesDesktopSafeNote, A2.dCapWide, A2.dCap ) : sprintf( I.sizesDesktopNote, A2.dCap, VIEWPORT.desktop.w ) ) : I.sizesDesktopNoCap;
 		var mNote = A2.mCap ? sprintf( I.sizesMobileNote, A2.mCap ) : I.sizesMobileNoCap;
 		h += group( I.gImageSizes, 'format-image',
 			'<p class="wonom-hint">' + esc( I.sizesIntro ) + '</p>' +
 			'<div class="wonom-sizes">' +
-			sizeCard( 'desktop', I.sizesDesktop, A2.dW, A2.dH, A2.dRatio, dNote ) +
+			sizeCard( 'desktop', I.sizesDesktop, A2.dW, A2.dH, A2.dRatio, dNote, A2.sH, A2.sRatio ) +
 			sizeCard( 'smartphone', I.sizesMobile, A2.mW, A2.mH, A2.mRatio, mNote ) +
 			'</div>' +
 			'<ul class="wonom-size-rules">' +
