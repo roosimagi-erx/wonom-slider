@@ -194,8 +194,11 @@ class Wonom_Slider_Frontend {
 		);
 
 		// The slider ratio follows the first slide that actually has an image (text-only slides carry no dimensions).
+		// Editor previews pass 'ratio_slides' = the slides that are live in the shop, so a single slide or a
+		// preview that includes scheduled/expired slides still gets exactly the shop's slider shape.
+		$ratio_pool  = ! empty( $args['ratio_slides'] ) && is_array( $args['ratio_slides'] ) ? array_values( $args['ratio_slides'] ) : $slides;
 		$ratio_slide = $slides[0];
-		foreach ( $slides as $candidate ) {
+		foreach ( $ratio_pool as $candidate ) {
 			$main = Wonom_Slider_Data::slide_main_image( $candidate );
 			if ( $main['width'] && $main['height'] ) {
 				$ratio_slide = $candidate;

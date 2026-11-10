@@ -186,10 +186,11 @@ class Wonom_Slider_Rest {
 	public static function state() {
 		$slides   = Wonom_Slider_Data::get_slides();
 		$settings = Wonom_Slider_Data::get_settings();
+		$shape    = self::shop_ratio_slides();
 		foreach ( $slides as $k => $slide ) {
-			// Live miniature for the slide list: the exact front-end markup of this slide alone.
+			// Live miniature for the slide list: the exact front-end markup of this slide alone, in the shop's slider shape.
 			$slides[ $k ]['preview'] = Wonom_Slider_Data::slide_has_content( $slide )
-				? Wonom_Slider_Frontend::render( array( 'slides' => array( $slide ), 'settings' => $settings ) )
+				? Wonom_Slider_Frontend::render( array( 'slides' => array( $slide ), 'settings' => $settings, 'ratio_slides' => $shape ) )
 				: '';
 			// Map-like fields must reach JavaScript as objects, never as [] (empty PHP arrays).
 			$slides[ $k ]['i18n'] = (object) ( is_array( $slide['i18n'] ) ? $slide['i18n'] : array() );
@@ -247,7 +248,8 @@ class Wonom_Slider_Rest {
 		$lang = sanitize_key( (string) $req->get_param( 'lang' ) );
 		$args = array();
 		if ( $all ) {
-			$args['slides'] = array_values( array_filter( Wonom_Slider_Data::get_slides(), array( 'Wonom_Slider_Data', 'slide_has_content' ) ) );
+			$args['slides']       = array_values( array_filter( Wonom_Slider_Data::get_slides(), array( 'Wonom_Slider_Data', 'slide_has_content' ) ) );
+			$args['ratio_slides'] = self::shop_ratio_slides();   // the shape the shop shows, not the first scheduled slide's
 		}
 		if ( $lang ) {
 			$args['lang'] = $lang;
@@ -262,6 +264,23 @@ class Wonom_Slider_Rest {
 				'custom_css' => $settings['custom_css'],
 			)
 		);
+	}
+
+	/**
+	 * Slides that decide the slider's shape in the shop right now (the live ones, in order).
+	 * With $edited, its unsaved version replaces the saved one, so changing the first slide's image
+	 * reshapes the stage immediately. Empty list → render() falls back to the rendered slide.
+	 */
+	public static function shop_ratio_slides( $edited = null ) {
+		$live = Wonom_Slider_Data::get_active_slides();
+		if ( $edited && ! empty( $edited['id'] ) ) {
+			foreach ( $live as $k => $s ) {
+				if ( $s['id'] === $edited['id'] ) {
+					$live[ $k ] = $edited;
+				}
+			}
+		}
+		return $live;
 	}
 
 	/**
@@ -283,9 +302,10 @@ class Wonom_Slider_Rest {
 		if ( Wonom_Slider_Data::slide_has_content( $slide ) ) {
 			$html = Wonom_Slider_Frontend::render(
 				array(
-					'slides'   => array( $slide ),
-					'settings' => $settings,
-					'lang'     => $lang ? $lang : null,
+					'slides'       => array( $slide ),
+					'settings'     => $settings,
+					'lang'         => $lang ? $lang : null,
+					'ratio_slides' => self::shop_ratio_slides( $slide ),
 				)
 			);
 		}
