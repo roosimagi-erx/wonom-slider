@@ -66,11 +66,13 @@ $cmp = ([version]$Version).CompareTo([version]$current)
 if ($cmp -lt 0) {
     throw "Version $Version is lower than the current $current. WordPress never updates to a lower number."
 }
-if ($cmp -eq 0 -and -not $Force) {
-    throw "Version $Version is already the current version. Use a higher number, or -Force to rebuild the same version."
-}
-
 if ($Release) { $Tag = $true }
+
+# Same number: fine for publishing a version that was bumped but never released (the tag and
+# release checks below catch a real duplicate); a plain rebuild needs -Force.
+if ($cmp -eq 0 -and -not $Force -and -not $Tag) {
+    throw "Version $Version is already the current version. Use a higher number, -Release to publish it, or -Force to rebuild the zip."
+}
 
 # Native tools (git, gh) write progress to stderr; in Windows PowerShell 5.1 with 'Stop' that would
 # abort the script. Run them with 'Continue', echo their output and return the exit code.
@@ -180,7 +182,7 @@ Write-Host "Built: $zip ($kb KB)" -ForegroundColor Green
 if (-not $Tag) {
     Write-Host ""
     Write-Host "Next: .\build-release.ps1 -Version $Version -Release   (commit, push and publish)" -ForegroundColor Cyan
-    return
+    exit 0
 }
 
 # ---------------------------------------------------------------- commit, tag, release
@@ -196,7 +198,7 @@ try {
         Invoke-Native git @('tag', "v$Version") | Out-Null
         if ((Invoke-Native git @('push', 'origin', 'main', '--tags')).Code -ne 0) { throw "git push failed." }
         Write-Host "Tag v$Version pushed. The GitHub Action publishes the release in about a minute." -ForegroundColor Green
-        return
+        exit 0
     }
 
     if ((Invoke-Native git @('push', 'origin', 'main')).Code -ne 0) { throw "git push failed." }
@@ -221,6 +223,8 @@ try {
     Write-Host ""
     Write-Host "Release v$Version published: https://github.com/$repo/releases/tag/v$Version" -ForegroundColor Green
     Write-Host "In WordPress: Wonom Slider -> Settings -> 'Check for updates now' -> 'Update now'." -ForegroundColor Green
+    $global:LASTEXITCODE = 0
 } finally {
     Pop-Location
 }
+exit 0
