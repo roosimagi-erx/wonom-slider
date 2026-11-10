@@ -7,3 +7,4 @@ docs
 *.md
 *.zip
 build-release.ps1
+.claude

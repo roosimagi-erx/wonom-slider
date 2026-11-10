@@ -1,7 +1,7 @@
 # GitHubi seadistus – automaatsed uuendused
 
 Sama muster mis Wonom Kampaaniaribal. Konto: **roosimagi-erx**. Hoidla nimi: **wonom-slider**.
-Erinevus Kampaaniaribast: siin ehitab GitHub Action ZIP-i ise, käsitsi üleslaadimist ei ole.
+Väljalase käib nagu Wonom KKK-l: skript avaldab väljalaske koos ZIP-iga ise, käsitsi üleslaadimist ei ole.
 
 > **Olek 04.10.2026:** hoidla on loodud (avalik), kood pushitud, release 1.0.0 avaldatud Actioni poolt, plugin paigaldatud testsaidile test.emmaandtheo.ee. Sammud 1–3 on tehtud; edaspidi vt „Edaspidine töövoog”.
 
@@ -54,14 +54,33 @@ Hoidla `roosimagi-erx/wonom-slider` on pluginasse sisse kirjutatud (`wonom-slide
 avaliku hoidla puhul pole midagi seadistada. Teise hoidla kasutamiseks kirjuta see **Seaded → Automaatsed uuendused**.
 Vajuta **Kontrolli uuendusi kohe** – olekurida peab näitama paigaldatud versiooni ja GitHubi viimast väljalaset.
 
-## Edaspidine töövoog
+## Edaspidine töövoog (sama mis Wonom KKK-l)
 
-1. Tee koodimuudatus, kirjuta CHANGELOG.md-sse uus sektsioon `## 1.1.0 - kuupäev`.
-2. `.\build-release.ps1 -Version 1.1.0 -Tag`
-3. Action avaldab release'i; poed näevad uuendust 6 tunni jooksul või kohe nupuga.
+Claude teeb koodimuudatuse, kirjutab CHANGELOG.md-sse uue sektsiooni ja käivitab:
 
-**Versiooninumber peab kattuma** plugina failis (`Version:` + `WONOM_SLIDER_VERSION`) ja tag'is (`v1.1.0`).
-Action keeldub ehitamast, kui ei kattu. Skript hoiab failid paigas.
+```powershell
+.\build-release.ps1 -Version 1.8.0 -Release
+```
+
+Skript tõstab versiooninumbri, ehitab ZIP-i, teeb commiti, saadab selle GitHubi ja avaldab
+väljalaske koos ZIP-iga (GitHubi käsurea tööriist `gh`). Väljalaske tekst on CHANGELOG-i sektsioon.
+Seejärel kontrollib GitHub Action PHP süntaksit ja versiooni; kui midagi on valesti, muudab see
+väljalaske mustandiks ja poed seda ei näe.
+
+**Sinu osa:** WordPressis **Wonom Slider → Seaded → „Kontrolli uuendusi kohe“ → „Uuenda kohe“**.
+Ilma nuputa näeb pood uuendust 6 tunni jooksul.
+
+`gh` on selles arvutis paigaldatud ja sisse logitud kontoga roosimagi-erx. Kui see kunagi välja logib:
+
+```powershell
+gh auth login
+```
+
+Varuvariant ilma `gh`-ta: `.\build-release.ps1 -Version 1.8.0 -Tag` pushib ainult tagi ja Action
+ehitab ning avaldab väljalaske ise umbes minutiga.
+
+**Versiooninumber peab kattuma** plugina failis (`Version:` + `WONOM_SLIDER_VERSION`) ja tag'is (`v1.8.0`).
+Skript hoiab failid paigas ja keeldub väiksemast või samast numbrist ning vales kaustas jooksutamisest.
 
 **WordPress ei uuenda tagasi** – väiksem number ei tee midagi.
 

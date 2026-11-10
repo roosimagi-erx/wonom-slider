@@ -1,7 +1,12 @@
-name: Build release zip
+name: Release checks
 
-# Pushing a tag like v1.2.0 creates a GitHub Release with wonom-slider.zip attached.
-# The plugin's updater picks that zip up on every WordPress site where it is installed.
+# Normal flow: build-release.ps1 -Release creates the GitHub release (with wonom-slider.zip) through
+# gh CLI, which also creates the tag. This workflow then checks that tag: the plugin version must
+# match and every PHP file must pass php -l. If a check fails, the release is turned into a draft so
+# the plugin's updater (which reads releases/latest, drafts excluded) never offers a broken build.
+#
+# Fallback flow: if only the tag was pushed (build-release.ps1 -Tag), there is no release yet and
+# this workflow builds the zip and publishes the release itself.
 on:
   push:
     tags:
@@ -13,6 +18,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -20,32 +27,53 @@ jobs:
         id: v
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Does the release already exist?
+        id: rel
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release $GITHUB_REF_NAME was published by build-release.ps1 - running checks only."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "No release yet - this workflow will build and publish it."
+          fi
+
       - name: Verify plugin version matches tag
+        id: version
         run: |
           FILE_VERSION=$(grep -m1 -oP '^\s*\*\s*Version:\s*\K[0-9.]+' wonom-slider.php)
-          echo "Tag: ${{ steps.v.outputs.version }}  File: $FILE_VERSION"
-          if [ "$FILE_VERSION" != "${{ steps.v.outputs.version }}" ]; then
-            echo "::error::Version in wonom-slider.php ($FILE_VERSION) does not match tag (${{ steps.v.outputs.version }})."
+          CONST_VERSION=$(grep -m1 -oP "define\(\s*'WONOM_SLIDER_VERSION',\s*'\K[0-9.]+" wonom-slider.php)
+          echo "Tag: ${{ steps.v.outputs.version }}  Header: $FILE_VERSION  Constant: $CONST_VERSION"
+          if [ "$FILE_VERSION" != "${{ steps.v.outputs.version }}" ] || [ "$CONST_VERSION" != "${{ steps.v.outputs.version }}" ]; then
+            echo "::error::Version in wonom-slider.php (header $FILE_VERSION, constant $CONST_VERSION) does not match tag ${{ steps.v.outputs.version }}."
             exit 1
           fi
 
       - name: PHP syntax check
+        id: lint
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq php-cli >/dev/null
           find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
 
+      - name: Check failed - turn the release into a draft
+        if: failure() && steps.rel.outputs.exists == 'true'
+        run: |
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=true
+          echo "::error::Checks failed. Release $GITHUB_REF_NAME is now a draft, shops will not be offered it. Fix and release a higher version."
+
       - name: Build zip
+        if: steps.rel.outputs.exists == 'false'
         run: |
           mkdir -p build/wonom-slider
           rsync -a ./ build/wonom-slider/ \
-            --exclude .git --exclude .github --exclude build --exclude docs \
-            --exclude '*.md' --exclude .gitignore --exclude .distignore \
+            --exclude .git --exclude .github --exclude .claude --exclude build --exclude docs \
+            --exclude '*.md' --exclude .gitignore --exclude .distignore --exclude .gitattributes \
             --exclude build-release.ps1 --exclude '*.zip'
           cd build && zip -rq ../wonom-slider.zip wonom-slider
           cd .. && unzip -l wonom-slider.zip | tail -n 3
 
       - name: Extract changelog section
-        id: notes
+        if: steps.rel.outputs.exists == 'false'
         run: |
           V="${{ steps.v.outputs.version }}"
           awk -v v="$V" '
@@ -57,6 +85,7 @@ jobs:
           cat notes.md
 
       - name: Create GitHub Release
+        if: steps.rel.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ steps.v.outputs.version }}
