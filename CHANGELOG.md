@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.5 - 2026-11-10
+
+- Parandus: arvutivaate eelvaade, lava ja slaidide pisipildid joonistatakse nüüd päris arvutilaiuses (brauseri ala 1600 × 1040 px) ja vähendatakse ekraanile. Varem joonistati need kitsamalt ja laial ekraanil tekkiv kärbe (pildi üla- ja alaosa) adminis ei paistnud. Nüüd näed adminis täpselt sama kärbet, mida näeb külastaja.
+- Uus: Seaded → Pildi mõõdud. Juhend, mis mõõdus arvuti- ja mobiilipildid teha, arvutatud sinu kõrguse piirangutest (praeguste seadetega arvuti 2400 × 620 px, mobiil 1080 × 1350 px), koos reeglitega teksti, failivormingu ja kollaažifotode kohta. Pildivälja all olev soovitus kasutab samu arvutatud mõõte (enne oli seal vale 1920 × 660).
+
 ## 1.7.4 - 2026-11-10
 
 - Tehniline: uued versioonid avaldatakse nüüd otse väljalaske skriptist (nagu Wonom KKK-l) ja GitHub kontrollib iga väljalaske üle. Kui kontroll ebaõnnestub, ei pakuta seda versiooni poodidele üldse. Plugina töös muudatusi pole.

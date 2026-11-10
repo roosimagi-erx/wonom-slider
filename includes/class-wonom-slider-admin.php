@@ -292,6 +292,27 @@ class Wonom_Slider_Admin {
 			'focalHint'        => __( 'Click an image to set its focal point – the spot that stays visible when the image is cropped. Desktop and mobile show different crops, so each has its own point: blue = desktop, purple = mobile. The switch below (same as on the preview) chooses which one you are setting.', 'wonom-slider' ),
 			'focalFor'         => __( 'Focal point for', 'wonom-slider' ),
 			'recommended'      => __( 'Recommended: desktop 1920×660 px (or your ratio), mobile 800×1000 px. WebP/JPG under 300 kB.', 'wonom-slider' ),
+			/* translators: 1: desktop size, 2: mobile size, e.g. "2400 × 620" */
+			'recommendedFmt'   => __( 'Ideal size with your settings: desktop %1$s px, mobile %2$s px. JPG or WebP. Details: Settings → Image sizes.', 'wonom-slider' ),
+			/* translators: 1: virtual width, 2: virtual height in px */
+			'previewWidthNote' => __( 'Shown as on a typical computer screen (%1$s × %2$s px browser area) and scaled down – any cropping here is what visitors see.', 'wonom-slider' ),
+			'gImageSizes'      => __( 'Image sizes', 'wonom-slider' ),
+			'sizesIntro'       => __( 'Ideal sizes when you make your own banner images, calculated from the height limits under Layout. Other sizes work too – the slider then crops them around the focal point.', 'wonom-slider' ),
+			'sizesDesktop'     => __( 'Desktop image', 'wonom-slider' ),
+			'sizesMobile'      => __( 'Mobile image', 'wonom-slider' ),
+			/* translators: %s: aspect ratio like "3.9 : 1" */
+			'sizesRatio'       => __( 'Aspect ratio %s', 'wonom-slider' ),
+			/* translators: 1: height limit in px, 2: reference width in px */
+			'sizesDesktopNote' => __( 'Matches the visible area on a typical computer screen: the slider is at most %1$s px high on a %2$s px wide page, so an image of this shape is shown whole. Wider screens show it almost whole too.', 'wonom-slider' ),
+			'sizesDesktopNoCap' => __( 'There is no height limit, so the slider follows the image. 3 : 1 is a balanced banner shape.', 'wonom-slider' ),
+			/* translators: %s: mobile height limit in px */
+			'sizesMobileNote'  => __( 'Fills a phone screen well and stays within the mobile height limit (about %s px on a typical phone), so nothing is cropped. For a lower banner, 1080 × 1080 px (1 : 1) also works.', 'wonom-slider' ),
+			'sizesMobileNoCap' => __( 'Fills a phone screen well. For a lower banner, 1080 × 1080 px (1 : 1) also works.', 'wonom-slider' ),
+			'sizesRuleSame'    => __( 'Use the same shape for every desktop image and the same shape for every mobile image: the slider height comes from the first slide with an image, other shapes are cropped to fit it.', 'wonom-slider' ),
+			'sizesRuleSafe'    => __( 'Keep text and faces in the middle: on some screens up to about 8 % at the top and bottom, or a little at the sides, can be cut off.', 'wonom-slider' ),
+			'sizesRuleText'    => __( 'If the text is part of the image, always make a separate mobile image – desktop text becomes too small to read on a phone.', 'wonom-slider' ),
+			'sizesRuleFormat'  => __( 'Save as JPG or WebP: desktop under 400 kB, mobile under 250 kB. PNG only when you need transparency – a PNG photo is often 2 MB or more and slows the page down.', 'wonom-slider' ),
+			'sizesRuleCollage' => __( 'Collage photos: portrait 4 : 5 (e.g. 1080 × 1350 px), all the same size.', 'wonom-slider' ),
 			'mobileHint'       => __( 'Used below the mobile breakpoint. If empty, the desktop image is used with the mobile focal point.', 'wonom-slider' ),
 			'alt'              => __( 'Alt text (accessibility & SEO)', 'wonom-slider' ),
 			'imageSize'        => __( '%1$d × %2$d px', 'wonom-slider' ),

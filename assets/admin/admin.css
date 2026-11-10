@@ -377,3 +377,21 @@ body.wonom-app .wonom-settings textarea.wonom-code { width: 100%; font-family: u
 .wonom-typocolor input[type=color] { width: 44px; height: 30px; padding: 2px; border: 1px solid var(--w-border); border-radius: 6px; background: #fff; }
 .wonom-typocolor input[data-unset] { opacity: 0.55; }
 .wonom-typocolor .button-link { color: var(--w-muted); text-decoration: none; font-size: 12px; }
+
+/* previews rendered at a virtual device width (desktop) and scaled into the editor */
+.wonom-vp { width: 100%; }
+.wonom-vp:not(.is-scaled) { display: flex; justify-content: center; }
+.wonom-vp.is-scaled { position: relative; overflow: hidden; }
+.wonom-vp.is-scaled iframe { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; transition: none; }
+.wonom-preview-note { margin: 8px 0 0; text-align: center; }
+
+/* Settings → Image sizes */
+.wonom-sizes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; margin: 4px 0 14px; }
+.wonom-size { border: 1px solid var(--w-border); border-radius: var(--w-radius-sm); padding: 14px 16px; background: var(--w-bg); }
+.wonom-size h3 { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--w-text); display: flex; align-items: center; gap: 6px; }
+.wonom-size__px { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--w-text); margin: 2px 0 2px; }
+.wonom-size__ratio { font-size: 12px; color: var(--w-muted); margin-bottom: 8px; }
+.wonom-size__shape { background: repeating-linear-gradient(45deg, #dfe5ef 0 8px, #eef2f8 8px 16px); border: 1px dashed var(--w-border-strong); border-radius: 4px; margin: 10px 0 8px; }
+.wonom-size p { margin: 0; font-size: 12px; color: var(--w-muted); line-height: 1.5; }
+.wonom-size-rules { margin: 0; padding-left: 18px; font-size: 13px; color: var(--w-text); line-height: 1.6; }
+@media (max-width: 900px) { .wonom-sizes { grid-template-columns: 1fr; } }

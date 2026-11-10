@@ -267,7 +267,9 @@
 		h += '<span class="wonom-hint">' + esc( I.previewHint ) + '</span>';
 		h += '<button type="button" class="button" data-action="preview-refresh"><span class="dashicons dashicons-update"></span> ' + esc( I.refresh ) + '</button>';
 		h += '</div>';
-		h += '<div class="wonom-preview-stage is-' + preview.device + '"><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"></iframe></div>';
+		var scaled = preview.device === 'desktop';
+		h += '<div class="wonom-preview-stage is-' + preview.device + '"><div class="wonom-vp' + ( scaled ? ' is-scaled' : '' ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="width:' + VIEWPORT.desktop.w + 'px"' : '' ) + '></iframe></div></div>';
+		if ( scaled ) { h += '<p class="wonom-hint wonom-preview-note">' + esc( sprintf( I.previewWidthNote, VIEWPORT.desktop.w, VIEWPORT.desktop.h ) ) + '</p>'; }
 		h += '</div>';
 		return h;
 	}
@@ -441,7 +443,8 @@
 			h += '</div>';
 		} else {
 			h += '<div class="wonom-grid wonom-grid--2">';
-			h += imageBox( s, 'image', I.desktopImage, I.recommended );
+			var ia = imageAdvice();
+			h += imageBox( s, 'image', I.desktopImage, sprintf( I.recommendedFmt, ia.dW + ' × ' + ia.dH, ia.mW + ' × ' + ia.mH ) );
 			h += imageBox( s, 'mobile_image', I.mobileImage, I.mobileHint );
 			h += '</div>';
 			h += '<p class="wonom-hint">' + esc( I.focalHint ) + '</p>';
@@ -661,7 +664,9 @@
 		try {
 			var d = f.contentDocument, sl = d && d.querySelector( '.wonom-slider' );
 			if ( sl ) {
-				f.style.height = Math.max( 120, Math.ceil( sl.getBoundingClientRect().height ) ) + 'px';
+				var ph = Math.max( 120, Math.ceil( sl.getBoundingClientRect().height ) );
+				if ( f.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( f, VIEWPORT.desktop.w, ph ); }
+				else { f.style.height = ph + 'px'; }
 				[].forEach.call( d.images, function ( img ) { if ( ! img.complete ) { img.addEventListener( 'load', fitPreview ); } } );
 			}
 		} catch ( e ) { /* cross-origin – keep default height */ }
@@ -670,7 +675,7 @@
 	// Live miniatures: each card gets its own document (srcdoc iframe) with the exact front-end
 	// markup and stylesheet, rendered at desktop width and scaled down – the same pipeline as the
 	// big preview, so the card shows precisely what visitors see.
-	var THUMB_W = 960, THUMB_BOX_W = 160;
+	var THUMB_W = 1600, THUMB_BOX_W = 160;
 	function fitThumbs() {
 		var assets = ( state.assets || ( WONOM_SLIDER.state && WONOM_SLIDER.state.assets ) || {} );
 		var scale = THUMB_BOX_W / THUMB_W;
@@ -760,7 +765,36 @@
 	 * The front end caps the slider at e.g. 40vh of the visitor's window. Inside a preview iframe
 	 * "vh" would refer to the iframe itself (which is sized by the slider → feedback loop), so the
 	 * previews resolve the cap against a typical screen height per device instead. */
-	var REF_H = { desktop: 1080, tablet: 1024, mobile: 812 };
+	// Typical visible browser area per device (window minus browser bars). Desktop previews are
+	// rendered at this real width and scaled down, so the crop matches what visitors see.
+	var VIEWPORT = { desktop: { w: 1600, h: 1040 }, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 760 } };
+	var REF_H = { desktop: VIEWPORT.desktop.h, tablet: VIEWPORT.tablet.h, mobile: VIEWPORT.mobile.h };
+
+	// Render an iframe at a virtual width and scale it into its wrapper (.wonom-vp.is-scaled).
+	function fitScaled( iframe, vw, h ) {
+		var wrap = iframe.parentNode;
+		var avail = wrap.clientWidth || vw;
+		var scale = Math.min( 1, avail / vw );
+		iframe.style.width = vw + 'px';
+		iframe.style.height = h + 'px';
+		iframe.style.transform = scale < 1 ? 'scale(' + scale + ')' : '';
+		wrap.style.height = Math.ceil( h * scale ) + 'px';
+	}
+
+	/* Ideal image sizes for the current height limits (shown in Settings and under the image fields). */
+	function imageAdvice() {
+		var S = state.settings || {};
+		var D = VIEWPORT.desktop, M = VIEWPORT.mobile;
+		var dw = Math.min( D.w, parseInt( S.max_width, 10 ) || D.w ), cap = capPx( 'desktop' );
+		var dRatio = cap ? dw / cap : 3;                       // no limit → the classic 3:1
+		dRatio = Math.max( 2, Math.min( 6, dRatio ) );
+		var dW = 2400, dH = Math.round( dW / dRatio / 10 ) * 10;
+		var capM = capPx( 'mobile' );
+		var mRatio = 0.8;                                      // 4:5 fills a phone nicely
+		if ( capM && M.w / capM > mRatio ) { mRatio = M.w / capM; } // never taller than the mobile limit
+		var mW = 1080, mH = Math.round( mW / mRatio / 10 ) * 10;
+		return { dW: dW, dH: dH, dRatio: ( dW / dH ).toFixed( 1 ), mW: mW, mH: mH, mRatio: ( mW / mH ).toFixed( 2 ), dCap: cap, mCap: capM };
+	}
 	function capPx( device ) {
 		var S = state.settings || {};
 		var v = parseInt( S.max_height, 10 ) || 0, u = S.max_height_unit === 'px' ? 'px' : 'vh';
@@ -820,8 +854,13 @@
 			var iframe = document.createElement( 'iframe' );
 			iframe.className = 'wonom-stage-frame';
 			iframe.setAttribute( 'title', I.preview );
+			// Desktop stage: real desktop width, scaled down – the crop is exactly what visitors see.
+			var vp = document.createElement( 'div' );
+			vp.className = 'wonom-vp' + ( stage.device === 'desktop' ? ' is-scaled' : '' );
+			if ( stage.device === 'desktop' ) { iframe.style.width = VIEWPORT.desktop.w + 'px'; vp.style.height = '300px'; }
+			vp.appendChild( iframe );
 			host.innerHTML = '';
-			host.appendChild( iframe );
+			host.appendChild( vp );
 			stage.iframe = iframe;
 			iframe.addEventListener( 'load', function () {
 				fitStage( iframe );
@@ -838,9 +877,18 @@
 		try {
 			var d = iframe.contentDocument;
 			var sl = d.querySelector( '.wonom-slider' );
-			iframe.style.height = ( sl ? sl.getBoundingClientRect().height : d.body.scrollHeight ) + 'px';
+			var sh = Math.ceil( sl ? sl.getBoundingClientRect().height : d.body.scrollHeight );
+			if ( iframe.parentNode && iframe.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( iframe, VIEWPORT.desktop.w, sh ); }
+			else { iframe.style.height = sh + 'px'; }
 		} catch ( e ) { /* ignore */ }
 	}
+
+	// Scaled previews follow the editor width.
+	var refitTimer = null;
+	window.addEventListener( 'resize', function () {
+		clearTimeout( refitTimer );
+		refitTimer = setTimeout( function () { fitPreview(); if ( stage.iframe ) { fitStage( stage.iframe ); } }, 150 );
+	} );
 
 	// Which position fields apply on the current stage device.
 	function posKeys() {
@@ -1126,6 +1174,29 @@
 			field( I.paddingMobile, sInput( 'padding_mobile', 'number', ' min="0" max="100"' ) ) +
 			field( I.headingTag, sSelect( 'heading_tag', [ [ 'h2', 'H2' ], [ 'h1', 'H1' ], [ 'h3', 'H3' ], [ 'p', 'P' ] ] ), esc( I.headingTagHint ) ) +
 			'</div>' );
+
+		/* Image sizes: a guide for making your own banners, calculated from the limits above. */
+		var A2 = imageAdvice();
+		function sizeCard( icon, title, w, hgt, ratioText, note ) {
+			var shapeW = 100, shapeH = Math.max( 18, Math.round( shapeW * hgt / w ) );
+			if ( shapeH > 125 ) { shapeW = Math.round( 125 * w / hgt ); shapeH = 125; }
+			return '<div class="wonom-size"><h3><span class="dashicons dashicons-' + icon + '"></span> ' + esc( title ) + '</h3>'
+				+ '<div class="wonom-size__px">' + w + ' × ' + hgt + ' px</div>'
+				+ '<div class="wonom-size__ratio">' + esc( sprintf( I.sizesRatio, ratioText ) ) + '</div>'
+				+ '<div class="wonom-size__shape" style="width:' + ( shapeW * 2 ) + 'px;max-width:100%;aspect-ratio:' + w + ' / ' + hgt + '"></div>'
+				+ '<p>' + esc( note ) + '</p></div>';
+		}
+		var dNote = A2.dCap ? sprintf( I.sizesDesktopNote, A2.dCap, VIEWPORT.desktop.w ) : I.sizesDesktopNoCap;
+		var mNote = A2.mCap ? sprintf( I.sizesMobileNote, A2.mCap ) : I.sizesMobileNoCap;
+		h += group( I.gImageSizes, 'format-image',
+			'<p class="wonom-hint">' + esc( I.sizesIntro ) + '</p>' +
+			'<div class="wonom-sizes">' +
+			sizeCard( 'desktop', I.sizesDesktop, A2.dW, A2.dH, A2.dRatio + ' : 1', dNote ) +
+			sizeCard( 'smartphone', I.sizesMobile, A2.mW, A2.mH, A2.mRatio + ' : 1', mNote ) +
+			'</div>' +
+			'<ul class="wonom-size-rules">' +
+			[ I.sizesRuleSame, I.sizesRuleSafe, I.sizesRuleText, I.sizesRuleFormat, I.sizesRuleCollage ].map( function ( t ) { return '<li>' + esc( t ) + '</li>'; } ).join( '' ) +
+			'</ul>' );
 
 		var C = state.cache || {};
 		var cacheInner = '<div class="wonom-row"><label class="wonom-toggle wonom-toggle--inline"><input type="checkbox" data-adv="auto_purge"' + ( A.auto_purge ? ' checked' : '' ) + '><span></span></label><span>' + esc( I.autoPurge ) + '</span></div>';
