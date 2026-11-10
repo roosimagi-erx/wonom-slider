@@ -13,7 +13,7 @@
 	var langTab = {}; // slideId -> language slug
 	var tab = ( location.hash || '#slides' ).replace( '#', '' );
 	if ( [ 'slides', 'calendar', 'settings' ].indexOf( tab ) < 0 ) { tab = 'slides'; }
-	var preview = { open: true, device: 'desktop', all: true, lang: '' };
+	var preview = { open: true, device: 'screen', all: true, lang: '' };
 	try { preview.open = window.localStorage.getItem( 'wonom_slider_preview' ) !== '0'; } catch ( e ) { /* private mode */ }
 	var calView = null;
 	var saveBtn = document.getElementById( 'wonom-save' );
@@ -250,7 +250,7 @@
 		var h = '<div class="wonom-card wonom-preview">';
 		h += '<div class="wonom-preview-tools">';
 		h += '<div class="wonom-switch" role="group">';
-		[ [ 'wide', I.wideScreen, 'welcome-view-site' ], [ 'desktop', I.laptop, 'laptop' ], [ 'tablet', I.tablet, 'tablet' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
+		[ [ 'screen', I.yourScreen, 'desktop' ], [ 'desktop', I.laptop, 'laptop' ], [ 'wide', I.wideScreen, 'welcome-view-site' ], [ 'tablet', I.tablet, 'tablet' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
 			h += '<button type="button" data-action="preview-device" data-device="' + d[ 0 ] + '" aria-pressed="' + ( preview.device === d[ 0 ] ) + '"><span class="dashicons dashicons-' + d[ 2 ] + '"></span> ' + esc( d[ 1 ] ) + '</button>';
 		} );
 		h += '</div>';
@@ -267,9 +267,9 @@
 		h += '<span class="wonom-hint">' + esc( I.previewHint ) + '</span>';
 		h += '<button type="button" class="button" data-action="preview-refresh"><span class="dashicons dashicons-update"></span> ' + esc( I.refresh ) + '</button>';
 		h += '</div>';
-		var scaled = preview.device === 'desktop' || preview.device === 'wide', pv = VIEWPORT[ preview.device ] || VIEWPORT.desktop;
+		var scaled = preview.device === 'screen' || preview.device === 'desktop' || preview.device === 'wide', pv = VIEWPORT[ preview.device ] || VIEWPORT.screen;
 		h += '<div class="wonom-preview-stage is-' + ( scaled ? 'desktop' : preview.device ) + '"><div class="wonom-vp' + ( scaled ? ' is-scaled' : '' ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="width:' + pv.w + 'px"' : '' ) + '></iframe></div></div>';
-		if ( scaled ) { h += '<p class="wonom-hint wonom-preview-note">' + esc( sprintf( preview.device === 'wide' ? I.previewWideNote : I.previewWidthNote, pv.w, pv.h ) ) + '</p>'; }
+		if ( scaled ) { h += '<p class="wonom-hint wonom-preview-note">' + esc( sprintf( preview.device === 'wide' ? I.previewWideNote : ( preview.device === 'screen' ? I.previewScreenNote : I.previewWidthNote ), pv.w, pv.h ) ) + '</p>'; }
 		h += '</div>';
 		return h;
 	}
@@ -671,7 +671,7 @@
 			var d = f.contentDocument, sl = d && d.querySelector( '.wonom-slider' );
 			if ( sl ) {
 				var ph = Math.max( 120, Math.ceil( sl.getBoundingClientRect().height ) );
-				if ( f.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( f, ( VIEWPORT[ preview.device ] || VIEWPORT.desktop ).w, ph ); }
+				if ( f.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( f, ( VIEWPORT[ preview.device ] || VIEWPORT.screen ).w, ph ); }
 				else { f.style.height = ph + 'px'; }
 				[].forEach.call( d.images, function ( img ) { if ( ! img.complete ) { img.addEventListener( 'load', fitPreview ); } } );
 			}
@@ -681,7 +681,7 @@
 	// Live miniatures: each card gets its own document (srcdoc iframe) with the exact front-end
 	// markup and stylesheet, rendered at desktop width and scaled down – the same pipeline as the
 	// big preview, so the card shows precisely what visitors see.
-	var THUMB_W = 1600, THUMB_BOX_W = 160;
+	var THUMB_W = 0, THUMB_BOX_W = 160;   // set to the editor's screen width (see VIEWPORT.screen)
 	function fitThumbs() {
 		var assets = ( state.assets || ( WONOM_SLIDER.state && WONOM_SLIDER.state.assets ) || {} );
 		var scale = THUMB_BOX_W / THUMB_W;
@@ -691,7 +691,7 @@
 			var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 				+ '<link rel="stylesheet" href="' + esc( assets.css || '' ) + '">'
 				+ ( assets.fonts ? '<link rel="stylesheet" href="' + esc( assets.fonts ) + '">' : '' )
-				+ '<style>html,body{margin:0;background:#e9e9e9;overflow:hidden}' + capStyle( 'desktop' )
+				+ '<style>html,body{margin:0;background:#e9e9e9;overflow:hidden}' + capStyle( 'screen' )
 				+ '.wonom-slider{margin:0;max-width:none}'
 				+ '.wonom-slider__arrow,.wonom-slider__dots,.wonom-slider__progress{display:none!important}'
 				+ '.wonom-slide__badge,.wonom-slide__eyebrow,.wonom-slide__heading,.wonom-slide__text,.wonom-slide__actions{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}'
@@ -778,8 +778,16 @@
 	// and scaled down, so the crop in the editor is what visitors see.
 	// "wide" = a large monitor (2560 × 1440): the slider stops at its maximum width while the height
 	// limit keeps growing, so this is where the most of the image is shown.
-	var VIEWPORT = { desktop: { w: 1536, h: 730 }, wide: { w: 2560, h: 1300 }, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 700 } };
-	var REF_H = { desktop: VIEWPORT.desktop.h, wide: VIEWPORT.wide.h, tablet: VIEWPORT.tablet.h, mobile: VIEWPORT.mobile.h };
+	// "screen" = the browser window the editor is open in. The shop is usually checked on the same
+	// screen, so the stage, the thumbnails and the default preview use it: what you see in the editor
+	// is exactly what this screen shows in the shop at 100 % zoom.
+	var VIEWPORT = { screen: screenViewport(), desktop: { w: 1536, h: 730 }, wide: { w: 2560, h: 1300 }, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 700 } };
+	var REF_H = { screen: VIEWPORT.screen.h, desktop: VIEWPORT.desktop.h, wide: VIEWPORT.wide.h, tablet: VIEWPORT.tablet.h, mobile: VIEWPORT.mobile.h };
+	THUMB_W = VIEWPORT.screen.w;
+	function screenViewport() {
+		var de = document.documentElement;
+		return { w: Math.max( 1024, Math.round( de.clientWidth || window.innerWidth ) ), h: Math.max( 560, Math.round( window.innerHeight || de.clientHeight ) ) };
+	}
 
 	// Render an iframe at a virtual width and scale it into its wrapper (.wonom-vp.is-scaled).
 	function fitScaled( iframe, vw, h ) {
@@ -814,7 +822,7 @@
 	function collageFillText( s ) {
 		var rc = collageRatio( s );
 		var raw = function ( dev ) { return rc / sliderBoxRatio( dev ) * 100; };   // > 100 = wider than the slider
-		var wideRaw = raw( 'wide' ), lapRaw = raw( 'desktop' );
+		var wideRaw = raw( 'screen' ), lapRaw = raw( 'desktop' );
 		var wide = Math.min( 100, Math.round( wideRaw ) ), lap = Math.min( 100, Math.round( lapRaw ) );
 		var perPhoto = rc / Math.max( 1, s.collage.length );
 		var need = Math.max( 0, Math.ceil( ( sliderBoxRatio( 'desktop' ) - rc ) / perPhoto - 0.15 ) );
@@ -896,7 +904,7 @@
 			var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">'
 				+ ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
-				+ '<style>html,body{margin:0;background:#eceff4;overflow:hidden}' + capStyle( stage.device )
+				+ '<style>html,body{margin:0;background:#eceff4;overflow:hidden}' + capStyle( stage.device === 'desktop' ? 'screen' : stage.device )
 				+ '.wonom-slide__badge,.wonom-slide__eyebrow,.wonom-slide__heading,.wonom-slide__text,.wonom-slide__actions{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}'
 				+ '.wonom-slide__inner{outline:1px dashed rgba(255,255,255,.75);outline-offset:8px;cursor:move;user-select:none;-webkit-user-select:none}'
 				+ '.wonom-slide__inner:hover,.wonom-slide__inner:focus{outline:2px solid #2563eb;outline-offset:8px}'
@@ -913,7 +921,7 @@
 			// Desktop stage: real desktop width, scaled down – the crop is exactly what visitors see.
 			var vp = document.createElement( 'div' );
 			vp.className = 'wonom-vp' + ( stage.device === 'desktop' ? ' is-scaled' : '' );
-			if ( stage.device === 'desktop' ) { iframe.style.width = VIEWPORT.desktop.w + 'px'; vp.style.height = '300px'; }
+			if ( stage.device === 'desktop' ) { iframe.style.width = VIEWPORT.screen.w + 'px'; vp.style.height = '300px'; }
 			vp.appendChild( iframe );
 			host.innerHTML = '';
 			host.appendChild( vp );
@@ -934,7 +942,7 @@
 			var d = iframe.contentDocument;
 			var sl = d.querySelector( '.wonom-slider' );
 			var sh = Math.ceil( sl ? sl.getBoundingClientRect().height : d.body.scrollHeight );
-			if ( iframe.parentNode && iframe.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( iframe, VIEWPORT.desktop.w, sh ); }
+			if ( iframe.parentNode && iframe.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( iframe, VIEWPORT.screen.w, sh ); }
 			else { iframe.style.height = sh + 'px'; }
 		} catch ( e ) { /* ignore */ }
 	}
@@ -943,7 +951,22 @@
 	var refitTimer = null;
 	window.addEventListener( 'resize', function () {
 		clearTimeout( refitTimer );
-		refitTimer = setTimeout( function () { fitPreview(); if ( stage.iframe ) { fitStage( stage.iframe ); } }, 150 );
+		refitTimer = setTimeout( function () {
+			// The window is the reference screen: when it changes size, render the previews again for it.
+			var now = screenViewport(), old = VIEWPORT.screen;
+			if ( Math.abs( now.w - old.w ) > 40 || Math.abs( now.h - old.h ) > 40 ) {
+				VIEWPORT.screen = now; REF_H.screen = now.h; THUMB_W = now.w;
+				var pf = document.getElementById( 'wonom-preview-frame' );
+				if ( pf && preview.device === 'screen' ) { pf.style.width = now.w + 'px'; }
+				refreshPreview();
+				var openCard = app.querySelector( '.wonom-slide-card.is-open' );
+				if ( openCard ) { renderStage( findSlide( openCard.getAttribute( 'data-id' ) ) ); }
+				[].forEach.call( app.querySelectorAll( '.wonom-thumb__frame' ), function ( f ) { f.remove(); } );
+				fitThumbs();
+				return;
+			}
+			fitPreview(); if ( stage.iframe ) { fitStage( stage.iframe ); }
+		}, 250 );
 	} );
 
 	// Which position fields apply on the current stage device.

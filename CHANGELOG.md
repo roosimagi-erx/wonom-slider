@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.11 - 2026-11-10
+
+- Muudatus: lava, slaidide pisipildid ja vaikimisi eelvaade joonistatakse nüüd sinu enda brauseriakna mõõtudes (nupp „Sinu ekraan“). Mida näed redaktoris, seda näed samal ekraanil ka poes 100 % suumiga. Varem kasutati tüüpilise sülearvuti mõõte ja lava oli suurel monitoril palju madalam kui pood. Akna suuruse muutmisel joonistatakse eelvaated uuesti.
+- Eelvaate nupud „Sülearvuti“ ja „Suur ekraan“ jäävad alles, et saaksid kontrollida ka teisi ekraane.
+
 ## 1.7.10 - 2026-11-10
 
 - Parandus: kollaaži täitmise vihje ümardab nüüd õigesti: „fotorida on slaidist madalam“ ilmub ainult siis, kui see päriselt nii on, ja sülearvuti jaoks pakutakse õiget lisafotode arvu (5 fotoga: lisa 2).

@@ -167,10 +167,10 @@ class Wonom_Slider_Admin {
 			'fitCover'         => __( 'Fill the slide (crop photos)', 'wonom-slider' ),
 			'fitContain'       => __( 'Show photos whole', 'wonom-slider' ),
 			/* translators: 1: % of the width filled on a large monitor, 2: % on a laptop */
-			'collageFill'      => __( 'Photos are shown whole. They fill about %1$s % of the slider width on a large monitor and %2$s % on a laptop; the rest shows the slide background colour (Design → Background colour).', 'wonom-slider' ),
+			'collageFill'      => __( 'Photos are shown whole. They fill about %1$s % of the slider width on your screen and %2$s % on a laptop; the rest shows the slide background colour (Design → Background colour).', 'wonom-slider' ),
 			/* translators: %s: number of photos */
 			'collageFillAdd'   => __( 'Add %s more photo(s) to fill the width on a laptop too.', 'wonom-slider' ),
-			'collageFillLower' => __( 'On a large monitor the photos are wider than the slider, so the row is a little lower than the slide.', 'wonom-slider' ),
+			'collageFillLower' => __( 'On your screen the photos are wider than the slider, so the row is a little lower than the slide.', 'wonom-slider' ),
 			'seam'             => __( 'Seam between images', 'wonom-slider' ),
 			'seamHard'         => __( 'Sharp', 'wonom-slider' ),
 			'seamFade'         => __( 'Fade', 'wonom-slider' ),
@@ -307,6 +307,9 @@ class Wonom_Slider_Admin {
 			/* translators: 1: virtual width, 2: virtual height in px */
 			'previewWidthNote' => __( 'Shown as on a typical laptop (%1$s × %2$s px browser area), the most cropped common screen, and scaled down. What you see here is what visitors see; on larger screens the image is cropped less, never more.', 'wonom-slider' ),
 			'wideScreen'       => __( 'Large screen', 'wonom-slider' ),
+			'yourScreen'       => __( 'Your screen', 'wonom-slider' ),
+			/* translators: 1: browser width, 2: browser height in px */
+			'previewScreenNote' => __( 'Shown exactly as on this screen (browser area %1$s × %2$s px) at 100 % zoom, scaled down. The other buttons show a laptop and a large monitor.', 'wonom-slider' ),
 			'laptop'           => __( 'Laptop', 'wonom-slider' ),
 			/* translators: 1: virtual width, 2: virtual height in px */
 			'previewWideNote'  => __( 'Shown as on a large monitor (%1$s × %2$s px browser area) and scaled down. Here the slider is at its full width and most of the image is visible.', 'wonom-slider' ),
