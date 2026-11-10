@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.6 - 2026-11-10
+
+- Parandus: arvutipildi soovitus ja eelvaade lähtuvad nüüd tüüpilisest sülearvutist (brauseri ala 1536 × 730 px). Kõrguse piirang on protsent ekraani kõrgusest, nii et sülearvutil ja tavalisel 1080p monitoril on nähtav ala kõige laiem ja pilti kärbitakse kõige rohkem. 1.7.5 arvutas suurema ekraani järgi ja soovitas 2400 × 620, mis sülearvutil kaotas ikka umbes 20 % kõrgusest. 40 % piiranguga on õige mõõt 2400 × 460 px: see on igal levinud ekraanil terve, suuremal ekraanil on slaider lihtsalt madalam.
+- Külgede suhe kuvatakse eesti keeles komaga (5,2 : 1, 4 : 5).
+
 ## 1.7.5 - 2026-11-10
 
 - Parandus: arvutivaate eelvaade, lava ja slaidide pisipildid joonistatakse nüüd päris arvutilaiuses (brauseri ala 1600 × 1040 px) ja vähendatakse ekraanile. Varem joonistati need kitsamalt ja laial ekraanil tekkiv kärbe (pildi üla- ja alaosa) adminis ei paistnud. Nüüd näed adminis täpselt sama kärbet, mida näeb külastaja.

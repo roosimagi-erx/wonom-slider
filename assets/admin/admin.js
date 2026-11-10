@@ -765,9 +765,12 @@
 	 * The front end caps the slider at e.g. 40vh of the visitor's window. Inside a preview iframe
 	 * "vh" would refer to the iframe itself (which is sized by the slider → feedback loop), so the
 	 * previews resolve the cap against a typical screen height per device instead. */
-	// Typical visible browser area per device (window minus browser bars). Desktop previews are
-	// rendered at this real width and scaled down, so the crop matches what visitors see.
-	var VIEWPORT = { desktop: { w: 1600, h: 1040 }, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 760 } };
+	// Visible browser area per device (window minus browser bars). Desktop = a typical laptop
+	// (1536 × 864 screen): with a height limit in % of the screen this is the widest, i.e. most
+	// cropped, common case – an image that fits here is shown whole on every common screen
+	// (taller screens just show a lower slider). Desktop previews are rendered at this real width
+	// and scaled down, so the crop in the editor is what visitors see.
+	var VIEWPORT = { desktop: { w: 1536, h: 730 }, tablet: { w: 768, h: 1024 }, mobile: { w: 390, h: 700 } };
 	var REF_H = { desktop: VIEWPORT.desktop.h, tablet: VIEWPORT.tablet.h, mobile: VIEWPORT.mobile.h };
 
 	// Render an iframe at a virtual width and scale it into its wrapper (.wonom-vp.is-scaled).
@@ -793,7 +796,15 @@
 		var mRatio = 0.8;                                      // 4:5 fills a phone nicely
 		if ( capM && M.w / capM > mRatio ) { mRatio = M.w / capM; } // never taller than the mobile limit
 		var mW = 1080, mH = Math.round( mW / mRatio / 10 ) * 10;
-		return { dW: dW, dH: dH, dRatio: ( dW / dH ).toFixed( 1 ), mW: mW, mH: mH, mRatio: ( mW / mH ).toFixed( 2 ), dCap: cap, mCap: capM };
+		return { dW: dW, dH: dH, dRatio: ratioText( dW, dH ), mW: mW, mH: mH, mRatio: ratioText( mW, mH ), dCap: cap, mCap: capM };
+	}
+	// "5,2 : 1" / "4 : 5" in the admin language.
+	function ratioText( w, h ) {
+		var lang = document.documentElement.lang || undefined;
+		var fmt = function ( n ) { return Number( n ).toLocaleString( lang, { maximumFractionDigits: 1 } ); };
+		if ( w >= h ) { return fmt( w / h ) + ' : 1'; }
+		if ( Math.abs( w / h - 0.8 ) < 0.01 ) { return '4 : 5'; }
+		return '1 : ' + fmt( h / w );
 	}
 	function capPx( device ) {
 		var S = state.settings || {};
@@ -1191,8 +1202,8 @@
 		h += group( I.gImageSizes, 'format-image',
 			'<p class="wonom-hint">' + esc( I.sizesIntro ) + '</p>' +
 			'<div class="wonom-sizes">' +
-			sizeCard( 'desktop', I.sizesDesktop, A2.dW, A2.dH, A2.dRatio + ' : 1', dNote ) +
-			sizeCard( 'smartphone', I.sizesMobile, A2.mW, A2.mH, A2.mRatio + ' : 1', mNote ) +
+			sizeCard( 'desktop', I.sizesDesktop, A2.dW, A2.dH, A2.dRatio, dNote ) +
+			sizeCard( 'smartphone', I.sizesMobile, A2.mW, A2.mH, A2.mRatio, mNote ) +
 			'</div>' +
 			'<ul class="wonom-size-rules">' +
 			[ I.sizesRuleSame, I.sizesRuleSafe, I.sizesRuleText, I.sizesRuleFormat, I.sizesRuleCollage ].map( function ( t ) { return '<li>' + esc( t ) + '</li>'; } ).join( '' ) +

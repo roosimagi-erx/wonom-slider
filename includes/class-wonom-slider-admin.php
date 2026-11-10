@@ -295,7 +295,7 @@ class Wonom_Slider_Admin {
 			/* translators: 1: desktop size, 2: mobile size, e.g. "2400 × 620" */
 			'recommendedFmt'   => __( 'Ideal size with your settings: desktop %1$s px, mobile %2$s px. JPG or WebP. Details: Settings → Image sizes.', 'wonom-slider' ),
 			/* translators: 1: virtual width, 2: virtual height in px */
-			'previewWidthNote' => __( 'Shown as on a typical computer screen (%1$s × %2$s px browser area) and scaled down – any cropping here is what visitors see.', 'wonom-slider' ),
+			'previewWidthNote' => __( 'Shown as on a typical laptop (%1$s × %2$s px browser area), the most cropped common screen, and scaled down. What you see here is what visitors see; on larger screens the image is cropped less, never more.', 'wonom-slider' ),
 			'gImageSizes'      => __( 'Image sizes', 'wonom-slider' ),
 			'sizesIntro'       => __( 'Ideal sizes when you make your own banner images, calculated from the height limits under Layout. Other sizes work too – the slider then crops them around the focal point.', 'wonom-slider' ),
 			'sizesDesktop'     => __( 'Desktop image', 'wonom-slider' ),
@@ -303,7 +303,7 @@ class Wonom_Slider_Admin {
 			/* translators: %s: aspect ratio like "3.9 : 1" */
 			'sizesRatio'       => __( 'Aspect ratio %s', 'wonom-slider' ),
 			/* translators: 1: height limit in px, 2: reference width in px */
-			'sizesDesktopNote' => __( 'Matches the visible area on a typical computer screen: the slider is at most %1$s px high on a %2$s px wide page, so an image of this shape is shown whole. Wider screens show it almost whole too.', 'wonom-slider' ),
+			'sizesDesktopNote' => __( 'Matches the visible area on a typical laptop, the most cropped common screen: there the slider is at most %1$s px high and %2$s px wide. An image of this shape is shown whole on every common screen; on larger screens the slider is simply lower. Want a taller banner? Raise the height limit under Layout and this size follows.', 'wonom-slider' ),
 			'sizesDesktopNoCap' => __( 'There is no height limit, so the slider follows the image. 3 : 1 is a balanced banner shape.', 'wonom-slider' ),
 			/* translators: %s: mobile height limit in px */
 			'sizesMobileNote'  => __( 'Fills a phone screen well and stays within the mobile height limit (about %s px on a typical phone), so nothing is cropped. For a lower banner, 1080 × 1080 px (1 : 1) also works.', 'wonom-slider' ),
