@@ -813,12 +813,14 @@
 	}
 	function collageFillText( s ) {
 		var rc = collageRatio( s );
-		var pct = function ( dev ) { return Math.min( 100, Math.round( rc / sliderBoxRatio( dev ) * 100 ) ); };
-		var wide = pct( 'wide' ), lap = pct( 'desktop' );
-		var need = Math.max( 0, Math.ceil( ( sliderBoxRatio( 'desktop' ) - rc ) / ( rc / Math.max( 1, s.collage.length ) ) ) );
+		var raw = function ( dev ) { return rc / sliderBoxRatio( dev ) * 100; };   // > 100 = wider than the slider
+		var wideRaw = raw( 'wide' ), lapRaw = raw( 'desktop' );
+		var wide = Math.min( 100, Math.round( wideRaw ) ), lap = Math.min( 100, Math.round( lapRaw ) );
+		var perPhoto = rc / Math.max( 1, s.collage.length );
+		var need = Math.max( 0, Math.ceil( ( sliderBoxRatio( 'desktop' ) - rc ) / perPhoto - 0.15 ) );
 		var t = sprintf( I.collageFill, wide, lap );
-		if ( lap < 100 && need > 0 && s.collage.length + need <= COLLAGE_MAX ) { t += ' ' + sprintf( I.collageFillAdd, need ); }
-		if ( wide >= 100 ) { t += ' ' + I.collageFillLower; }
+		if ( lap < 97 && need > 0 ) { t += ' ' + sprintf( I.collageFillAdd, Math.min( need, COLLAGE_MAX - s.collage.length ) ); }
+		if ( wideRaw > 103 ) { t += ' ' + I.collageFillLower; }
 		return t;
 	}
 
