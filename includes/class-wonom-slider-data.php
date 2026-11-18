@@ -668,10 +668,11 @@ class Wonom_Slider_Data {
 				if ( ! is_array( $item ) ) {
 					continue;
 				}
-				// Width in "photos" (0.25 steps) and the mobile width (-1 = same, 0 = hidden on mobile).
-				$w  = isset( $item['w'] ) && is_numeric( $item['w'] ) ? max( 0.25, min( 4, round( (float) $item['w'] * 4 ) / 4 ) ) : 1;
+				// Width in "photos" (0.05 steps – the editor also sets it by dragging a seam) and the mobile
+				// width (-1 = same, 0 = hidden on mobile).
+				$w  = isset( $item['w'] ) && is_numeric( $item['w'] ) ? max( 0.1, min( 6, round( (float) $item['w'] * 20 ) / 20 ) ) : 1;
 				$wm = isset( $item['wm'] ) && is_numeric( $item['wm'] ) ? (float) $item['wm'] : -1;
-				$wm = $wm < 0 ? -1 : ( 0.0 === $wm ? 0 : max( 0.25, min( 4, round( $wm * 4 ) / 4 ) ) );
+				$wm = $wm < 0 ? -1 : ( 0.0 === $wm ? 0 : max( 0.1, min( 6, round( $wm * 20 ) / 20 ) ) );
 				if ( isset( $item['type'] ) && 'color' === $item['type'] ) {
 					$out['collage'][] = array( 'type' => 'color', 'w' => $w, 'wm' => $wm );
 					continue;

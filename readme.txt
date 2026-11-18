@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,13 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.9.2 - 2026-11-18 =
+* Uus: kollaaži saab slaidi eelvaates hiirega sättida.
+* Fotost kinni võttes nihutad fotot tema lahtri sees (sama mis fookuspunkt, eraldi arvutile ja mobiilile).
+* Kahe lahtri vahelist serva lohistades muudad nende laiust sujuvalt; mobiilivaates muutub mobiili laius.
+* Foto kohal ilmuvast ⇄ pidemest (või värvipinnast endast) lohistades viid lahtri teise kohta.
+* Muudatus: lahtri laius salvestub 0,05 täpsusega, et lohistatud laius jääks täpselt selliseks.
 
 = 1.9.1 - 2026-11-18 =
 * Uus: värvipinna laiuseks saab valida ka 0,25× (kitsas värviriba, nt slaideri servades).
@@ -82,8 +89,5 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 = 1.7.5 - 2026-11-10 =
 * Parandus: arvutivaate eelvaade, lava ja slaidide pisipildid joonistatakse nüüd päris arvutilaiuses (brauseri ala 1600 × 1040 px) ja vähendatakse ekraanile. Varem joonistati need kitsamalt ja laial ekraanil tekkiv kärbe (pildi üla- ja alaosa) adminis ei paistnud. Nüüd näed adminis täpselt sama kärbet, mida näeb külastaja.
 * Uus: Seaded → Pildi mõõdud. Juhend, mis mõõdus arvuti- ja mobiilipildid teha, arvutatud sinu kõrguse piirangutest (praeguste seadetega arvuti 2400 × 620 px, mobiil 1080 × 1350 px), koos reeglitega teksti, failivormingu ja kollaažifotode kohta. Pildivälja all olev soovitus kasutab samu arvutatud mõõte (enne oli seal vale 1920 × 660).
-
-= 1.7.4 - 2026-11-10 =
-* Tehniline: uued versioonid avaldatakse nüüd otse väljalaske skriptist (nagu Wonom KKK-l) ja GitHub kontrollib iga väljalaske üle. Kui kontroll ebaõnnestub, ei pakuta seda versiooni poodidele üldse. Plugina töös muudatusi pole.
 
 Full history: CHANGELOG.md on GitHub.

@@ -201,6 +201,12 @@ msgstr "Kollaaž (kuni 7 lahtrit)"
 msgid "Collage photos: portrait 4 : 5 (e.g. 1080 × 1350 px), all the same size."
 msgstr "Kollaaži fotod: püstised 4 : 5 (nt 1080 × 1350 px), kõik ühesuurused."
 
+msgid "Collage: drag a photo to move it inside its slot, drag the edge between two slots to change their widths, drag ⇄ (or a colour field) to change the order."
+msgstr "Kollaaž: lohista fotot, et nihutada seda lahtri sees; lohista kahe lahtri vahelist serva, et muuta laiust; lohista ⇄ pidet (või värvipinda), et muuta järjekorda."
+
+msgid "Collage: drag ⇄ (or a colour field) to change the order."
+msgstr "Kollaaž: lohista ⇄ pidet (või värvipinda), et muuta järjekorda."
+
 msgid "Colour"
 msgstr "Värv"
 
@@ -302,6 +308,9 @@ msgstr "Punktide asukoht"
 
 msgid "Drag the text block anywhere. Arrow keys nudge by 1 % (Shift = 5 %). Drag the blue handle to change its width. Switch to Mobile to position it separately for phones."
 msgstr "Lohista tekstiplokk kuhu tahes. Nooleklahvid nihutavad 1 % (Shift = 5 %). Sinisest pidemest saab muuta laiust. Vali „Mobiil”, et paigutada plokk telefonile eraldi."
+
+msgid "Drag to move this photo to another place"
+msgstr "Lohista, et viia see foto teise kohta"
 
 msgid "Drag to reorder"
 msgstr "Lohista järjekorra muutmiseks"

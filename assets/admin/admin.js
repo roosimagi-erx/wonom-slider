@@ -416,7 +416,7 @@
 		[ [ 'desktop', I.desktop, 'desktop' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
 			h += '<button type="button" data-action="stage-device" data-device="' + d[ 0 ] + '" aria-pressed="' + ( stage.device === d[ 0 ] ) + '"><span class="dashicons dashicons-' + d[ 2 ] + '"></span> ' + esc( d[ 1 ] ) + '</button>';
 		} );
-		h += '</div><span class="wonom-hint">' + esc( I.stageHint ) + '</span></div>';
+		h += '</div><span class="wonom-hint">' + esc( I.stageHint ) + ( s.bg_mode === 'collage' && s.collage && s.collage.length ? ' ' + esc( s.collage_fit === 'contain' ? I.stageCollageHintWhole : I.stageCollageHint ) : '' ) + '</span></div>';
 		h += '<div class="wonom-stage is-' + stage.device + '" data-stage><div class="wonom-stage-empty">' + esc( I.stageLoading ) + '</div></div>';
 		h += '</section>';
 
@@ -982,6 +982,11 @@
 				+ '.wonom-stage-guide{position:absolute;background:rgba(37,99,235,.85);pointer-events:none;display:none;z-index:9}'
 				+ '.wonom-stage-guide.v{left:50%;top:0;bottom:0;width:1px}.wonom-stage-guide.h{top:50%;left:0;right:0;height:1px}'
 				+ '.wonom-stage-guide.is-on{display:block}'
+				+ '.wonom-slide__link{pointer-events:none}'
+				+ '.wonom-stage-move{position:absolute;top:10px;z-index:12;display:none;transform:translateX(-50%);padding:4px 12px;border-radius:999px;background:#2563eb;color:#fff;font:600 18px/1 system-ui,sans-serif;box-shadow:0 1px 6px rgba(0,0,0,.35);cursor:move;user-select:none}'
+				+ '.wonom-stage-move.is-on{display:block}'
+				+ '.wonom-stage-marker{position:absolute;top:0;bottom:0;width:4px;margin-left:-2px;z-index:12;display:none;background:#2563eb;box-shadow:0 0 0 2px rgba(255,255,255,.7);pointer-events:none}'
+				+ '.wonom-stage-marker.is-on{display:block}'
 				+ ( res.custom_css || '' ) + '</style></head><body>' + res.html + '</body></html>';
 
 			var iframe = document.createElement( 'iframe' );
@@ -1072,6 +1077,7 @@
 
 	function attachStage( doc, s ) {
 		var slideEl = doc.querySelector( '.wonom-slide' ), inner = doc.querySelector( '.wonom-slide__inner' );
+		if ( slideEl && doc.querySelector( '.wonom-collage' ) ) { attachCollageDrag( doc, s, slideEl ); }
 		if ( ! slideEl || ! inner ) { return; }
 		inner.setAttribute( 'tabindex', '0' );
 		var handle = doc.createElement( 'div' ); handle.className = 'wonom-stage-handle'; inner.appendChild( handle );
@@ -1133,6 +1139,166 @@
 			applyFree( s, slideEl, Math.max( 0, Math.min( 100, x + dx * step ) ), Math.max( 0, Math.min( 100, y + dy * step ) ), w );
 			commit();
 		} );
+	}
+
+	/* ---------- collage on the stage: pan a photo, drag a seam to resize, drag to reorder ---------- */
+
+	// "Choose per slot" on mobile, keeping what the first-N rule showed (needed before mobile widths change).
+	function ensureCustomMobile( s ) {
+		if ( s.collage_mobile === 'custom' ) { return; }
+		var lim = { first3: 3, first2: 2, first1: 1 }[ s.collage_mobile ] || 0;
+		s.collage.forEach( function ( c, i ) { c.wm = lim && i >= lim ? 0 : -1; } );
+		s.collage_mobile = 'custom';
+	}
+	function roundW( x ) { return Math.max( 0.1, Math.min( 6, Math.round( x * 20 ) / 20 ) ); }
+	// Show a changed width in the slot's select without re-rendering the editor (the stage stays put).
+	function syncSlotSelect( idx, key, val ) {
+		var sel = app.querySelector( '.wonom-slide-card.is-open .wonom-cslot[data-slot="' + idx + '"] select[data-cslot="' + key + '"]' );
+		if ( ! sel ) { return; }
+		var v = String( val );
+		if ( ! [].some.call( sel.options, function ( o ) { return o.value === v; } ) ) {
+			var o = document.createElement( 'option' ); o.value = v; o.textContent = fmtW( val );
+			var before = [].filter.call( sel.options, function ( x ) { return parseFloat( x.value ) > val; } )[ 0 ];
+			sel.insertBefore( o, before || null );
+		}
+		sel.value = v;
+	}
+
+	function attachCollageDrag( doc, s, slideEl ) {
+		var col = doc.querySelector( '.wonom-collage' );
+		var items = [].slice.call( col.querySelectorAll( '.wonom-collage__item' ) );
+		var whole = col.classList.contains( 'fit-contain' ), mobile = stage.device === 'mobile';
+		var mover = doc.createElement( 'div' ); mover.className = 'wonom-stage-move'; mover.title = I.stageMoveSlot; mover.textContent = '⇄'; slideEl.appendChild( mover );
+		var marker = doc.createElement( 'div' ); marker.className = 'wonom-stage-marker'; slideEl.appendChild( marker );
+		var drag = null;
+
+		function scale() {   // stage px → screen px (the desktop stage is shrunk)
+			var f = stage.iframe; return f && f.offsetWidth ? f.getBoundingClientRect().width / f.offsetWidth : 1;
+		}
+		function visible() {
+			return items.map( function ( el, i ) { return { el: el, i: i, r: el.getBoundingClientRect() }; } ).filter( function ( v ) { return v.r.width > 0; } );
+		}
+		function slotAt( x ) {
+			var v = visible();
+			for ( var k = v.length - 1; k >= 0; k-- ) { if ( x >= v[ k ].r.left && x <= v[ k ].r.right ) { return v[ k ]; } }   // later items overlap earlier ones
+			return null;
+		}
+		function seamAt( x ) {
+			if ( whole ) { return null; }   // whole photos keep their own width
+			var v = visible(), tol = 9 / scale();
+			for ( var k = 0; k < v.length - 1; k++ ) {
+				var bx = ( v[ k ].r.right + v[ k + 1 ].r.left ) / 2;
+				if ( Math.abs( x - bx ) <= tol ) { return { a: v[ k ], b: v[ k + 1 ], x: bx }; }
+			}
+			return null;
+		}
+		function wOf( i ) { var c = s.collage[ i ]; return mobile && parseFloat( c.wm ) > 0 ? parseFloat( c.wm ) : slotW( c ); }
+		function photoInfo( v ) {
+			var img = v.el.querySelector( 'img' ), c = s.collage[ v.i ];
+			if ( ! img || ! img.naturalWidth ) { return null; }
+			var k = Math.max( v.r.width / img.naturalWidth, v.r.height / img.naturalHeight );
+			var fx = mobile && c.mfocal_x != null ? c.mfocal_x : c.focal_x, fy = mobile && c.mfocal_y != null ? c.mfocal_y : c.focal_y;
+			return { ox: img.naturalWidth * k - v.r.width, oy: img.naturalHeight * k - v.r.height, fx: fx == null ? 50 : fx, fy: fy == null ? 50 : fy };
+		}
+		// Insertion point for reordering: before visible slot k (k = count → after the last one).
+		function insertAt( x ) {
+			var v = visible(), best = 0, bestD = Infinity;
+			for ( var k = 0; k <= v.length; k++ ) {
+				var ex = k === 0 ? v[ 0 ].r.left : ( k === v.length ? v[ k - 1 ].r.right : ( v[ k - 1 ].r.right + v[ k ].r.left ) / 2 );
+				if ( Math.abs( x - ex ) < bestD ) { bestD = Math.abs( x - ex ); best = k; }
+			}
+			return { k: best, v: v, x: best === 0 ? v[ 0 ].r.left : ( best === v.length ? v[ best - 1 ].r.right : ( v[ best - 1 ].r.right + v[ best ].r.left ) / 2 ) };
+		}
+		function toLocal( x ) { return x - slideEl.getBoundingClientRect().left; }
+
+		slideEl.addEventListener( 'pointermove', function ( e ) {
+			if ( drag ) { return; }
+			if ( e.target.closest( '.wonom-slide__inner' ) || e.target === mover ) { return; }
+			var seam = seamAt( e.clientX ), slot = seam ? null : slotAt( e.clientX );
+			slideEl.style.cursor = seam ? 'col-resize' : ( slot ? ( slot.el.classList.contains( 'is-color' ) ? 'move' : 'grab' ) : '' );
+			if ( slot && slot.el.classList.contains( 'is-photo' ) ) {
+				mover.style.left = toLocal( slot.r.left + slot.r.width / 2 ) + 'px'; mover.setAttribute( 'data-i', slot.i ); mover.classList.add( 'is-on' );
+			} else if ( ! seam ) { mover.classList.remove( 'is-on' ); }
+		} );
+		slideEl.addEventListener( 'pointerleave', function () { if ( ! drag ) { mover.classList.remove( 'is-on' ); slideEl.style.cursor = ''; } } );
+		slideEl.addEventListener( 'click', function ( e ) { e.preventDefault(); } );   // never follow the slide link here
+
+		slideEl.addEventListener( 'pointerdown', function ( e ) {
+			if ( e.button !== 0 || e.target.closest( '.wonom-slide__inner' ) ) { return; }   // the text block has its own drag
+			var seam = e.target === mover ? null : seamAt( e.clientX );
+			if ( seam ) {
+				if ( mobile ) { ensureCustomMobile( s ); }
+				drag = { type: 'seam', a: seam.a, b: seam.b, total: wOf( seam.a.i ) + wOf( seam.b.i ), x0: seam.a.r.left, x1: seam.b.r.right };
+			} else {
+				var slot = e.target === mover ? visible().filter( function ( v ) { return v.i === parseInt( mover.getAttribute( 'data-i' ), 10 ); } )[ 0 ] : slotAt( e.clientX );
+				if ( ! slot ) { return; }
+				if ( e.target === mover || slot.el.classList.contains( 'is-color' ) ) {
+					drag = { type: 'move', from: slot.i };
+					slot.el.style.opacity = '0.55';
+				} else {
+					var info = photoInfo( slot );
+					if ( ! info ) { return; }
+					drag = { type: 'pan', v: slot, info: info, sx: e.clientX, sy: e.clientY };
+					slideEl.style.cursor = 'grabbing';
+				}
+			}
+			slideEl.setPointerCapture( e.pointerId );
+			e.preventDefault();
+		} );
+
+		slideEl.addEventListener( 'pointermove', function ( e ) {
+			if ( ! drag ) { return; }
+			var c;
+			if ( drag.type === 'pan' ) {
+				var inf = drag.info; c = s.collage[ drag.v.i ];
+				var fx = inf.ox > 1 ? Math.round( Math.max( 0, Math.min( 100, inf.fx - ( e.clientX - drag.sx ) / inf.ox * 100 ) ) ) : inf.fx;
+				var fy = inf.oy > 1 ? Math.round( Math.max( 0, Math.min( 100, inf.fy - ( e.clientY - drag.sy ) / inf.oy * 100 ) ) ) : inf.fy;
+				if ( mobile ) { c.mfocal_x = fx; c.mfocal_y = fy; drag.v.el.style.setProperty( '--ws-cfm', fx + '% ' + fy + '%' ); }
+				else {
+					c.focal_x = fx; c.focal_y = fy; drag.v.el.style.setProperty( '--ws-cf', fx + '% ' + fy + '%' );
+					if ( c.mfocal_x == null ) { drag.v.el.style.setProperty( '--ws-cfm', fx + '% ' + fy + '%' ); }
+				}
+				drag.changed = true;
+			} else if ( drag.type === 'seam' ) {
+				var f = Math.max( 0.04, Math.min( 0.96, ( e.clientX - drag.x0 ) / Math.max( 1, drag.x1 - drag.x0 ) ) );
+				var wa = roundW( drag.total * f ), wb = roundW( drag.total - wa );
+				var key = mobile ? 'wm' : 'w', prop = mobile ? '--ws-cwm' : '--ws-cw';
+				s.collage[ drag.a.i ][ key ] = wa; s.collage[ drag.b.i ][ key ] = wb;
+				drag.a.el.style.setProperty( prop, wa ); drag.b.el.style.setProperty( prop, wb );
+				drag.changed = true;
+			} else {
+				var ins = insertAt( e.clientX );
+				marker.style.left = toLocal( ins.x ) + 'px'; marker.classList.add( 'is-on' );
+				drag.to = ins;
+			}
+		} );
+
+		function end() {
+			if ( ! drag ) { return; }
+			var d = drag; drag = null;
+			slideEl.style.cursor = ''; marker.classList.remove( 'is-on' );
+			if ( d.type === 'pan' && d.changed ) {
+				var c = s.collage[ d.v.i ], dot = app.querySelector( '.wonom-slide-card.is-open .wonom-cslot[data-slot="' + d.v.i + '"] .wonom-focal' );
+				if ( dot ) { dot.style.left = ( mobile ? c.mfocal_x : c.focal_x ) + '%'; dot.style.top = ( mobile ? c.mfocal_y : c.focal_y ) + '%'; }
+				markDirty( 'slides' );
+			} else if ( d.type === 'seam' && d.changed ) {
+				var key = mobile ? 'wm' : 'w';
+				syncSlotSelect( d.a.i, key, s.collage[ d.a.i ][ key ] ); syncSlotSelect( d.b.i, key, s.collage[ d.b.i ][ key ] );
+				markDirty( 'slides' );
+				if ( mobile ) { render(); }   // the slots now show their own mobile widths
+			} else if ( d.type === 'move' ) {
+				items[ d.from ].style.opacity = '';
+				if ( ! d.to ) { return; }
+				// Target position in the full list: before the k-th visible slot, or after the last visible one.
+				var target = d.to.k < d.to.v.length ? d.to.v[ d.to.k ].i : d.to.v[ d.to.v.length - 1 ].i + 1;
+				if ( target === d.from || target === d.from + 1 ) { return; }
+				var moved = s.collage.splice( d.from, 1 )[ 0 ];
+				s.collage.splice( target > d.from ? target - 1 : target, 0, moved );
+				markDirty( 'slides' ); render();
+			}
+		}
+		slideEl.addEventListener( 'pointerup', end );
+		slideEl.addEventListener( 'pointercancel', end );
 	}
 
 	/**

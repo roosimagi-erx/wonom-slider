@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.2 - 2026-11-18
+
+- Uus: kollaaži saab slaidi eelvaates hiirega sättida.
+  - Fotost kinni võttes nihutad fotot tema lahtri sees (sama mis fookuspunkt, eraldi arvutile ja mobiilile).
+  - Kahe lahtri vahelist serva lohistades muudad nende laiust sujuvalt; mobiilivaates muutub mobiili laius.
+  - Foto kohal ilmuvast ⇄ pidemest (või värvipinnast endast) lohistades viid lahtri teise kohta.
+- Muudatus: lahtri laius salvestub 0,05 täpsusega, et lohistatud laius jääks täpselt selliseks.
+
 ## 1.9.1 - 2026-11-18
 
 - Uus: värvipinna laiuseks saab valida ka 0,25× (kitsas värviriba, nt slaideri servades).
