@@ -401,3 +401,5 @@ body.wonom-app .wonom-settings textarea.wonom-code { width: 100%; font-family: u
 .wonom-size__safe { display: block; width: 100%; background: rgba(37, 99, 235, 0.14); border-top: 1px dashed var(--w-primary); border-bottom: 1px dashed var(--w-primary); }
 .wonom-size__safe-label { font-size: 12px; color: var(--w-text); margin: -2px 0 8px; display: flex; align-items: center; gap: 6px; }
 .wonom-size__safe-label i { display: inline-block; width: 12px; height: 8px; background: rgba(37, 99, 235, 0.22); border: 1px dashed var(--w-primary); }
+.wonom-ok-text { color: var(--w-ok); }
+body.wonom-app [hidden] { display: none !important; }

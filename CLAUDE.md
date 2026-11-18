@@ -21,6 +21,21 @@
 4. Ütle kasutajale: **Wonom Slider → Seaded → „Kontrolli uuendusi kohe“ → „Uuenda kohe“**
    (või Pluginad-lehel). Ilma nuputa näeb pood uuendust 6 tunni jooksul.
 
+**Suurem või riskantsem muudatus – testsait enne poode:**
+
+```powershell
+.\build-release.ps1 -Version X.Y.Z -Release -Prerelease   # GitHubi eelväljalase: poed seda ei näe
+# testsait: Pluginad → Lisa uus → Laadi üles → wonom-slider.zip → „Asenda praegune“, testi
+.\build-release.ps1 -Version X.Y.Z -Promote              # tavaliseks väljalaskeks: poed näevad uuendust
+```
+
+Tagasipööramine testsaidil: lae alla eelmise väljalaske ZIP
+(`https://github.com/roosimagi-erx/wonom-slider/releases/download/vA.B.C/wonom-slider.zip`) ja
+paigalda see samamoodi „Asenda praegune“ valikuga. Andmed (`wonom_slider_*` optionid) jäävad alles.
+
+Tõlked: muuda ainult `languages/wonom-slider-et.l10n.php`; `.po`, `.mo` ja admin-JS-i JSON genereerib
+`tools/build-translations.ps1` (käivitub väljalaske skriptist). Admin-liidese tekstid on `assets/admin/i18n.js`-is.
+
 Skript keeldub: vales kaustas, väiksema või sama versiooniga (`-Force` ehitab sama versiooni uuesti),
 tühja CHANGELOG-i sektsiooniga, olemasoleva tagi või väljalaskega, mitte-`main` harul.
 `gh` on paigaldatud (`C:\Program Files\GitHub CLI\gh.exe`) ja sisse logitud kontoga `roosimagi-erx`.

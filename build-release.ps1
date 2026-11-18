@@ -36,7 +36,15 @@ param(
 
     [string]$Notes = '',
 
-    [switch]$Force
+    [switch]$Force,
+
+    # With -Release: publish as a GitHub pre-release. The plugin's updater ignores pre-releases, so no
+    # shop is offered it - install the zip on the test site by hand, then run -Promote.
+    [switch]$Prerelease,
+
+    # Turn an already published pre-release of -Version into the normal (latest) release, so shops
+    # are offered it. Nothing is rebuilt.
+    [switch]$Promote
 )
 
 $ErrorActionPreference = 'Stop'
@@ -70,7 +78,7 @@ if ($Release) { $Tag = $true }
 
 # Same number: fine for publishing a version that was bumped but never released (the tag and
 # release checks below catch a real duplicate); a plain rebuild needs -Force.
-if ($cmp -eq 0 -and -not $Force -and -not $Tag) {
+if ($cmp -eq 0 -and -not $Force -and -not $Tag -and -not $Promote) {
     throw "Version $Version is already the current version. Use a higher number, -Release to publish it, or -Force to rebuild the zip."
 }
 
@@ -94,6 +102,20 @@ function Find-Gh {
     if (Test-Path $exe) { return $exe }
     throw "gh CLI is missing. Install: winget install --id GitHub.cli ; then: gh auth login"
 }
+
+# -Promote: pre-release -> normal latest release (after the test site check). Nothing is rebuilt.
+if ($Promote) {
+    if ($cmp -ne 0) { throw "-Promote works on the current version ($current), not $Version." }
+    $gh = Find-Gh
+    $view = Invoke-Native $gh @('release', 'view', "v$Version", '--repo', $repo, '--json', 'isPrerelease,isDraft', '--jq', '"\(.isPrerelease) \(.isDraft)"') -Quiet
+    if ($view.Code -ne 0 -or -not $view.Out) { throw "Release v$Version not found on GitHub." }
+    if ($view.Out -match 'true$') { throw "v$Version is a draft (the release checks failed). Fix it and release a higher version." }
+    if ($view.Out -match '^false') { Write-Host "v$Version is already a normal release." -ForegroundColor Yellow; exit 0 }
+    if ((Invoke-Native $gh @('release', 'edit', "v$Version", '--repo', $repo, '--prerelease=false', '--latest')).Code -ne 0) { throw "gh release edit failed." }
+    Write-Host "v$Version is now the latest release - shops are offered it (within 6 h, or now via 'Check for updates now')." -ForegroundColor Green
+    exit 0
+}
+if ($Prerelease -and -not $Release) { throw "-Prerelease is used together with -Release." }
 
 if ($Tag) {
     Push-Location $root
@@ -145,12 +167,46 @@ Update-File $main @{
 }
 Update-File $readme @{ '(Stable tag:\s*)\d+\.\d+\.\d+' = "`${1}$Version" }
 
+# readme.txt "== Changelog ==" is generated from CHANGELOG.md (latest 15 versions, WordPress format),
+# so the WordPress "View details" window and readme.txt never go stale.
+function Update-ReadmeChangelog([string]$clSource) {
+    if (-not (Test-Path $readme)) { return }
+    $matches2 = [regex]::Matches($clSource, "(?ms)^## (\d+\.\d+\.\d+)[^\r\n]*?(?: - (\d{4}-\d{2}-\d{2}))?\r?\n(.*?)(?=^## |\z)")
+    $out = New-Object System.Text.StringBuilder
+    $n = 0
+    foreach ($m in $matches2) {
+        if ($n -ge 15) { break }
+        $body = $m.Groups[3].Value.Trim()
+        if (($body -replace '[-\s]', '') -eq '') { continue }
+        $head = if ($m.Groups[2].Value) { "= $($m.Groups[1].Value) - $($m.Groups[2].Value) =" } else { "= $($m.Groups[1].Value) =" }
+        [void]$out.AppendLine($head)
+        foreach ($line in ($body -split "\r?\n")) {
+            if ($line -match '^\s*-\s+(.*)$') { [void]$out.AppendLine("* " + $Matches[1]) }
+            elseif ($line.Trim() -ne '') { [void]$out.AppendLine($line.Trim()) }
+        }
+        [void]$out.AppendLine('')
+        $n++
+    }
+    $rt = [System.IO.File]::ReadAllText($readme, [System.Text.Encoding]::UTF8)
+    $rt = [regex]::Replace($rt, '(?s)== Changelog ==.*\z', "== Changelog ==`r`n`r`n" + $out.ToString().TrimEnd() + "`r`n`r`nFull history: CHANGELOG.md on GitHub.`r`n")
+    [System.IO.File]::WriteAllText($readme, $rt, $utf8)
+}
+
 # No CHANGELOG section yet (bump-only run): add an empty one to fill in.
 if ((Test-Path $changelog) -and $null -eq $section) {
     $date = Get-Date -Format 'yyyy-MM-dd'
     $clText = $clText -replace '(?m)^(# .*\r?\n)', "`$1`r`n## $Version - $date`r`n`r`n- `r`n"
     [System.IO.File]::WriteAllText($changelog, $clText, $utf8)
     Write-Host "Added an empty section to CHANGELOG.md - fill it in before releasing." -ForegroundColor Yellow
+}
+Update-ReadmeChangelog $clText
+
+# Translations: languages/*.l10n.php is the source; the .po/.mo (PHP) and the JSON for the
+# admin script (wp.i18n) are generated from it on every build.
+$i18nTool = Join-Path $root 'tools\build-translations.ps1'
+if (Test-Path $i18nTool) {
+    & $i18nTool -Root $root
+    if (-not $?) { throw "Building the translation files failed." }
 }
 
 # ---------------------------------------------------------------- zip
@@ -160,7 +216,7 @@ Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 if (Test-Path $zip) { Remove-Item $zip -Force }
 
-$exclude      = @('.git', '.github', '.claude', 'build', 'docs', 'node_modules', 'vendor')
+$exclude      = @('.git', '.github', '.claude', 'build', 'docs', 'tools', 'node_modules', 'vendor')
 $excludeFiles = @('.gitignore', '.distignore', '.gitattributes', 'build-release.ps1', 'desktop.ini', 'Thumbs.db', '.DS_Store')
 $archive = [System.IO.Compression.ZipFile]::Open($zip, [System.IO.Compression.ZipArchiveMode]::Create)
 try {
@@ -209,7 +265,9 @@ try {
     $notesFile = Join-Path ([IO.Path]::GetTempPath()) "$slug-$Version-notes.md"
     [System.IO.File]::WriteAllText($notesFile, $Notes, $utf8)
     try {
-        $r = Invoke-Native $gh @('release', 'create', "v$Version", $zip, '--repo', $repo, '--target', $sha, '--title', $Version, '--notes-file', $notesFile)
+        $createArgs = @('release', 'create', "v$Version", $zip, '--repo', $repo, '--target', $sha, '--title', $Version, '--notes-file', $notesFile)
+        if ($Prerelease) { $createArgs += '--prerelease' }
+        $r = Invoke-Native $gh $createArgs
         if ($r.Code -ne 0) { throw "gh release create failed." }
     } finally {
         Remove-Item $notesFile -Force -ErrorAction SilentlyContinue
@@ -221,8 +279,14 @@ try {
     if (-not $asset) { throw "Release v$Version was created but $slug.zip is not attached." }
 
     Write-Host ""
-    Write-Host "Release v$Version published: https://github.com/$repo/releases/tag/v$Version" -ForegroundColor Green
-    Write-Host "In WordPress: Wonom Slider -> Settings -> 'Check for updates now' -> 'Update now'." -ForegroundColor Green
+    if ($Prerelease) {
+        Write-Host "PRE-release v$Version published: https://github.com/$repo/releases/tag/v$Version" -ForegroundColor Green
+        Write-Host "Shops are NOT offered it. Test site: Plugins -> Add new -> Upload $slug.zip -> Replace current." -ForegroundColor Green
+        Write-Host "When it is fine: .\build-release.ps1 -Version $Version -Promote" -ForegroundColor Cyan
+    } else {
+        Write-Host "Release v$Version published: https://github.com/$repo/releases/tag/v$Version" -ForegroundColor Green
+        Write-Host "In WordPress: Wonom Slider -> Settings -> 'Check for updates now' -> 'Update now'." -ForegroundColor Green
+    }
     $global:LASTEXITCODE = 0
 } finally {
     Pop-Location

@@ -3,7 +3,7 @@
 	'use strict';
 
 	var CFG = window.WONOM_SLIDER || {};
-	var I = CFG.i18n || {};
+	var I = window.WONOM_SLIDER_I18N || CFG.i18n || {};   // wp.i18n strings (assets/admin/i18n.js)
 	var state = CFG.state || { slides: [], settings: {}, advanced: {}, languages: [] };
 	var app = document.getElementById( 'wonom-slider-app' );
 	if ( ! app ) { return; }
@@ -1283,7 +1283,14 @@
 		var C = state.cache || {};
 		var cacheInner = '<div class="wonom-row"><label class="wonom-toggle wonom-toggle--inline"><input type="checkbox" data-adv="auto_purge"' + ( A.auto_purge ? ' checked' : '' ) + '><span></span></label><span>' + esc( I.autoPurge ) + '</span></div>';
 		cacheInner += '<p class="wonom-hint">' + esc( C.detected && C.detected.length ? sprintf( I.cacheDetected, C.detected.join( ', ' ) ) : I.cacheNone ) + ( C.next_tick ? ' · ' + esc( sprintf( I.nextTick, C.next_tick ) ) : '' ) + '</p>';
-		if ( C.wp_cron_off ) { cacheInner += '<p class="wonom-warn">' + esc( I.cronOff ) + '</p>'; }
+		var CR = C.cron || {};
+		if ( CR.state === 'ok' ) {
+			cacheInner += '<p class="wonom-hint wonom-ok-text">' + esc( sprintf( I.cronOk, CR.last_ago, CR.last ) ) + ( C.wp_cron_off ? ' ' + esc( I.cronServer ) : '' ) + '</p>';
+		} else if ( CR.state === 'waiting' ) {
+			cacheInner += '<p class="wonom-hint">' + esc( I.cronWaiting ) + '</p>';
+		} else {
+			cacheInner += '<p class="wonom-warn">' + esc( CR.last ? sprintf( I.cronLate, CR.last ) : I.cronNever ) + ' ' + esc( C.wp_cron_off ? I.cronOff : I.cronLateHint ) + '</p>';
+		}
 		cacheInner += '<div class="wonom-grid wonom-grid--2">' + field( I.cfZone, '<input type="text" data-adv="cf_zone" value="' + esc( A.cf_zone || '' ) + '" autocomplete="off">' ) + field( I.cfToken, '<input type="text" data-adv="cf_token" value="' + esc( A.cf_token || '' ) + '" autocomplete="off">', esc( I.cfHint ) ) + '</div>';
 		cacheInner += '<div class="wonom-row"><button type="button" class="button" data-action="purge">' + esc( I.purgeNow ) + '</button></div>';
 		cacheInner += '<p class="wonom-hint">' + esc( I.delayJsHint ) + '</p><p class="wonom-codeline"><code>wonom-slider</code><button type="button" class="button" data-action="copy" data-copy="wonom-slider">' + esc( I.copy ) + '</button></p>';

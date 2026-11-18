@@ -1,0 +1,1206 @@
+# Generated from wonom-slider-et.l10n.php - edit that file, not this one.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: et\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/build-translations.ps1\n"
+
+msgid " (copy)"
+msgstr " (koopia)"
+
+msgid "% of screen"
+msgstr "% ekraanist"
+
+msgid "%1$d × %2$d px"
+msgstr "%1$d × %2$d px"
+
+msgid "%d days"
+msgstr "%d päeva"
+
+msgid "%d hours"
+msgstr "%d tundi"
+
+msgid "+14 days"
+msgstr "+14 päeva"
+
+msgid "+7 days"
+msgstr "+7 päeva"
+
+msgid "1920 = the most common monitor width: full width on laptops, centred with the page background around it on larger monitors."
+msgstr "1920 = kõige levinum monitori laius: sülearvutil täislaius, suuremal monitoril keskel, ümber lehe taust."
+
+msgid "A light overlay keeps white text readable on bright photos."
+msgstr "Kerge tumendus hoiab valge teksti heledal fotol loetavana."
+
+msgid "A linked slide is created automatically: texts, link, coupon and schedule follow this campaign; images, position and typography are edited in Wonom Slider."
+msgstr "Seotud slaid luuakse automaatselt: tekstid, link, sooduskood ja ajakava järgivad seda kampaaniat; pilte, asukohta ja tüpograafiat muudetakse Wonom Slideris."
+
+msgid "A token is defined in wp-config.php and takes precedence."
+msgstr "Võti on määratud failis wp-config.php ja see on ülimuslik."
+
+msgid "Access token (private repository only)"
+msgstr "Juurdepääsuvõti (ainult privaatse hoidla puhul)"
+
+msgid "Add %s more photo(s) to fill the width on a laptop too."
+msgstr "Lisa veel %s fotot, et laius täituks ka sülearvutil."
+
+msgid "Add a DeepL API key under Settings → Translation to translate automatically."
+msgstr "Automaatseks tõlkimiseks lisa DeepL API võti: Seaded → Keeled ja tõlkimine."
+
+msgid "Add an image or some text to see the preview."
+msgstr "Lisa pilt või tekst, et eelvaadet näha."
+
+msgid "Add campaign slide"
+msgstr "Lisa kampaaniaslaid"
+
+msgid "Add images"
+msgstr "Lisa pildid"
+
+msgid "Add slide"
+msgstr "Lisa slaid"
+
+msgid "Add your first slide →"
+msgstr "Lisa esimene slaid →"
+
+msgid "Advanced"
+msgstr "Täpsemalt"
+
+msgid "All changes saved"
+msgstr "Kõik muudatused on salvestatud"
+
+msgid "All content comes from the campaign only: heading, text, small line, badge (coupon), link and schedule – in every language. Fields the campaign does not have stay empty. There is no button; when the campaign has a link, the whole slide links there. Images, position, colours and typography stay editable."
+msgstr "Kogu sisu tuleb ainult kampaaniast: pealkiri, tekst, väike rida, silt (sooduskood), link ja ajakava – igas keeles. Väljad, mida kampaanial pole, jäävad tühjaks. Nuppu ei ole; kui kampaanial on link, on kogu slaid klõpsatav. Pildid, asukoht, värvid ja tüpograafia jäävad muudetavaks."
+
+msgid "All images"
+msgstr "Kõiki pilte"
+
+msgid "Alt text (accessibility & SEO)"
+msgstr "Alt-tekst (ligipääsetavus ja SEO)"
+
+msgid "Always shows the campaign that is live in Kampaaniariba right now. When none is live, the slide waits for the next scheduled campaign and stays hidden until it starts."
+msgstr "Näitab alati kampaaniat, mis on Kampaaniaribal parasjagu eetris. Kui ühtki eetris pole, ootab slaid järgmist ajastatud kampaaniat ja on seni peidetud."
+
+msgid "Always visible"
+msgstr "Alati nähtav"
+
+msgid "April"
+msgstr "aprill"
+
+msgid "Arrows on mobile"
+msgstr "Nooled mobiilis"
+
+msgid "Aspect ratio %s"
+msgstr "Külgede suhe %s"
+
+msgid "Attachment not found."
+msgstr "Meediafaili ei leitud."
+
+msgid "August"
+msgstr "august"
+
+msgid "Automatic updates"
+msgstr "Automaatsed uuendused"
+
+msgid "Autoplay"
+msgstr "Automaatne vahetus"
+
+msgid "Background"
+msgstr "Taust"
+
+msgid "Background colour"
+msgstr "Taustavärv"
+
+msgid "Badge (e.g. −20 %)"
+msgstr "Silt (nt −20 %)"
+
+msgid "Below this width the mobile image, ratio, sizes and alignment are used."
+msgstr "Sellest laiusest allpool kasutatakse mobiili pilti, suhet, suurusi ja joondust."
+
+msgid "Block editor – add the “Wonom Slider” block."
+msgstr "Plokiredaktor – lisa plokk „Wonom Slider”."
+
+msgid "Blur"
+msgstr "Hägu"
+
+msgid "Bottom"
+msgstr "All"
+
+msgid "Button background"
+msgstr "Nupu taust"
+
+msgid "Button corner radius (px)"
+msgstr "Nupu nurga raadius (px)"
+
+msgid "Button link"
+msgstr "Nupu link"
+
+msgid "Button text"
+msgstr "Nupu tekst"
+
+msgid "Button text colour"
+msgstr "Nupu teksti värv"
+
+msgid "Calendar"
+msgstr "Kalender"
+
+msgid "Campaign"
+msgstr "Kampaania"
+
+msgid "Campaign not found."
+msgstr "Kampaaniat ei leitud."
+
+msgid "Caps the slider height; the image is cropped top/bottom around each slide’s focal point. “% of screen” follows the visitor’s window height. 0 = no cap (height follows the image ratio). Mobile empty = same as desktop."
+msgstr "Piirab slaideri kõrgust; pilti kärbitakse ülalt-alt slaidi fookuspunkti ümber. „% ekraanist” järgib külastaja akna kõrgust. 0 = piiranguta (kõrgus pildi suhte järgi). Mobiil tühi = sama mis arvutis."
+
+msgid "Center"
+msgstr "Keskel"
+
+msgid "Check for updates"
+msgstr "Kontrolli uuendusi"
+
+msgid "Check for updates now"
+msgstr "Kontrolli uuendusi kohe"
+
+msgid "Checking WP-Cron – the first result appears within about 20 minutes."
+msgstr "Kontrollin WP-Croni – esimene tulemus tuleb umbes 20 minuti jooksul."
+
+msgid "Checking…"
+msgstr "Kontrollin…"
+
+msgid "Choose image"
+msgstr "Vali pilt"
+
+msgid "Clear"
+msgstr "Tühjenda"
+
+msgid "Click an image to set its focal point – the spot that stays visible when the image is cropped. Desktop and mobile show different crops, so each has its own point: blue = desktop, purple = mobile. The switch below (same as on the preview) chooses which one you are setting."
+msgstr "Klõpsa pildil, et määrata fookuspunkt – koht, mis jääb kärpimisel nähtavaks. Arvutis ja mobiilis on kärbe erinev, seepärast on kummalgi oma punkt: sinine = arvuti, lilla = mobiil. Allolev lüliti (sama mis laval) valib, kumba sead."
+
+msgid "Close"
+msgstr "Sulge"
+
+msgid "Cloudflare API token (Cache Purge permission)"
+msgstr "Cloudflare’i API võti (õigus Cache Purge)"
+
+msgid "Cloudflare Zone ID"
+msgstr "Cloudflare’i Zone ID"
+
+msgid "Collage (2–5 images)"
+msgstr "Kollaaž (2–5 pilti)"
+
+msgid "Collage photos: portrait 4 : 5 (e.g. 1080 × 1350 px), all the same size."
+msgstr "Kollaaži fotod: püstised 4 : 5 (nt 1080 × 1350 px), kõik ühesuurused."
+
+msgid "Colour"
+msgstr "Värv"
+
+msgid "Content"
+msgstr "Sisu"
+
+msgid "Content source"
+msgstr "Sisu allikas"
+
+msgid "Copied"
+msgstr "Kopeeritud"
+
+msgid "Copy"
+msgstr "Kopeeri"
+
+msgid "Corners (px)"
+msgstr "Nurgad (px)"
+
+msgid "Could not reach GitHub or no release has been published yet."
+msgstr "GitHubiga ei saadud ühendust või ühtegi väljalaset pole veel avaldatud."
+
+msgid "Could not reach GitHub or no release published yet."
+msgstr "GitHubiga ei saadud ühendust või ühtegi väljalaset pole veel avaldatud."
+
+msgid "Current campaign (automatic)"
+msgstr "Praegu eetris olev kampaania (automaatne)"
+
+msgid "Custom CSS"
+msgstr "Oma CSS"
+
+msgid "Custom CSS value…"
+msgstr "Oma CSS-väärtus…"
+
+msgid "Data"
+msgstr "Andmed"
+
+msgid "December"
+msgstr "detsember"
+
+msgid "DeepL API key"
+msgstr "DeepL API võti"
+
+msgid "Default"
+msgstr "Vaikimisi"
+
+msgid "Default (from slider settings)"
+msgstr "Vaikimisi (slaideri seadetest)"
+
+msgid "Delete"
+msgstr "Kustuta"
+
+msgid "Delete slides and settings when the plugin is deleted"
+msgstr "Kustuta slaidid ja seaded, kui plugin kustutatakse"
+
+msgid "Delete this slide? This cannot be undone after saving."
+msgstr "Kustutada see slaid? Pärast salvestamist ei saa seda tagasi võtta."
+
+msgid "Design"
+msgstr "Kujundus"
+
+msgid "Desktop"
+msgstr "Arvuti"
+
+msgid "Desktop aspect ratio"
+msgstr "Arvutivaate külgede suhe"
+
+msgid "Desktop image"
+msgstr "Arvutipilt"
+
+msgid "Detected on this site: %s"
+msgstr "Saidil tuvastatud: %s"
+
+msgid "Displays the Wonom hero slider."
+msgstr "Kuvab Wonomi päiseslaideri."
+
+msgid "Done"
+msgstr "Valmis"
+
+msgid "Dots on mobile"
+msgstr "Punktid mobiilis"
+
+msgid "Dots position"
+msgstr "Punktide asukoht"
+
+msgid "Drag the text block anywhere. Arrow keys nudge by 1 % (Shift = 5 %). Drag the blue handle to change its width. Switch to Mobile to position it separately for phones."
+msgstr "Lohista tekstiplokk kuhu tahes. Nooleklahvid nihutavad 1 % (Shift = 5 %). Sinisest pidemest saab muuta laiust. Vali „Mobiil”, et paigutada plokk telefonile eraldi."
+
+msgid "Drag to reorder"
+msgstr "Lohista järjekorra muutmiseks"
+
+msgid "Duplicate"
+msgstr "Tee koopia"
+
+msgid "Duration: %s"
+msgstr "Kestus: %s"
+
+msgid "Edit"
+msgstr "Muuda"
+
+msgid "Edit in Kampaaniariba"
+msgstr "Muuda Kampaaniaribal"
+
+msgid "Elementor – drag the “Wonom Slider” widget (category Wonom) onto the page."
+msgstr "Elementor – lohista lehele vidin „Wonom Slider” (kategooria Wonom)."
+
+msgid "Empty"
+msgstr "Tühi"
+
+msgid "Empty = default (shown as placeholder). Everything here applies to this slide only; the preview updates immediately."
+msgstr "Tühi = vaikeväärtus (näha kohatäitena). Kõik siinne kehtib ainult sellele slaidile; eelvaade uueneb kohe."
+
+msgid "Empty = default: button colours, text font, 13 px, bold, uppercase, pill shape. Padding is the vertical value; horizontal is three times that."
+msgstr "Tühi = vaikimisi: nupu värvid, teksti font, 13 px, paks, suurtähed, pilli kuju. Polsterdus on vertikaalne väärtus; horisontaalne on sellest kolm korda suurem."
+
+msgid "Empty fields fall back to the default language, so a slide never shows blank text."
+msgstr "Tühjad väljad võtavad vaikekeele teksti, nii et slaid ei jää kunagi tühjaks."
+
+msgid "Enabled"
+msgstr "Sees"
+
+msgid "End is before start – the slide will never show."
+msgstr "Lõpp on enne algust – slaidi ei näidata kunagi."
+
+msgid "End of month"
+msgstr "Kuu lõpp"
+
+msgid "Ended"
+msgstr "Lõppenud"
+
+msgid "Ended %s"
+msgstr "Lõppes %s"
+
+msgid "Ends"
+msgstr "Lõpeb"
+
+msgid "Everything here applies only below the mobile breakpoint (Settings → Layout). Leave “Same as desktop” unless the mobile view needs something different."
+msgstr "Kõik siinne kehtib ainult allpool mobiili murdepunkti (Seaded → Paigutus). Jäta „Sama mis arvutis”, kui mobiilivaade ei vaja midagi teistsugust."
+
+msgid "Example: et,en. Used when no Polylang/WPML is active; the slider then picks the language from the page locale."
+msgstr "Näide: et,en. Kasutatakse, kui Polylang/WPML pole aktiivne; slaider valib keele lehe lokaadi järgi."
+
+msgid "Export JSON"
+msgstr "Ekspordi JSON"
+
+msgid "Extra CSS class"
+msgstr "Lisa CSS-klass"
+
+msgid "Fade"
+msgstr "Hajumine"
+
+msgid "Featured"
+msgstr "Esiletõstetud"
+
+msgid "February"
+msgstr "veebruar"
+
+msgid "Fill the slide (crop photos)"
+msgstr "Täida slaid (fotosid kärbitakse)"
+
+msgid "Fills a phone screen well and stays within the mobile height limit (about %s px on a typical phone), so nothing is cropped. For a lower banner, 1080 × 1080 px (1 : 1) also works."
+msgstr "Täidab telefoniekraani hästi ja jääb mobiili kõrguse piirangu sisse (tüüpilisel telefonil umbes %s px), nii et midagi ei lõigata. Madalama bänneri jaoks sobib ka 1080 × 1080 px (1 : 1)."
+
+msgid "Fills a phone screen well. For a lower banner, 1080 × 1080 px (1 : 1) also works."
+msgstr "Täidab telefoniekraani hästi. Madalama bänneri jaoks sobib ka 1080 × 1080 px (1 : 1)."
+
+msgid "Fills the slider at its full height on every common screen: on a large monitor the whole image shows (about %1$s px high). Laptops and 1080p screens show a wider, lower slider (about %2$s px high) and cut the top and bottom strips off – put only sky, floor or background there and keep faces and text inside the safe area."
+msgstr "Täidab slaideri täies kõrguses igal levinud ekraanil: suurel monitoril paistab kogu pilt (umbes %1$s px kõrge). Sülearvutil ja 1080p ekraanil on slaider laiem ja madalam (umbes %2$s px) ning pildi ülemine ja alumine riba jääb välja – pane sinna ainult taevas, põrand või taust ning hoia näod ja tekst turvaala sees."
+
+msgid "Fine-grained token with “Contents: read” on this repository. Leave empty for a public repository."
+msgstr "Fine-grained võti õigusega „Contents: read” sellele hoidlale. Avaliku hoidla puhul jäta tühjaks."
+
+msgid "First one"
+msgstr "Ühte esimest"
+
+msgid "First three"
+msgstr "Kolme esimest"
+
+msgid "First two"
+msgstr "Kahte esimest"
+
+msgid "Focal point for"
+msgstr "Fookuspunkt vaatele"
+
+msgid "Font"
+msgstr "Font"
+
+msgid "Font family (CSS value)"
+msgstr "Font (CSS väärtus)"
+
+msgid "Frame: corner radius (px)"
+msgstr "Raam: nurga raadius (px)"
+
+msgid "Frame: distance from slide edge (px)"
+msgstr "Raam: kaugus slaidi servast (px)"
+
+msgid "Free"
+msgstr "Vaba"
+
+msgid "From first image"
+msgstr "Esimese pildi järgi"
+
+msgid "Gap between images (px, sharp seam only)"
+msgstr "Piltide vahe (px, ainult terava ülemineku puhul)"
+
+msgid "Gap between photos (px)"
+msgstr "Fotode vahe (px)"
+
+msgid "GitHub repository (owner/name)"
+msgstr "GitHubi hoidla (omanik/nimi)"
+
+msgid "Go to slide %d"
+msgstr "Mine slaidile %d"
+
+msgid "Grid"
+msgstr "Ruudustik"
+
+msgid "Grid = the alignment buttons above. Free = exact position; set it by dragging in the preview or with the numbers."
+msgstr "Ruudustik = ülal olevad joondusnupud. Vaba = täpne asukoht; määra see eelvaates lohistades või numbritega."
+
+msgid "Heading"
+msgstr "Pealkiri"
+
+msgid "Heading HTML tag"
+msgstr "Pealkirja HTML-tag"
+
+msgid "Heading font"
+msgstr "Pealkirja font"
+
+msgid "Heading in uppercase"
+msgstr "Pealkiri suurtähtedega"
+
+msgid "Heading letter spacing (1/100 em)"
+msgstr "Pealkirja tähevahe (1/100 em)"
+
+msgid "Heading size – desktop (px)"
+msgstr "Pealkirja suurus – arvuti (px)"
+
+msgid "Heading size – mobile (px)"
+msgstr "Pealkirja suurus – mobiil (px)"
+
+msgid "Heading weight"
+msgstr "Pealkirja paksus"
+
+msgid "Hidden"
+msgstr "Peidetud"
+
+msgid "Hide preview"
+msgstr "Peida eelvaade"
+
+msgid "Hide texts and buttons on mobile (image only)"
+msgstr "Peida mobiilis tekstid ja nupud (ainult pilt)"
+
+msgid "Hour"
+msgstr "Tund"
+
+msgid "How to show the slider"
+msgstr "Kuidas slaiderit lehel näidata"
+
+msgid "Ideal size with your settings: desktop %1$s px with faces and text inside the middle %2$s px band, mobile %3$s px. JPG or WebP. Details: Settings → Image sizes."
+msgstr "Sinu seadetega ideaalne suurus: arvuti %1$s px, näod ja tekst keskmise %2$s px riba sees; mobiil %3$s px. JPG või WebP. Täpsemalt: Seaded → Pildi mõõdud."
+
+msgid "Ideal size with your settings: desktop %1$s px, mobile %2$s px. JPG or WebP. Details: Settings → Image sizes."
+msgstr "Sinu seadetega ideaalne suurus: arvuti %1$s px, mobiil %2$s px. JPG või WebP. Täpsemalt: Seaded → Pildi mõõdud."
+
+msgid "Ideal sizes when you make your own banner images, calculated from the height limits under Layout. Other sizes work too – the slider then crops them around the focal point."
+msgstr "Ideaalsed mõõdud, kui teed bännerid ise. Arvutatud plokis „Paigutus“ seatud kõrguse piirangutest. Ka muud mõõdud töötavad – siis kärbib slaider pilti fookuspunkti ümber."
+
+msgid "If the text is part of the image, always make a separate mobile image – desktop text becomes too small to read on a phone."
+msgstr "Kui tekst on pildi sees, tee alati eraldi mobiilipilt – arvutipildi tekst jääb telefonis lugemiseks liiga väikeseks."
+
+msgid "If your speed plugin delays JavaScript until the first interaction (FlyingPress “Delay JavaScript”, WP Rocket “Delay JS”), add this keyword to its exclusions so the slider starts and autoplays immediately:"
+msgstr "Kui kiirendusplugin viivitab JavaScripti kuni esimese tegevuseni (FlyingPress „Delay JavaScript”, WP Rocket „Delay JS”), lisa selle väljajätmistesse see märksõna, et slaider käivituks ja vahetuks kohe:"
+
+msgid "Image %d"
+msgstr "Pilt %d"
+
+msgid "Image sizes"
+msgstr "Pildi mõõdud"
+
+msgid "Images"
+msgstr "Pildid"
+
+msgid "Import JSON"
+msgstr "Impordi JSON"
+
+msgid "Import failed – not a Wonom Slider export."
+msgstr "Import ebaõnnestus – see pole Wonom Slideri eksport."
+
+msgid "Imported"
+msgstr "Imporditud"
+
+msgid "Importing replaces all current slides and settings. Continue?"
+msgstr "Import asendab kõik praegused slaidid ja seaded. Jätkata?"
+
+msgid "Include scheduled and disabled slides"
+msgstr "Näita ka ajastatud ja väljalülitatud slaide"
+
+msgid "Installed: %s"
+msgstr "Paigaldatud: %s"
+
+msgid "Internal name"
+msgstr "Sisemine nimi"
+
+msgid "Invalid import file."
+msgstr "Vigane impordifail."
+
+msgid "Invalid payload."
+msgstr "Vigased andmed."
+
+msgid "It is driven by the server (DISABLE_WP_CRON)."
+msgstr "Seda käivitab server (DISABLE_WP_CRON)."
+
+msgid "January"
+msgstr "jaanuar"
+
+msgid "July"
+msgstr "juuli"
+
+msgid "June"
+msgstr "juuni"
+
+msgid "Kampaaniariba"
+msgstr "Kampaaniariba"
+
+msgid "Kampaaniariba campaign"
+msgstr "Kampaaniariba kampaania"
+
+msgid "Keep H2 unless the slider heading should be the page’s only H1. Multiple H1s hurt SEO."
+msgstr "Jäta H2, kui slaideri pealkiri ei pea olema lehe ainus H1. Mitu H1-te kahjustab SEO-d."
+
+msgid "Keep faces, products and text inside the safe area. The strips above and below it are shown only on large monitors – use them for sky, floor or background."
+msgstr "Hoia näod, tooted ja tekst turvaala sees. Selle kohal ja all olevad ribad paistavad ainult suurtel monitoridel – pane sinna taevas, põrand või taust."
+
+msgid "Languages & translation"
+msgstr "Keeled ja tõlkimine"
+
+msgid "Languages (comma separated, default first)"
+msgstr "Keeled (komaga eraldatult, vaikekeel esimesena)"
+
+msgid "Languages are managed by %s – each slide gets a tab per language automatically."
+msgstr "Keeli haldab %s – iga slaid saab automaatselt vahelehe iga keele jaoks."
+
+msgid "Laptop"
+msgstr "Sülearvuti"
+
+msgid "Large screen"
+msgstr "Suur ekraan"
+
+msgid "Latest release on GitHub: %1$s (installed: %2$s)."
+msgstr "Viimane väljalase GitHubis: %1$s (paigaldatud: %2$s)."
+
+msgid "Layout & sizes"
+msgstr "Paigutus ja suurused"
+
+msgid "Leave both empty for a slide that is always shown. Set a start and/or end for campaigns – the slide appears and disappears automatically."
+msgstr "Jäta mõlemad tühjaks, kui slaid on alati nähtav. Kampaaniale määra algus ja/või lõpp – slaid ilmub ja kaob automaatselt."
+
+msgid "Left"
+msgstr "Vasakul"
+
+msgid "Letter spacing"
+msgstr "Tähevahe"
+
+msgid "Linked to campaign: %s"
+msgstr "Seotud kampaaniaga: %s"
+
+msgid "Live"
+msgstr "Eetris"
+
+msgid "Live now"
+msgstr "Praegu eetris"
+
+msgid "Live now, ends %s"
+msgstr "Praegu eetris, lõpeb %s"
+
+msgid "Loaded only on pages that show the slider. Example: .wonom-slide__heading { letter-spacing: .12em; }"
+msgstr "Laaditakse ainult lehtedel, kus slaider on. Näide: .wonom-slide__heading { letter-spacing: .12em; }"
+
+msgid "Look of this row"
+msgstr "Selle rea kujundus"
+
+msgid "Loop"
+msgstr "Kordus"
+
+msgid "Make the whole slide clickable (uses the button link)"
+msgstr "Tee kogu slaid klõpsatavaks (kasutab nupu linki)"
+
+msgid "March"
+msgstr "märts"
+
+msgid "Matches the visible area on a typical laptop, the most cropped common screen: there the slider is at most %1$s px high and %2$s px wide. An image of this shape is shown whole on every common screen; on larger screens the slider is simply lower. Want a taller banner? Raise the height limit under Layout and this size follows."
+msgstr "Vastab tüüpilise sülearvuti nähtavale alale, mis on levinud ekraanidest kõige rohkem kärbitud: seal on slaider kuni %1$s px kõrge ja %2$s px lai. Sellise kujuga pilti näidatakse tervena igal levinud ekraanil; suuremal ekraanil on slaider lihtsalt madalam. Tahad kõrgemat bännerit? Tõsta plokis „Paigutus“ kõrguse piirangut ja see mõõt muutub kaasa."
+
+msgid "Max height – desktop"
+msgstr "Maksimaalne kõrgus – arvuti"
+
+msgid "Max height – mobile"
+msgstr "Maksimaalne kõrgus – mobiil"
+
+msgid "Max width (px, 0 = container width)"
+msgstr "Maksimaalne laius (px, 0 = konteineri laius)"
+
+msgid "Maximum height"
+msgstr "Maksimaalne kõrgus"
+
+msgid "May"
+msgstr "mai"
+
+msgid "Middle"
+msgstr "Keskel"
+
+msgid "Minimum height"
+msgstr "Minimaalne kõrgus"
+
+msgid "Minute"
+msgstr "Minut"
+
+msgid "Mobile"
+msgstr "Mobiil"
+
+msgid "Mobile (px)"
+msgstr "Mobiilis (px)"
+
+msgid "Mobile aspect ratio"
+msgstr "Mobiilivaate külgede suhe"
+
+msgid "Mobile breakpoint (px)"
+msgstr "Mobiili murdepunkt (px)"
+
+msgid "Mobile focal point"
+msgstr "Mobiili fookuspunkt"
+
+msgid "Mobile image"
+msgstr "Mobiilipilt"
+
+msgid "Mobile image (optional)"
+msgstr "Mobiilivaate pilt (valikuline)"
+
+msgid "Move down"
+msgstr "Liiguta alla"
+
+msgid "Move up"
+msgstr "Liiguta üles"
+
+msgid "Navigation"
+msgstr "Navigeerimine"
+
+msgid "Next Monday"
+msgstr "Järgmine esmaspäev"
+
+msgid "Next month"
+msgstr "Järgmine kuu"
+
+msgid "Next scheduled purge: %s"
+msgstr "Järgmine ajastatud tühjendus: %s"
+
+msgid "Next slide"
+msgstr "Järgmine slaid"
+
+msgid "No"
+msgstr "Ei"
+
+msgid "No cache plugin detected – nothing to purge."
+msgstr "Vahemäluplugina ei tuvastatud – pole midagi tühjendada."
+
+msgid "No campaigns yet – create one in Kampaaniariba first."
+msgstr "Kampaaniaid veel pole – loo esmalt Kampaaniaribal."
+
+msgid "No live or upcoming campaign – the slide stays hidden until one starts."
+msgstr "Eetris ega tulemas pole ühtki kampaaniat – slaid on peidetud, kuni mõni algab."
+
+msgid "No release notes."
+msgstr "Väljalaskemärkmeid pole."
+
+msgid "No scheduled slides yet. Open a slide → Schedule to set a start and end."
+msgstr "Ajastatud slaide veel pole. Ava slaid → Ajakava ja määra algus ning lõpp."
+
+msgid "No slides yet. Add your first slide – a desktop image is all that is required."
+msgstr "Slaide veel pole. Lisa esimene slaid – vaja on ainult arvutivaate pilti."
+
+msgid "No visible slides. Add an image to a slide and save."
+msgstr "Nähtavaid slaide pole. Lisa slaidile pilt ja salvesta."
+
+msgid "Not allowed."
+msgstr "Pole lubatud."
+
+msgid "Not used when photos are shown whole: they sit side by side so no edge is hidden."
+msgstr "Tervena näitamisel ei kasutata: fotod on kõrvuti, et ükski serv ei jääks peitu."
+
+msgid "Nothing to purge – no cache plugin active."
+msgstr "Pole midagi tühjendada – vahemäluplugin pole aktiivne."
+
+msgid "November"
+msgstr "november"
+
+msgid "Now"
+msgstr "Kohe"
+
+msgid "Now following: %s"
+msgstr "Praegu võetud: %s"
+
+msgid "October"
+msgstr "oktoober"
+
+msgid "Off"
+msgstr "Väljas"
+
+msgid "On a cached page a scheduled slide may then appear or disappear late; the next visit to this admin screen catches up."
+msgstr "Vahemälust tuleval lehel võib ajastatud slaid siis hilinemisega ilmuda või kaduda; järgmine selle admin-lehe külastus teeb selle tasa."
+
+msgid "On mobile show"
+msgstr "Mobiilis näita"
+
+msgid "On phones the dots often sit on top of the texts – move them to a side or hide them."
+msgstr "Telefonis jäävad punktid tihti teksti peale – vii need serva või peida."
+
+msgid "On your screen the photos are wider than the slider, so the row is a little lower than the slide."
+msgstr "Sinu ekraanil on fotod kokku slaiderist laiemad, seega on fotorida slaidist veidi madalam."
+
+msgid "One image"
+msgstr "Üks pilt"
+
+msgid "Only a label for you – campaign slides are highlighted in the list and the calendar."
+msgstr "Ainult märge sinu jaoks – kampaaniaslaidid tõstetakse nimekirjas ja kalendris esile."
+
+msgid "Only needed when Cloudflare caches HTML (APO or “Cache Everything”)."
+msgstr "Vaja ainult siis, kui Cloudflare hoiab HTML-i vahemälus (APO või „Cache Everything”)."
+
+msgid "Only shown in the admin, e.g. “Autumn campaign”."
+msgstr "Näidatakse ainult adminis, nt „Sügiskampaania”."
+
+msgid "Open calendar"
+msgstr "Ava kalender"
+
+msgid "Open links in a new tab"
+msgstr "Ava lingid uuel vahelehel"
+
+msgid "Open site"
+msgstr "Ava sait"
+
+msgid "Open the slide in Wonom Slider"
+msgstr "Ava slaid Wonom Slideris"
+
+msgid "Optional. Enables the “Translate” button in slide texts. Free keys end with “:fx”. Saved keys are shown masked."
+msgstr "Valikuline. Lülitab sisse nupu „Tõlgi” slaidi tekstides. Tasuta võtmed lõpevad „:fx”. Salvestatud võtit näidatakse peidetult."
+
+msgid "Overlay colour"
+msgstr "Tumenduskihi värv"
+
+msgid "Overlay darkness"
+msgstr "Tumenduskihi tugevus"
+
+msgid "Own texts"
+msgstr "Oma tekstid"
+
+msgid "Padding (px)"
+msgstr "Polsterdus (px)"
+
+msgid "Page cache"
+msgstr "Lehe vahemälu"
+
+msgid "Pause on hover"
+msgstr "Peata hiirega peal olles"
+
+msgid "Photo layout"
+msgstr "Fotode paigutus"
+
+msgid "Photos are shown whole. They fill about %1$s % of the slider width on your screen and %2$s % on a laptop; the rest shows the slide background colour (Design → Background colour)."
+msgstr "Fotod on tervena. Sinu ekraanil täidavad need umbes %1$s % slaideri laiusest ja sülearvutil %2$s %; ülejäänud osas paistab slaidi taustavärv (Kujundus → Taustavärv)."
+
+msgid "Pick 2–7 portrait photos of the same size (e.g. 1080×1350 px); you can select several at once. Click a photo to set its focal point. Drag the slot header to change the order."
+msgstr "Vali 2–7 ühesuurust püstist fotot (nt 1080×1350 px); korraga saab valida mitu. Klõps fotol määrab fookuspunkti. Järjekorra muutmiseks lohista pesa pealkirjast."
+
+msgid "Plain defaults (no template)"
+msgstr "Tavalised vaikeväärtused (mallita)"
+
+msgid "Playback"
+msgstr "Esitus"
+
+msgid "Preview"
+msgstr "Eelvaade"
+
+msgid "Preview shows the saved version. Save to refresh."
+msgstr "Eelvaade näitab salvestatud versiooni. Värskendamiseks salvesta."
+
+msgid "Preview – drag the text block to position it"
+msgstr "Eelvaade – lohista tekstiplokk soovitud kohta"
+
+msgid "Previous month"
+msgstr "Eelmine kuu"
+
+msgid "Previous slide"
+msgstr "Eelmine slaid"
+
+msgid "Published releases of this repository are offered as plugin updates in WordPress."
+msgstr "Selle hoidla avaldatud väljalasked pakutakse WordPressis plugina uuendustena."
+
+msgid "Purge cache now"
+msgstr "Tühjenda vahemälu kohe"
+
+msgid "Purge the page cache automatically when slides change and at scheduled start/end times"
+msgstr "Tühjenda lehe vahemälu automaatselt slaidide muutmisel ning ajastatud alguse ja lõpu hetkel"
+
+msgid "Purged: %s"
+msgstr "Tühjendatud: %s"
+
+msgid "Purging…"
+msgstr "Tühjendan…"
+
+msgid "Recommended: desktop 1920×660 px (or your ratio), mobile 800×1000 px. WebP/JPG under 300 kB."
+msgstr "Soovitus: arvuti 1920×660 px (või sinu suhe), mobiil 800×1000 px. WebP/JPG alla 300 kB."
+
+msgid "Refresh"
+msgstr "Värskenda"
+
+msgid "Regular"
+msgstr "Tavaline"
+
+msgid "Remove"
+msgstr "Eemalda"
+
+msgid "Rendering…"
+msgstr "Joonistan…"
+
+msgid "Replace"
+msgstr "Asenda"
+
+msgid "Reset to defaults"
+msgstr "Taasta vaikeväärtused"
+
+msgid "Right"
+msgstr "Paremal"
+
+msgid "Safe area in the middle: %1$s px (%2$s) – visible on every screen"
+msgstr "Turvaala keskel: %1$s px (%2$s) – paistab igal ekraanil"
+
+msgid "Same as desktop"
+msgstr "Sama mis arvutis"
+
+msgid "Same style as the first button, transparent background."
+msgstr "Sama stiil mis esimesel nupul, läbipaistev taust."
+
+msgid "Save as JPG or WebP: desktop under 400 kB, mobile under 250 kB. PNG only when you need transparency – a PNG photo is often 2 MB or more and slows the page down."
+msgstr "Salvesta JPG või WebP vormingus: arvutipilt alla 400 kB, mobiilipilt alla 250 kB. PNG ainult siis, kui on vaja läbipaistvust – PNG-foto on sageli 2 MB või rohkem ja aeglustab lehte."
+
+msgid "Save changes"
+msgstr "Salvesta muudatused"
+
+msgid "Saved"
+msgstr "Salvestatud"
+
+msgid "Saving failed"
+msgstr "Salvestamine ebaõnnestus"
+
+msgid "Saving…"
+msgstr "Salvestan…"
+
+msgid "Schedule"
+msgstr "Ajakava"
+
+msgid "Scheduled"
+msgstr "Tulemas"
+
+msgid "Scheduled slides on a monthly grid. Slides without a schedule are always visible and are not drawn."
+msgstr "Ajastatud slaidid kuu vaates. Ajakavata slaidid on alati nähtavad ja neid siin ei joonistata."
+
+msgid "Seam between images"
+msgstr "Piltide vaheline üleminek"
+
+msgid "Second button link"
+msgstr "Teise nupu link"
+
+msgid "Second button text"
+msgstr "Teise nupu tekst"
+
+msgid "See the offer"
+msgstr "Vaata pakkumist"
+
+msgid "September"
+msgstr "september"
+
+msgid "Settings"
+msgstr "Seaded"
+
+msgid "Sharp"
+msgstr "Terav"
+
+msgid "Shortcode – paste into any page, widget or theme slider area:"
+msgstr "Lühikood – kleebi suvalisele lehele, vidinasse või teema slaideri alasse:"
+
+msgid "Show arrows"
+msgstr "Näita nooli"
+
+msgid "Show dots"
+msgstr "Näita punkte"
+
+msgid "Show photos whole"
+msgstr "Näita fotosid tervena"
+
+msgid "Show progress bar"
+msgstr "Näita edenemisriba"
+
+msgid "Show this campaign in the slider too"
+msgstr "Näita seda kampaaniat ka slaideris"
+
+msgid "Shown"
+msgstr "Näha"
+
+msgid "Shown as on a large monitor (%1$s × %2$s px browser area) and scaled down. Here the slider is at its full width and most of the image is visible."
+msgstr "Näidatud nagu suurel monitoril (brauseri ala %1$s × %2$s px) ja vähendatud. Siin on slaider täislaiuses ja pildist paistab kõige rohkem."
+
+msgid "Shown as on a typical laptop (%1$s × %2$s px browser area), the most cropped common screen, and scaled down. What you see here is what visitors see; on larger screens the image is cropped less, never more."
+msgstr "Näidatud nagu tüüpilisel sülearvutil (brauseri ala %1$s × %2$s px), mis on levinud ekraanidest kõige rohkem kärbitud, ja vähendatud. Mida siin näed, seda näeb külastaja; suuremal ekraanil kärbitakse vähem, mitte kunagi rohkem."
+
+msgid "Shown behind the image and on its own when the slide has no image – a slide can be text only."
+msgstr "Näha pildi taga ja üksinda, kui slaidil pilti pole – slaid võib olla ka ainult tekstiga."
+
+msgid "Shown exactly as on this screen (browser area %1$s × %2$s px) at 100 % zoom, scaled down. The other buttons show a laptop and a large monitor."
+msgstr "Näidatud täpselt nagu sellel ekraanil (brauseri ala %1$s × %2$s px) 100 % suumiga, vähendatult. Teised nupud näitavad sülearvutit ja suurt monitori."
+
+msgid "Side padding – mobile (px)"
+msgstr "Külgvahe – mobiil (px)"
+
+msgid "Site default font (theme)"
+msgstr "Saidi vaikefont (teema)"
+
+msgid "Size (px)"
+msgstr "Suurus (px)"
+
+msgid "Slide"
+msgstr "Libisemine"
+
+msgid "Slide type"
+msgstr "Slaidi tüüp"
+
+msgid "Slider preview"
+msgstr "Slaideri eelvaade"
+
+msgid "Slides"
+msgstr "Slaidid"
+
+msgid "Slides, texts, scheduling and design are managed in <a href=\"%s\" target=\"_blank\">Wonom Slider</a>. This widget only places the slider."
+msgstr "Slaide, tekste, ajakava ja kujundust hallatakse menüüs <a href=\"%s\" target=\"_blank\">Wonom Slider</a>. See vidin ainult paigutab slaideri lehele."
+
+msgid "Slow zoom (Ken Burns)"
+msgstr "Aeglane suumimine (Ken Burns)"
+
+msgid "Small line above heading"
+msgstr "Väike rida pealkirja kohal"
+
+msgid "Space above (px)"
+msgstr "Vahe ette (px)"
+
+msgid "Space above buttons (px)"
+msgstr "Vahe nupu ees (px)"
+
+msgid "Space below (px)"
+msgstr "Vahe alla (px)"
+
+msgid "Space below applies between all text rows."
+msgstr "Vahe alla kehtib kõigi tekstiridade vahel."
+
+msgid "Space between lines (px)"
+msgstr "Ridade vahe (px)"
+
+msgid "Starts"
+msgstr "Algab"
+
+msgid "Starts %1$s, ends %2$s"
+msgstr "Algab %1$s, lõpeb %2$s"
+
+msgid "Starts %s"
+msgstr "Algab %s"
+
+msgid "Status"
+msgstr "Olek"
+
+msgid "Tablet"
+msgstr "Tahvel"
+
+msgid "Template slide"
+msgstr "Mall-slaid"
+
+msgid "Template slide for campaign slides"
+msgstr "Kampaaniaslaidide mall"
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Text & button font"
+msgstr "Teksti ja nupu font"
+
+msgid "Text alignment"
+msgstr "Teksti joondus"
+
+msgid "Text block max width (px)"
+msgstr "Tekstiploki maksimaalne laius (px)"
+
+msgid "Text block position"
+msgstr "Tekstiploki asukoht"
+
+msgid "Text colour"
+msgstr "Teksti värv"
+
+msgid "Text colour applies to all texts of the slide."
+msgstr "Teksti värv kehtib slaidi kõigile tekstidele."
+
+msgid "Text size – desktop (px)"
+msgstr "Teksti suurus – arvuti (px)"
+
+msgid "Text size – mobile (px)"
+msgstr "Teksti suurus – mobiil (px)"
+
+msgid "Texts & button"
+msgstr "Tekstid ja nupp"
+
+msgid "The background colour shows around the frame; 0 = no frame. On mobile the distance is halved."
+msgstr "Raami ümber paistab taustavärv; 0 = raami pole. Mobiilis on kaugus poole väiksem."
+
+msgid "The linked campaign no longer exists – the slide is hidden."
+msgstr "Seotud kampaaniat enam pole – slaid on peidus."
+
+msgid "The slider editor needs JavaScript."
+msgstr "Slaideri redaktor vajab JavaScripti."
+
+msgid "Theme template (PHP):"
+msgstr "Teema mall (PHP):"
+
+msgid "There is no height limit, so the slider follows the image. 3 : 1 is a balanced banner shape."
+msgstr "Kõrguse piirangut pole, slaider järgib pilti. 3 : 1 on tasakaalukas bänneri kuju."
+
+msgid "Time per slide (ms)"
+msgstr "Aeg slaidi kohta (ms)"
+
+msgid "Times follow the site timezone: %s"
+msgstr "Kellaajad on saidi ajavööndis: %s"
+
+msgid "Today"
+msgstr "Täna"
+
+msgid "Tomorrow 00:00"
+msgstr "Homme 00:00"
+
+msgid "Top"
+msgstr "Üleval"
+
+msgid "Transition"
+msgstr "Üleminek"
+
+msgid "Transition speed (ms)"
+msgstr "Ülemineku kiirus (ms)"
+
+msgid "Translate from %s"
+msgstr "Tõlgi keelest %s"
+
+msgid "Translated with %s – please review."
+msgstr "Tõlgitud (%s) – palun loe üle."
+
+msgid "Translating…"
+msgstr "Tõlgin…"
+
+msgid "Translation failed"
+msgstr "Tõlkimine ebaõnnestus"
+
+msgid "Typography"
+msgstr "Tüpograafia"
+
+msgid "Unsaved changes"
+msgstr "Salvestamata muudatused"
+
+msgid "Untitled slide"
+msgstr "Nimetu slaid"
+
+msgid "Up to date – latest release is %s."
+msgstr "Kõik on värske – viimane väljalase on %s."
+
+msgid "Update now"
+msgstr "Uuenda kohe"
+
+msgid "Uppercase"
+msgstr "Suurtähed"
+
+msgid "Use the same shape for every desktop image and the same shape for every mobile image: the slider height comes from the first slide with an image, other shapes are cropped to fit it."
+msgstr "Tee kõik arvutipildid ühe kujuga ja kõik mobiilipildid ühe kujuga: slaideri kõrgus tuleb esimesest pildiga slaidist ja teistsuguse kujuga pilte kärbitakse selle järgi."
+
+msgid "Used below the mobile breakpoint. If empty, the desktop image is used with the mobile focal point."
+msgstr "Kasutatakse allpool mobiili murdepunkti. Kui tühi, kasutatakse arvutivaate pilti mobiili fookuspunktiga."
+
+msgid "Uses the text font."
+msgstr "Kasutab teksti fonti."
+
+msgid "Version %s is available."
+msgstr "Saadaval on versioon %s."
+
+msgid "Vertical position"
+msgstr "Vertikaalne asukoht"
+
+msgid "WP-Cron has not run since %s."
+msgstr "WP-Cron pole käinud alates %s."
+
+msgid "WP-Cron has not run yet."
+msgstr "WP-Cron pole veel käinud."
+
+msgid "WP-Cron is disabled (DISABLE_WP_CRON). Make sure a server cron runs wp-cron.php, otherwise scheduled slides switch only on the next save."
+msgstr "WP-Cron on välja lülitatud (DISABLE_WP_CRON). Veendu, et serveri cron käivitab wp-cron.php, muidu vahetuvad ajastatud slaidid alles järgmisel salvestamisel."
+
+msgid "WP-Cron works: last run %1$s min ago (%2$s). Scheduled slides switch on time on cached pages too."
+msgstr "WP-Cron töötab: viimati käis %1$s min tagasi (%2$s). Ajastatud slaidid vahetuvad õigel ajal ka vahemälust tuleval lehel."
+
+msgid "Waiting for a campaign"
+msgstr "Ootab kampaaniat"
+
+msgid "Web fonts are loaded from Bunny Fonts (EU servers, GDPR-friendly) and only when one is selected."
+msgstr "Veebifondid laaditakse Bunny Fontsist (EL-i serverid, GDPR-sõbralik) ja ainult siis, kui mõni on valitud."
+
+msgid "Weight"
+msgstr "Paksus"
+
+msgid "When a campaign gets “Show this campaign in the slider too” ticked (on the campaign edit screen), a linked slide is created from this template: images, position, typography and colours are copied; texts, link and schedule follow the campaign. Each campaign can also pick its own template."
+msgstr "Kui kampaanial on linnuke „Näita seda kampaaniat ka slaideris” (kampaania muutmise lehel), tehakse selle malli järgi seotud slaid: pildid, asukoht, tüpograafia ja värvid kopeeritakse; tekstid, link ja ajakava järgivad kampaaniat. Iga kampaania saab valida ka oma malli."
+
+msgid "Width (%)"
+msgstr "Laius (%)"
+
+msgid "Width × height, e.g. 1920x660. Match your images so nothing gets cropped. “From first image” uses the first slide’s dimensions."
+msgstr "Laius × kõrgus, nt 1920x660. Pane sama, mis piltidel, siis midagi ei kärbita. „Esimese pildi järgi” kasutab esimese slaidi mõõte."
+
+msgid "Wonom Slider"
+msgstr "Wonom Slider"
+
+msgid "Wonom Slider is active."
+msgstr "Wonom Slider on aktiivne."
+
+msgid "Wonom Slider: no slides yet. Add slides under Wonom Slider in the WordPress admin."
+msgstr "Wonom Slider: slaide veel pole. Lisa slaidid WordPressi admini menüüs Wonom Slider."
+
+msgid "X (%)"
+msgstr "X (%)"
+
+msgid "Y (%)"
+msgstr "Y (%)"
+
+msgid "Yes"
+msgstr "Jah"
+
+msgid "You have unsaved changes."
+msgstr "Sul on salvestamata muudatusi."
+
+msgid "Your screen"
+msgstr "Sinu ekraan"
+
+msgid "default"
+msgstr "vaikimisi"
+
+msgid "e.g. \"Helvetica Neue\", Arial, sans-serif"
+msgstr "nt \"Helvetica Neue\", Arial, sans-serif"
+
+msgid "ended"
+msgstr "lõppenud"
+
+msgid "immediately"
+msgstr "kohe"
+
+msgid "live"
+msgstr "eetris"
+
+msgid "no end"
+msgstr "lõputa"
+
+msgid "off"
+msgstr "väljas"
+
+msgid "px"
+msgstr "px"
+
+msgid "upcoming"
+msgstr "tulemas"
+
+msgctxt "weekday short"
+msgid "Fr"
+msgstr "R"
+
+msgctxt "weekday short"
+msgid "Mo"
+msgstr "E"
+
+msgctxt "weekday short"
+msgid "Sa"
+msgstr "L"
+
+msgctxt "weekday short"
+msgid "Su"
+msgstr "P"
+
+msgctxt "weekday short"
+msgid "Th"
+msgstr "N"
+
+msgctxt "weekday short"
+msgid "Tu"
+msgstr "T"
+
+msgctxt "weekday short"
+msgid "We"
+msgstr "K"
+
+msgid "— choose a campaign —"
+msgstr "— vali kampaania —"
+
+msgid "“inherit” uses the theme font."
+msgstr "„inherit” kasutab teema fonti."
+

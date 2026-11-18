@@ -278,8 +278,7 @@ class Wonom_Slider_Updater {
 		check_admin_referer( 'wonom_slider_check_update' );
 		delete_site_transient( self::TRANSIENT );
 		$release = self::get_release( true );
-		delete_site_transient( 'update_plugins' );
-		wp_update_plugins();
+		self::refresh_own_entry();
 
 		$msg = $release
 			? sprintf( /* translators: 1: latest version 2: installed version */ __( 'Latest release on GitHub: %1$s (installed: %2$s).', 'wonom-slider' ), $release['version'], WONOM_SLIDER_VERSION )
@@ -298,7 +297,6 @@ class Wonom_Slider_Updater {
 	public static function status( $force = false ) {
 		if ( $force ) {
 			delete_site_transient( self::TRANSIENT );
-			delete_site_transient( 'update_plugins' );
 		}
 		$release = self::get_release( $force );
 		$status  = array(
@@ -321,9 +319,25 @@ class Wonom_Slider_Updater {
 			),
 		);
 		if ( $force && $release ) {
-			wp_update_plugins();
+			self::refresh_own_entry();
 		}
 		return $status;
+	}
+
+	/**
+	 * Write only this plugin's entry into WordPress' stored update list.
+	 *
+	 * Never delete the whole `update_plugins` transient or call wp_update_plugins(): that makes
+	 * every other plugin's updater and wordpress.org check run in the same request, which timed
+	 * out a large shop (HTTP 524, Wonom Meilidisainer 0.31.0). Reads of the transient already get
+	 * our entry through the site_transient filter; storing it keeps the Plugins screen and the
+	 * update counter in step right away.
+	 */
+	public static function refresh_own_entry() {
+		$t = get_site_transient( 'update_plugins' );   // passes through inject_update().
+		if ( is_object( $t ) ) {
+			set_site_transient( 'update_plugins', $t );
+		}
 	}
 
 	public static function after_update( $upgrader, $hook_extra ) {

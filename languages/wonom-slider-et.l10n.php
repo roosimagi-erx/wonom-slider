@@ -207,6 +207,12 @@ return array(
 		'Nothing to purge – no cache plugin active.' => 'Pole midagi tühjendada – vahemäluplugin pole aktiivne.',
 		'Next scheduled purge: %s'           => 'Järgmine ajastatud tühjendus: %s',
 		'WP-Cron is disabled (DISABLE_WP_CRON). Make sure a server cron runs wp-cron.php, otherwise scheduled slides switch only on the next save.' => 'WP-Cron on välja lülitatud (DISABLE_WP_CRON). Veendu, et serveri cron käivitab wp-cron.php, muidu vahetuvad ajastatud slaidid alles järgmisel salvestamisel.',
+		'WP-Cron works: last run %1$s min ago (%2$s). Scheduled slides switch on time on cached pages too.' => 'WP-Cron töötab: viimati käis %1$s min tagasi (%2$s). Ajastatud slaidid vahetuvad õigel ajal ka vahemälust tuleval lehel.',
+		'It is driven by the server (DISABLE_WP_CRON).' => 'Seda käivitab server (DISABLE_WP_CRON).',
+		'Checking WP-Cron – the first result appears within about 20 minutes.' => 'Kontrollin WP-Croni – esimene tulemus tuleb umbes 20 minuti jooksul.',
+		'WP-Cron has not run since %s.' => 'WP-Cron pole käinud alates %s.',
+		'WP-Cron has not run yet.' => 'WP-Cron pole veel käinud.',
+		'On a cached page a scheduled slide may then appear or disappear late; the next visit to this admin screen catches up.' => 'Vahemälust tuleval lehel võib ajastatud slaid siis hilinemisega ilmuda või kaduda; järgmine selle admin-lehe külastus teeb selle tasa.',
 		'Regular'                            => 'Tavaline',
 		'Campaign'                           => 'Kampaania',
 

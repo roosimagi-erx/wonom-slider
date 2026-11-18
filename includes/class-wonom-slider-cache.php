@@ -13,7 +13,10 @@ defined( 'ABSPATH' ) || exit;
 
 class Wonom_Slider_Cache {
 
-	const CRON_HOOK = 'wonom_slider_schedule_tick';
+	const CRON_HOOK  = 'wonom_slider_schedule_tick';
+	const PULSE_HOOK = 'wonom_slider_cron_pulse';
+	const OPT_LAST   = 'wonom_slider_cron_last';   // last time WP-Cron really ran one of our events
+	const OPT_SINCE  = 'wonom_slider_cron_since';  // when the pulse was first scheduled (grace period)
 
 	private static $purged = false;
 	private static $errors = array();
@@ -23,7 +26,61 @@ class Wonom_Slider_Cache {
 		add_action( 'wonom_slider_saved', array( __CLASS__, 'schedule_next_change' ) );
 		add_action( self::CRON_HOOK, array( __CLASS__, 'purge' ) );
 		add_action( self::CRON_HOOK, array( __CLASS__, 'schedule_next_change' ) );
+		add_action( self::CRON_HOOK, array( __CLASS__, 'record_pulse' ) );
+		add_action( self::PULSE_HOOK, array( __CLASS__, 'record_pulse' ) );
+		add_action( 'init', array( __CLASS__, 'ensure_pulse' ) );
+		add_action( 'admin_init', array( __CLASS__, 'catch_up' ) );
 		add_action( 'upgrader_process_complete', array( __CLASS__, 'on_upgrade' ), 20, 2 );
+	}
+
+	/* ---------- WP-Cron health ----------
+	 * The scheduled purge only happens if WP-Cron runs. On a cached shop WP-Cron is often switched
+	 * off and driven by the server, which can stop unnoticed. An hourly pulse records when cron
+	 * really ran, so the settings screen can tell – checking DISABLE_WP_CRON alone says nothing. */
+
+	public static function ensure_pulse() {
+		if ( ! wp_next_scheduled( self::PULSE_HOOK ) ) {
+			wp_schedule_event( time() + 60, 'hourly', self::PULSE_HOOK );
+			if ( ! get_option( self::OPT_SINCE ) ) {
+				update_option( self::OPT_SINCE, time(), false );
+			}
+		}
+	}
+
+	public static function record_pulse() {
+		update_option( self::OPT_LAST, time(), false );
+	}
+
+	/**
+	 * Safety net: when a scheduled start/end purge is overdue (cron did not run), do it on the next
+	 * admin page load instead of waiting – the shop owner visiting the admin fixes the cached page.
+	 */
+	public static function catch_up() {
+		$next = wp_next_scheduled( self::CRON_HOOK );
+		if ( $next && $next < time() - 5 * MINUTE_IN_SECONDS && ! wp_doing_ajax() ) {
+			self::purge();
+			self::schedule_next_change();
+		}
+	}
+
+	/**
+	 * Cron health for the settings screen: ok | late | waiting (just installed, no pulse yet).
+	 */
+	public static function cron_health() {
+		$last  = (int) get_option( self::OPT_LAST, 0 );
+		$since = (int) get_option( self::OPT_SINCE, 0 );
+		if ( $last && time() - $last <= 75 * MINUTE_IN_SECONDS ) {
+			$state = 'ok';
+		} elseif ( ! $last && $since && time() - $since < 20 * MINUTE_IN_SECONDS ) {
+			$state = 'waiting';
+		} else {
+			$state = 'late';
+		}
+		return array(
+			'state'    => $state,
+			'last'     => $last ? wp_date( 'd.m.Y H:i', $last ) : '',
+			'last_ago' => $last ? (int) floor( ( time() - $last ) / MINUTE_IN_SECONDS ) : null,
+		);
 	}
 
 	public static function enabled() {
@@ -193,10 +250,11 @@ class Wonom_Slider_Cache {
 	public static function status() {
 		$next = wp_next_scheduled( self::CRON_HOOK );
 		return array(
-			'enabled'   => self::enabled(),
-			'next_tick' => $next ? wp_date( 'Y-m-d H:i', $next ) : '',
+			'enabled'     => self::enabled(),
+			'next_tick'   => $next ? wp_date( 'Y-m-d H:i', $next ) : '',
 			'wp_cron_off' => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
-			'detected'  => self::detected(),
+			'cron'        => self::cron_health(),
+			'detected'    => self::detected(),
 		);
 	}
 
