@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.3 - 2026-11-18
+
+- Parandus: lohistamisega sätitud laius (nt 1,15×) on lahtri laiuse valikus näha ka pärast lahtrite ümberjärjestamist.
+- Parandus: eelvaate ⇄ pide ja paigutusjoon on vähendatud eelvaates tavalises suuruses, et neid oleks lihtne haarata.
+
 ## 1.9.2 - 2026-11-18
 
 - Uus: kollaaži saab slaidi eelvaates hiirega sättida.

@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.2
+Stable tag: 1.9.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,10 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.9.3 - 2026-11-18 =
+* Parandus: lohistamisega sätitud laius (nt 1,15×) on lahtri laiuse valikus näha ka pärast lahtrite ümberjärjestamist.
+* Parandus: eelvaate ⇄ pide ja paigutusjoon on vähendatud eelvaates tavalises suuruses, et neid oleks lihtne haarata.
 
 = 1.9.2 - 2026-11-18 =
 * Uus: kollaaži saab slaidi eelvaates hiirega sättida.
@@ -85,9 +89,5 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 = 1.7.6 - 2026-11-10 =
 * Parandus: arvutipildi soovitus ja eelvaade lähtuvad nüüd tüüpilisest sülearvutist (brauseri ala 1536 × 730 px). Kõrguse piirang on protsent ekraani kõrgusest, nii et sülearvutil ja tavalisel 1080p monitoril on nähtav ala kõige laiem ja pilti kärbitakse kõige rohkem. 1.7.5 arvutas suurema ekraani järgi ja soovitas 2400 × 620, mis sülearvutil kaotas ikka umbes 20 % kõrgusest. 40 % piiranguga on õige mõõt 2400 × 460 px: see on igal levinud ekraanil terve, suuremal ekraanil on slaider lihtsalt madalam.
 * Külgede suhe kuvatakse eesti keeles komaga (5,2 : 1, 4 : 5).
-
-= 1.7.5 - 2026-11-10 =
-* Parandus: arvutivaate eelvaade, lava ja slaidide pisipildid joonistatakse nüüd päris arvutilaiuses (brauseri ala 1600 × 1040 px) ja vähendatakse ekraanile. Varem joonistati need kitsamalt ja laial ekraanil tekkiv kärbe (pildi üla- ja alaosa) adminis ei paistnud. Nüüd näed adminis täpselt sama kärbet, mida näeb külastaja.
-* Uus: Seaded → Pildi mõõdud. Juhend, mis mõõdus arvuti- ja mobiilipildid teha, arvutatud sinu kõrguse piirangutest (praeguste seadetega arvuti 2400 × 620 px, mobiil 1080 × 1350 px), koos reeglitega teksti, failivormingu ja kollaažifotode kohta. Pildivälja all olev soovitus kasutab samu arvutatud mõõte (enne oli seal vale 1920 × 660).
 
 Full history: CHANGELOG.md on GitHub.

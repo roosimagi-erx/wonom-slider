@@ -866,7 +866,10 @@
 	}
 	// Width selects under a collage slot: desktop width in "photos" and, with "choose per slot", the mobile one.
 	function slotWidthControls( it, whole, custom ) {
-		var h = '<div class="wonom-cslot__w">', widths = isColorSlot( it ) ? COLOR_WIDTHS : SLOT_WIDTHS;
+		var h = '<div class="wonom-cslot__w">', widths = ( isColorSlot( it ) ? COLOR_WIDTHS : SLOT_WIDTHS ).slice();
+		// A width set by dragging a seam in the preview (e.g. 1.15) is listed too.
+		[ slotW( it ), parseFloat( it.wm ) ].forEach( function ( x ) { if ( x > 0 && widths.indexOf( x ) < 0 ) { widths.push( x ); } } );
+		widths.sort( function ( a, b ) { return a - b; } );
 		if ( isColorSlot( it ) || ! whole ) {
 			h += '<label>' + esc( I.slotWidth ) + ' <select data-cslot="w">' + widths.map( function ( x ) { return '<option value="' + x + '"' + ( slotW( it ) === x ? ' selected' : '' ) + '>' + fmtW( x ) + '</option>'; } ).join( '' ) + '</select></label>';
 		}
@@ -983,7 +986,7 @@
 				+ '.wonom-stage-guide.v{left:50%;top:0;bottom:0;width:1px}.wonom-stage-guide.h{top:50%;left:0;right:0;height:1px}'
 				+ '.wonom-stage-guide.is-on{display:block}'
 				+ '.wonom-slide__link{pointer-events:none}'
-				+ '.wonom-stage-move{position:absolute;top:10px;z-index:12;display:none;transform:translateX(-50%);padding:4px 12px;border-radius:999px;background:#2563eb;color:#fff;font:600 18px/1 system-ui,sans-serif;box-shadow:0 1px 6px rgba(0,0,0,.35);cursor:move;user-select:none}'
+				+ '.wonom-stage-move{position:absolute;top:10px;z-index:12;display:none;transform:translateX(-50%);transform-origin:50% 0;padding:4px 12px;border-radius:999px;background:#2563eb;color:#fff;font:600 18px/1 system-ui,sans-serif;box-shadow:0 1px 6px rgba(0,0,0,.35);cursor:move;user-select:none}'
 				+ '.wonom-stage-move.is-on{display:block}'
 				+ '.wonom-stage-marker{position:absolute;top:0;bottom:0;width:4px;margin-left:-2px;z-index:12;display:none;background:#2563eb;box-shadow:0 0 0 2px rgba(255,255,255,.7);pointer-events:none}'
 				+ '.wonom-stage-marker.is-on{display:block}'
@@ -1175,6 +1178,11 @@
 		function scale() {   // stage px → screen px (the desktop stage is shrunk)
 			var f = stage.iframe; return f && f.offsetWidth ? f.getBoundingClientRect().width / f.offsetWidth : 1;
 		}
+		// Keep the handle and the drop marker at their normal on-screen size in the shrunk stage.
+		var inv = 1 / Math.max( 0.2, scale() );
+		mover.style.transform = 'translateX(-50%) scale(' + inv + ')';
+		mover.style.top = ( 10 * inv ) + 'px';
+		marker.style.width = ( 4 * inv ) + 'px'; marker.style.marginLeft = ( -2 * inv ) + 'px';
 		function visible() {
 			return items.map( function ( el, i ) { return { el: el, i: i, r: el.getBoundingClientRect() }; } ).filter( function ( v ) { return v.r.width > 0; } );
 		}
