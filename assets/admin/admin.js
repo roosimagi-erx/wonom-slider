@@ -683,6 +683,7 @@
 			if ( sl ) {
 				if ( f.parentNode.classList.contains( 'is-zoomed' ) ) {
 					// offsetHeight is in the zoomed page's own units; multiply to get the painted size.
+					f.style.width = ''; // must fill the box: the zoom is computed from the box width
 					var z = previewZoom( f );
 					d.documentElement.style.zoom = z;
 					f.style.height = Math.max( 60, Math.ceil( sl.offsetHeight * z ) ) + 'px';
@@ -972,8 +973,7 @@
 			var now = screenViewport(), old = VIEWPORT.screen;
 			if ( Math.abs( now.w - old.w ) > 40 || Math.abs( now.h - old.h ) > 40 ) {
 				VIEWPORT.screen = now; REF_H.screen = now.h; THUMB_W = now.w;
-				var pf = document.getElementById( 'wonom-preview-frame' );
-				if ( pf && preview.device === 'screen' ) { pf.style.width = now.w + 'px'; }
+				// The zoomed top preview stays width:100% – refreshPreview() recomputes its zoom.
 				refreshPreview();
 				var openCard = app.querySelector( '.wonom-slide-card.is-open' );
 				if ( openCard ) { renderStage( findSlide( openCard.getAttribute( 'data-id' ) ) ); }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.2 - 2026-11-18
+
+- Parandus: kui brauseri akna suurus või suum muutus, läks slaidide lehe ülemine eelvaade liiga laiaks – slaider nihkus paremale, osa jäi kasti taha peitu ja leht hakkas külgsuunas kerima. Nüüd täidab eelvaade alati kasti ja arvutab vähenduse uuesti.
+
 ## 1.8.1 - 2026-11-18
 
 - Parandus: slaidide lehe ülemine eelvaade ei värise enam. Eelvaade joonistati suures ekraani laiuses ja vähendati CSS-i „transform“ abil, mistõttu fotod ja tekstid värelesid slaidide vahetumise ajal, eriti suurel monitoril ja vähendatud brauseri suumiga. Nüüd vähendab brauser lehe otse (CSS zoom) ja eelvaade on terav ja rahulik; mõõdud ja kärbe on samad mis poes.
