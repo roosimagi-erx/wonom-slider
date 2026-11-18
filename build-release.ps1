@@ -107,10 +107,12 @@ function Find-Gh {
 if ($Promote) {
     if ($cmp -ne 0) { throw "-Promote works on the current version ($current), not $Version." }
     $gh = Find-Gh
-    $view = Invoke-Native $gh @('release', 'view', "v$Version", '--repo', $repo, '--json', 'isPrerelease,isDraft', '--jq', '"\(.isPrerelease) \(.isDraft)"') -Quiet
+    # Parse gh's JSON in PowerShell: Windows PowerShell 5.1 strips the quotes of a --jq argument.
+    $view = Invoke-Native $gh @('release', 'view', "v$Version", '--repo', $repo, '--json', 'isPrerelease,isDraft') -Quiet
     if ($view.Code -ne 0 -or -not $view.Out) { throw "Release v$Version not found on GitHub." }
-    if ($view.Out -match 'true$') { throw "v$Version is a draft (the release checks failed). Fix it and release a higher version." }
-    if ($view.Out -match '^false') { Write-Host "v$Version is already a normal release." -ForegroundColor Yellow; exit 0 }
+    $info = $view.Out | ConvertFrom-Json
+    if ($info.isDraft) { throw "v$Version is a draft (the release checks failed). Fix it and release a higher version." }
+    if (-not $info.isPrerelease) { Write-Host "v$Version is already a normal release." -ForegroundColor Yellow; exit 0 }
     if ((Invoke-Native $gh @('release', 'edit', "v$Version", '--repo', $repo, '--prerelease=false', '--latest')).Code -ne 0) { throw "gh release edit failed." }
     Write-Host "v$Version is now the latest release - shops are offered it (within 6 h, or now via 'Check for updates now')." -ForegroundColor Green
     exit 0
@@ -275,7 +277,9 @@ try {
     Invoke-Native git @('fetch', 'origin', '--tags', '--quiet') -Quiet | Out-Null
 
     # Verify the asset the plugin's updater downloads.
-    $asset = (Invoke-Native $gh @('release', 'view', "v$Version", '--repo', $repo, '--json', 'assets', '--jq', ".assets[] | select(.name==`"$slug.zip`") | .size") -Quiet).Out
+    $assetsJson = (Invoke-Native $gh @('release', 'view', "v$Version", '--repo', $repo, '--json', 'assets') -Quiet).Out
+    $asset = $null
+    if ($assetsJson) { $asset = ($assetsJson | ConvertFrom-Json).assets | Where-Object { $_.name -eq "$slug.zip" } | Select-Object -First 1 }
     if (-not $asset) { throw "Release v$Version was created but $slug.zip is not attached." }
 
     Write-Host ""
