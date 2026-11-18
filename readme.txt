@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.8.2
+Stable tag: 1.8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,9 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.8.3 - 2026-11-18 =
+* Parandus: slaidide lehe ülemine eelvaade ei vilgu enam kitsamas aknas ega vähendatud brauseri suumiga. Eelvaate raamis ilmus ümardamise tõttu korraks kerimisriba, mis tegi slaideri kitsamaks, riba kadus jälle ja nii kordus see mitukümmend korda sekundis. Nüüd ei kuva eelvaate raam kunagi kerimisriba.
 
 = 1.8.2 - 2026-11-18 =
 * Parandus: kui brauseri akna suurus või suum muutus, läks slaidide lehe ülemine eelvaade liiga laiaks – slaider nihkus paremale, osa jäi kasti taha peitu ja leht hakkas külgsuunas kerima. Nüüd täidab eelvaade alati kasti ja arvutab vähenduse uuesti.
@@ -74,8 +77,5 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 
 = 1.7.2 - 2026-10-05 =
 * Muudatus: kampaaniaga seotud slaidil (valitud kampaania või automaatne) tuleb kogu sisu ainult kampaaniast. Slaidi enda varasemad tekstid (nt ingliskeelne väike rida või nupu tekst) ei jää enam alles: väljad, mida kampaanial pole, on tühjad igas keeles. Nuppu kampaaniaslaidil ei ole; kui kampaanial on link, on kogu slaid klõpsatav.
-
-= 1.7.1 - 2026-10-05 =
-* Uus: silt (sooduskoodi pill) on slaidi kaupa eraldi seadistatav: font, suurus arvutis ja mobiilis, paksus, suurtähed, tähevahe, tausta- ja tekstivärv, polsterdus ja nurgad. Tühi = senine vaikimisi (nupu värvid). Muudatus on laval kohe näha; värvi saab ✕-ga vaikimisi tagasi panna.
 
 Full history: CHANGELOG.md on GitHub.

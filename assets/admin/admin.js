@@ -272,7 +272,7 @@
 		// with transform: scale() – a transformed iframe re-samples every frame during the slide fades
 		// and the photos and texts visibly shimmer. Zoom lays the page out at the device width and
 		// paints it directly at the small size.
-		h += '<div class="wonom-preview-stage is-' + ( scaled ? 'desktop' : preview.device ) + '"><div class="wonom-vp' + ( scaled ? ' is-zoomed' : '' ) + '"><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '></iframe></div></div>';
+		h += '<div class="wonom-preview-stage is-' + ( scaled ? 'desktop' : preview.device ) + '"><div class="wonom-vp' + ( scaled ? ' is-zoomed' : '' ) + '"><iframe id="wonom-preview-frame" scrolling="no" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '></iframe></div></div>';
 		if ( scaled ) { h += '<p class="wonom-hint wonom-preview-note">' + esc( sprintf( preview.device === 'wide' ? I.previewWideNote : ( preview.device === 'screen' ? I.previewScreenNote : I.previewWidthNote ), pv.w, pv.h ) ) + '</p>'; }
 		h += '</div>';
 		return h;
@@ -289,7 +289,9 @@
 			var body = res.html || '<p style="font:14px/1.5 system-ui,sans-serif;color:#555;padding:40px;text-align:center">' + esc( I.stageEmpty ) + '</p>';
 			f.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">' + ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
-				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6}' + ( f.parentNode.classList.contains( 'is-zoomed' ) ? 'html{zoom:' + previewZoom( f ) + '}' : '' ) + capStyle( preview.device ) + ( res.custom_css || '' ) + '</style></head><body>' + body
+				// overflow:hidden – the frame is sized to the slider; a scrollbar appearing for a rounding
+				// pixel would narrow the slider, shrink the frame, vanish again… and flicker endlessly.
+				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6;overflow:hidden}' + ( f.parentNode.classList.contains( 'is-zoomed' ) ? 'html{zoom:' + previewZoom( f ) + '}' : '' ) + capStyle( preview.device ) + ( res.custom_css || '' ) + '</style></head><body>' + body
 				+ '<script src="' + esc( res.js ) + '"><\/script></body></html>';
 		} ).catch( function ( e ) { toast( e && e.message ? e.message : 'Preview error', 'err' ); } );
 	}
