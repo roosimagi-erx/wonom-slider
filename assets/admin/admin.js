@@ -840,6 +840,7 @@
 	/* Collages: up to 7 photos; "show photos whole" fills part of the width – tell how much. */
 	var COLLAGE_MAX = 7;
 	var SLOT_WIDTHS = [ 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4 ];
+	var COLOR_WIDTHS = [ 0.25 ].concat( SLOT_WIDTHS );   // a narrow colour strip, e.g. at the slider edges
 	function photoRatio( c ) { return c && c.width && c.height ? c.width / c.height : 0.75; }
 	function isColorSlot( c ) { return !! c && c.type === 'color'; }
 	function slotW( c ) { return c && parseFloat( c.w ) > 0 ? parseFloat( c.w ) : 1; }
@@ -865,13 +866,13 @@
 	}
 	// Width selects under a collage slot: desktop width in "photos" and, with "choose per slot", the mobile one.
 	function slotWidthControls( it, whole, custom ) {
-		var h = '<div class="wonom-cslot__w">';
+		var h = '<div class="wonom-cslot__w">', widths = isColorSlot( it ) ? COLOR_WIDTHS : SLOT_WIDTHS;
 		if ( isColorSlot( it ) || ! whole ) {
-			h += '<label>' + esc( I.slotWidth ) + ' <select data-cslot="w">' + SLOT_WIDTHS.map( function ( x ) { return '<option value="' + x + '"' + ( slotW( it ) === x ? ' selected' : '' ) + '>' + fmtW( x ) + '</option>'; } ).join( '' ) + '</select></label>';
+			h += '<label>' + esc( I.slotWidth ) + ' <select data-cslot="w">' + widths.map( function ( x ) { return '<option value="' + x + '"' + ( slotW( it ) === x ? ' selected' : '' ) + '>' + fmtW( x ) + '</option>'; } ).join( '' ) + '</select></label>';
 		}
 		if ( custom ) {
 			var wm = it.wm == null ? -1 : parseFloat( it.wm ), opts = [ [ -1, I.slotSame ], [ 0, I.slotHidden ] ];
-			if ( isColorSlot( it ) || ! whole ) { SLOT_WIDTHS.forEach( function ( x ) { opts.push( [ x, fmtW( x ) ] ); } ); }
+			if ( isColorSlot( it ) || ! whole ) { widths.forEach( function ( x ) { opts.push( [ x, fmtW( x ) ] ); } ); }
 			h += '<label>' + esc( I.slotMobile ) + ' <select data-cslot="wm">' + opts.map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( wm === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select></label>';
 		}
 		return h + '</div>';

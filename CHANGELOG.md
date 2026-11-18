@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.1 - 2026-11-18
+
+- Uus: värvipinna laiuseks saab valida ka 0,25× (kitsas värviriba, nt slaideri servades).
+
 ## 1.9.0 - 2026-11-18
 
 - Uus: kollaaži saab lisada **värvipinna** – tühja lahtri, kus paistab slaidi taustavärv ja millele saab tekstitööriistaga sõnumi panna. Nii saab teha bänneri „foto – sõnum – foto“ ilma pilditöötlusprogrammita. Värvipinda saab lohistada kuhu tahes, ka servadesse (nt värv – foto – värv – foto – värv).

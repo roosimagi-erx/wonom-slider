@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,9 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.9.1 - 2026-11-18 =
+* Uus: värvipinna laiuseks saab valida ka 0,25× (kitsas värviriba, nt slaideri servades).
 
 = 1.9.0 - 2026-11-18 =
 * Uus: kollaaži saab lisada **värvipinna** – tühja lahtri, kus paistab slaidi taustavärv ja millele saab tekstitööriistaga sõnumi panna. Nii saab teha bänneri „foto – sõnum – foto“ ilma pilditöötlusprogrammita. Värvipinda saab lohistada kuhu tahes, ka servadesse (nt värv – foto – värv – foto – värv).
@@ -82,8 +85,5 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 
 = 1.7.4 - 2026-11-10 =
 * Tehniline: uued versioonid avaldatakse nüüd otse väljalaske skriptist (nagu Wonom KKK-l) ja GitHub kontrollib iga väljalaske üle. Kui kontroll ebaõnnestub, ei pakuta seda versiooni poodidele üldse. Plugina töös muudatusi pole.
-
-= 1.7.3 - 2026-10-05 =
-* Parandus: kui automaatsel kampaaniaslaidil pole ühtki kampaaniat võtta, tühjendatakse ka redaktoris slaidi varasemad tekstid, et vana sisu ei jääks kuhugi alles.
 
 Full history: CHANGELOG.md on GitHub.
