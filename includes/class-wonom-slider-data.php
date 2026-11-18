@@ -287,6 +287,8 @@ class Wonom_Slider_Data {
 			'overlay'             => 20,
 			'overlay_color'       => '#000000',
 			'bg_color'            => '#1d2433', // shown behind the image and for image-less slides
+			'bg_color2'           => '',        // second colour of a gradient background
+			'bg_grad'             => '',        // '' = plain colour | right | bottom | br | tr (gradient direction)
 			'badge'               => '',
 			'start'               => '',
 			'end'                 => '',
@@ -307,11 +309,15 @@ class Wonom_Slider_Data {
 			'mobile_pos_w'        => 90,
 			// Background: a single image (image_* fields) or a collage of 2–7 images built in the browser.
 			'bg_mode'             => 'image', // image | collage
-			'collage'             => array(), // list of { id, url, width, height, focal_x, focal_y }
+			// List of slots: photos { type: image, id, url, width, height, focal_x, focal_y, w, wm } or empty
+			// colour fields { type: color, w, wm } that show the slide background. w = width in "photos"
+			// (0.5–4), wm = width on mobile (-1 = same as w, 0 = hidden; used with collage_mobile = custom).
+			'collage'             => array(),
 			'collage_seam'        => 'fade',  // hard | fade | blur
 			'collage_gap'         => 0,       // px, used with the hard seam
-			'collage_mobile'      => 'first2', // all | first3 | first2 | first1
+			'collage_mobile'      => 'first2', // all | first3 | first2 | first1 | custom (per slot)
 			'collage_fit'         => 'cover',  // cover (fill, crop) | contain (every photo whole)
+			'collage_fade'        => 20,       // % of a photo's width that fades into a neighbouring colour field
 			// Frame: inset from the slide edge + corner radius; the background colour shows around it.
 			'frame_width'         => 0,
 			'frame_radius'        => 0,
@@ -605,6 +611,9 @@ class Wonom_Slider_Data {
 			$c         = isset( $in[ $k ] ) ? sanitize_hex_color( $in[ $k ] ) : null;
 			$out[ $k ] = $c ? $c : $d[ $k ];
 		}
+		$c2               = isset( $in['bg_color2'] ) ? sanitize_hex_color( $in['bg_color2'] ) : null;
+		$out['bg_color2'] = $c2 ? $c2 : '';
+		$out['bg_grad']   = ( isset( $in['bg_grad'] ) && in_array( $in['bg_grad'], array( 'right', 'bottom', 'br', 'tr' ), true ) ) ? $in['bg_grad'] : '';
 
 		$out['overlay'] = isset( $in['overlay'] ) ? max( 0, min( 100, absint( $in['overlay'] ) ) ) : $d['overlay'];
 		$out['focal_x'] = isset( $in['focal_x'] ) ? max( 0, min( 100, absint( $in['focal_x'] ) ) ) : 50;
@@ -647,7 +656,8 @@ class Wonom_Slider_Data {
 		$out['bg_mode']        = ( isset( $in['bg_mode'] ) && 'collage' === $in['bg_mode'] ) ? 'collage' : 'image';
 		$out['collage_seam']   = ( isset( $in['collage_seam'] ) && in_array( $in['collage_seam'], array( 'hard', 'fade', 'blur' ), true ) ) ? $in['collage_seam'] : $d['collage_seam'];
 		$out['collage_gap']    = isset( $in['collage_gap'] ) ? max( 0, min( 60, absint( $in['collage_gap'] ) ) ) : $d['collage_gap'];
-		$out['collage_mobile'] = ( isset( $in['collage_mobile'] ) && in_array( $in['collage_mobile'], array( 'all', 'first3', 'first2', 'first1' ), true ) ) ? $in['collage_mobile'] : $d['collage_mobile'];
+		$out['collage_mobile'] = ( isset( $in['collage_mobile'] ) && in_array( $in['collage_mobile'], array( 'all', 'first3', 'first2', 'first1', 'custom' ), true ) ) ? $in['collage_mobile'] : $d['collage_mobile'];
+		$out['collage_fade']   = isset( $in['collage_fade'] ) && is_numeric( $in['collage_fade'] ) ? max( 0, min( 50, absint( $in['collage_fade'] ) ) ) : $d['collage_fade'];
 		// cover = photos fill the slide (cropped to fit); contain = every photo whole, free space shows the slide background.
 		$out['collage_fit']    = ( isset( $in['collage_fit'] ) && 'contain' === $in['collage_fit'] ) ? 'contain' : 'cover';
 		$out['frame_width']    = isset( $in['frame_width'] ) ? max( 0, min( 80, absint( $in['frame_width'] ) ) ) : 0;
@@ -658,8 +668,19 @@ class Wonom_Slider_Data {
 				if ( ! is_array( $item ) ) {
 					continue;
 				}
+				// Width in "photos" (0.5 steps) and the mobile width (-1 = same, 0 = hidden on mobile).
+				$w  = isset( $item['w'] ) && is_numeric( $item['w'] ) ? max( 0.5, min( 4, round( (float) $item['w'] * 2 ) / 2 ) ) : 1;
+				$wm = isset( $item['wm'] ) && is_numeric( $item['wm'] ) ? (float) $item['wm'] : -1;
+				$wm = $wm < 0 ? -1 : ( 0.0 === $wm ? 0 : max( 0.5, min( 4, round( $wm * 2 ) / 2 ) ) );
+				if ( isset( $item['type'] ) && 'color' === $item['type'] ) {
+					$out['collage'][] = array( 'type' => 'color', 'w' => $w, 'wm' => $wm );
+					continue;
+				}
 				$id   = isset( $item['id'] ) ? absint( $item['id'] ) : 0;
 				$slot = array(
+					'type'    => 'image',
+					'w'       => $w,
+					'wm'      => $wm,
 					'id'      => $id,
 					'url'     => isset( $item['url'] ) ? esc_url_raw( $item['url'] ) : '',
 					'width'   => isset( $item['width'] ) ? absint( $item['width'] ) : 0,
@@ -886,13 +907,22 @@ class Wonom_Slider_Data {
 		return isset( $slide['bg_mode'] ) && 'collage' === $slide['bg_mode'] && ! empty( $slide['collage'] ) && is_array( $slide['collage'] );
 	}
 
+	/** Collage slot that is an empty colour field (shows the slide background) instead of a photo. */
+	public static function is_color_slot( $c ) {
+		return is_array( $c ) && isset( $c['type'] ) && 'color' === $c['type'];
+	}
+
 	/**
 	 * Representative image (for thumbnails / aspect ratio): the single image or the first collage image.
 	 */
 	public static function slide_main_image( $slide ) {
 		if ( self::slide_is_collage( $slide ) ) {
-			$c = $slide['collage'][0];
-			return array( 'id' => (int) $c['id'], 'url' => $c['url'], 'width' => (int) $c['width'], 'height' => (int) $c['height'] );
+			foreach ( $slide['collage'] as $c ) {
+				if ( ! self::is_color_slot( $c ) && ! empty( $c['url'] ) ) {
+					return array( 'id' => (int) $c['id'], 'url' => $c['url'], 'width' => (int) $c['width'], 'height' => (int) $c['height'] );
+				}
+			}
+			return array( 'id' => 0, 'url' => '', 'width' => 0, 'height' => 0 ); // colour fields only
 		}
 		return array( 'id' => (int) $slide['image_id'], 'url' => $slide['image_url'], 'width' => (int) $slide['image_width'], 'height' => (int) $slide['image_height'] );
 	}

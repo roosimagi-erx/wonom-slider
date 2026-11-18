@@ -30,6 +30,9 @@ msgstr "+7 päeva"
 msgid "1920 = the most common monitor width: full width on laptops, centred with the page background around it on larger monitors."
 msgstr "1920 = kõige levinum monitori laius: sülearvutil täislaius, suuremal monitoril keskel, ümber lehe taust."
 
+msgid "A colour field is an empty slot that shows the background colour or gradient (Design) – put your message on it with the text tool. Widths are in photos: 3× = as wide as three photos."
+msgstr "Värvipind on tühi lahter, kus paistab taustavärv või -üleminek (Kujundus) – sõnumi saad sinna panna tekstitööriistaga. Laius on „piltides“: 3× = kolme pildi laiune."
+
 msgid "A light overlay keeps white text readable on bright photos."
 msgstr "Kerge tumendus hoiab valge teksti heledal fotol loetavana."
 
@@ -111,6 +114,9 @@ msgstr "Taust"
 msgid "Background colour"
 msgstr "Taustavärv"
 
+msgid "Background colour (Design → Background colour)"
+msgstr "Taustavärv (Kujundus → Taustavärv)"
+
 msgid "Badge (e.g. −20 %)"
 msgstr "Silt (nt −20 %)"
 
@@ -171,6 +177,9 @@ msgstr "Kontrollin…"
 msgid "Choose image"
 msgstr "Vali pilt"
 
+msgid "Choose per slot"
+msgstr "Vali iga lahtri jaoks"
+
 msgid "Clear"
 msgstr "Tühjenda"
 
@@ -186,14 +195,23 @@ msgstr "Cloudflare’i API võti (õigus Cache Purge)"
 msgid "Cloudflare Zone ID"
 msgstr "Cloudflare’i Zone ID"
 
-msgid "Collage (2–5 images)"
-msgstr "Kollaaž (2–5 pilti)"
+msgid "Collage (up to 7 slots)"
+msgstr "Kollaaž (kuni 7 lahtrit)"
 
 msgid "Collage photos: portrait 4 : 5 (e.g. 1080 × 1350 px), all the same size."
 msgstr "Kollaaži fotod: püstised 4 : 5 (nt 1080 × 1350 px), kõik ühesuurused."
 
 msgid "Colour"
 msgstr "Värv"
+
+msgid "Colour field"
+msgstr "Värvipind"
+
+msgid "Colour field %d"
+msgstr "Värvipind %d"
+
+msgid "Colour gradient"
+msgstr "Värviüleminek"
 
 msgid "Content"
 msgstr "Sisu"
@@ -263,6 +281,12 @@ msgstr "Arvutipilt"
 
 msgid "Detected on this site: %s"
 msgstr "Saidil tuvastatud: %s"
+
+msgid "Diagonal ↗"
+msgstr "Diagonaalis ↗"
+
+msgid "Diagonal ↘"
+msgstr "Diagonaalis ↘"
 
 msgid "Displays the Wonom hero slider."
 msgstr "Kuvab Wonomi päiseslaideri."
@@ -341,6 +365,9 @@ msgstr "Lisa CSS-klass"
 
 msgid "Fade"
 msgstr "Hajumine"
+
+msgid "Fade into the colour field (%)"
+msgstr "Hajutus värvipinda (%)"
 
 msgid "Featured"
 msgstr "Esiletõstetud"
@@ -447,6 +474,9 @@ msgstr "Peida mobiilis tekstid ja nupud (ainult pilt)"
 msgid "Hour"
 msgstr "Tund"
 
+msgid "How much of a photo next to a colour field fades into the background; 0 = sharp edge."
+msgstr "Kui suur osa värvipinna kõrval oleva foto laiusest sulandub taustaks; 0 = terav serv."
+
 msgid "How to show the slider"
 msgstr "Kuidas slaiderit lehel näidata"
 
@@ -551,6 +581,9 @@ msgstr "Jäta mõlemad tühjaks, kui slaid on alati nähtav. Kampaaniale määra
 
 msgid "Left"
 msgstr "Vasakul"
+
+msgid "Left → right"
+msgstr "Vasakult paremale →"
 
 msgid "Letter spacing"
 msgstr "Tähevahe"
@@ -675,6 +708,9 @@ msgstr "Slaide veel pole. Lisa esimene slaid – vaja on ainult arvutivaate pilt
 msgid "No visible slides. Add an image to a slide and save."
 msgstr "Nähtavaid slaide pole. Lisa slaidile pilt ja salvesta."
 
+msgid "None – one colour"
+msgstr "Pole – üks värv"
+
 msgid "Not allowed."
 msgstr "Pole lubatud."
 
@@ -744,6 +780,9 @@ msgstr "Tumenduskihi värv"
 msgid "Overlay darkness"
 msgstr "Tumenduskihi tugevus"
 
+msgid "Overlay darkness was set to 0 so the colour field keeps its own colour."
+msgstr "Tumenduskihi tugevus pandi 0 peale, et värvipind jääks oma värvi."
+
 msgid "Own texts"
 msgstr "Oma tekstid"
 
@@ -764,6 +803,9 @@ msgstr "Fotod on tervena. Sinu ekraanil täidavad need umbes %1$s % slaideri lai
 
 msgid "Pick 2–7 portrait photos of the same size (e.g. 1080×1350 px); you can select several at once. Click a photo to set its focal point. Drag the slot header to change the order."
 msgstr "Vali 2–7 ühesuurust püstist fotot (nt 1080×1350 px); korraga saab valida mitu. Klõps fotol määrab fookuspunkti. Järjekorra muutmiseks lohista pesa pealkirjast."
+
+msgid "Pick a colour from the screen, e.g. from a photo in the preview"
+msgstr "Võta värv ekraanilt, nt eelvaate fotolt"
 
 msgid "Plain defaults (no template)"
 msgstr "Tavalised vaikeväärtused (mallita)"
@@ -800,6 +842,9 @@ msgstr "Tühjendatud: %s"
 
 msgid "Purging…"
 msgstr "Tühjendan…"
+
+msgid "Put the text block in the middle of this colour field – for the view (computer or mobile) chosen above the preview."
+msgstr "Paigutab tekstiploki selle värvipinna keskele – eelvaate kohal valitud vaate (arvuti või mobiil) jaoks."
 
 msgid "Recommended: desktop 1920×660 px (or your ratio), mobile 800×1000 px. WebP/JPG under 300 kB."
 msgstr "Soovitus: arvuti 1920×660 px (või sinu suhe), mobiil 800×1000 px. WebP/JPG alla 300 kB."
@@ -867,11 +912,17 @@ msgstr "Teise nupu link"
 msgid "Second button text"
 msgstr "Teise nupu tekst"
 
+msgid "Second colour"
+msgstr "Teine värv"
+
 msgid "See the offer"
 msgstr "Vaata pakkumist"
 
 msgid "September"
 msgstr "september"
+
+msgid "Set under each slot whether and how wide it is shown on mobile, e.g. one photo + a colour field."
+msgstr "Määra iga lahtri all, kas ja kui laialt seda mobiilis näidatakse, nt üks foto + värvipind."
 
 msgid "Settings"
 msgstr "Seaded"
@@ -990,6 +1041,12 @@ msgstr "Teksti joondus"
 msgid "Text block max width (px)"
 msgstr "Tekstiploki maksimaalne laius (px)"
 
+msgid "Text block placed in the middle of the colour field (computer). Fine-tune it by dragging in the preview."
+msgstr "Tekstiplokk on värvipinna keskel (arvuti). Täpsusta lohistades eelvaates."
+
+msgid "Text block placed in the middle of the colour field (mobile). Fine-tune it by dragging in the preview."
+msgstr "Tekstiplokk on värvipinna keskel (mobiil). Täpsusta lohistades eelvaates."
+
 msgid "Text block position"
 msgstr "Tekstiploki asukoht"
 
@@ -998,6 +1055,9 @@ msgstr "Teksti värv"
 
 msgid "Text colour applies to all texts of the slide."
 msgstr "Teksti värv kehtib slaidi kõigile tekstidele."
+
+msgid "Text here"
+msgstr "Tekst siia"
 
 msgid "Text size – desktop (px)"
 msgstr "Teksti suurus – arvuti (px)"
@@ -1011,6 +1071,9 @@ msgstr "Tekstid ja nupp"
 msgid "The background colour shows around the frame; 0 = no frame. On mobile the distance is halved."
 msgstr "Raami ümber paistab taustavärv; 0 = raami pole. Mobiilis on kaugus poole väiksem."
 
+msgid "The background runs from the background colour to this colour."
+msgstr "Taust läheb taustavärvist üle sellesse värvi."
+
 msgid "The linked campaign no longer exists – the slide is hidden."
 msgstr "Seotud kampaaniat enam pole – slaid on peidus."
 
@@ -1022,6 +1085,9 @@ msgstr "Teema mall (PHP):"
 
 msgid "There is no height limit, so the slider follows the image. 3 : 1 is a balanced banner shape."
 msgstr "Kõrguse piirangut pole, slaider järgib pilti. 3 : 1 on tasakaalukas bänneri kuju."
+
+msgid "This colour field is not shown in this view."
+msgstr "See värvipind ei ole selles vaates nähtav."
 
 msgid "Time per slide (ms)"
 msgstr "Aeg slaidi kohta (ms)"
@@ -1037,6 +1103,9 @@ msgstr "Homme 00:00"
 
 msgid "Top"
 msgstr "Üleval"
+
+msgid "Top → bottom"
+msgstr "Ülalt alla ↓"
 
 msgid "Transition"
 msgstr "Üleminek"
@@ -1113,6 +1182,9 @@ msgstr "Paksus"
 msgid "When a campaign gets “Show this campaign in the slider too” ticked (on the campaign edit screen), a linked slide is created from this template: images, position, typography and colours are copied; texts, link and schedule follow the campaign. Each campaign can also pick its own template."
 msgstr "Kui kampaanial on linnuke „Näita seda kampaaniat ka slaideris” (kampaania muutmise lehel), tehakse selle malli järgi seotud slaid: pildid, asukoht, tüpograafia ja värvid kopeeritakse; tekstid, link ja ajakava järgivad kampaaniat. Iga kampaania saab valida ka oma malli."
 
+msgid "Width"
+msgstr "Laius"
+
 msgid "Width (%)"
 msgstr "Laius (%)"
 
@@ -1152,6 +1224,9 @@ msgstr "nt \"Helvetica Neue\", Arial, sans-serif"
 msgid "ended"
 msgstr "lõppenud"
 
+msgid "hidden"
+msgstr "peidus"
+
 msgid "immediately"
 msgstr "kohe"
 
@@ -1166,6 +1241,9 @@ msgstr "väljas"
 
 msgid "px"
 msgstr "px"
+
+msgid "same"
+msgstr "sama"
 
 msgid "upcoming"
 msgstr "tulemas"

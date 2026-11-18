@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.9.0 - 2026-11-18
+
+- Uus: kollaaži saab lisada **värvipinna** – tühja lahtri, kus paistab slaidi taustavärv ja millele saab tekstitööriistaga sõnumi panna. Nii saab teha bänneri „foto – sõnum – foto“ ilma pilditöötlusprogrammita. Värvipinda saab lohistada kuhu tahes, ka servadesse (nt värv – foto – värv – foto – värv).
+- Uus: igal kollaaži lahtril on laius „piltides“ (0,5×–4×), nt foto 1×, värvipind 3×, foto 1×.
+- Uus: mobiilis saab valida „Vali iga lahtri jaoks“ ning määrata iga lahtri all, kas ja kui laialt seda mobiilis näidatakse (nt üks foto + värvipind).
+- Uus: värvipinna kõrval olev foto sulandub sujuvalt taustaks; sulandumise laiust saab muuta (Hajutus värvipinda %, 0 = terav serv).
+- Uus: nupp „Tekst siia“ paigutab tekstiploki värvipinna keskele (arvuti või mobiili vaate jaoks).
+- Uus: taustaks saab valida ka kahe värvi ülemineku (vasakult paremale, ülalt alla või diagonaalis).
+- Uus: värvivalijate kõrval on pipett (Chrome/Edge), millega saab värvi võtta otse ekraanilt, nt eelvaate fotolt.
+- Parandus: vahekaart näitas „Kollaaž (2–5 pilti)“, kuigi lubatud on 7 lahtrit.
+- Parandus: mitme foto korraga valimine ei kirjuta enam üle järgmisi lahtreid, vaid lisab fotod valitud lahtri järele.
+
 ## 1.8.3 - 2026-11-18
 
 - Parandus: slaidide lehe ülemine eelvaade ei vilgu enam kitsamas aknas ega vähendatud brauseri suumiga. Eelvaate raamis ilmus ümardamise tõttu korraks kerimisriba, mis tegi slaideri kitsamaks, riba kadus jälle ja nii kordus see mitukümmend korda sekundis. Nüüd ei kuva eelvaate raam kunagi kerimisriba.

@@ -291,6 +291,7 @@ class Wonom_Slider_Frontend {
 			(float) $m_w,
 			esc_attr( $slide['bg_color'] ? $slide['bg_color'] : 'transparent' )
 		);
+		$slide_style .= self::bg_gradient_style( $slide );
 		$slide_style .= self::typo_style( isset( $slide['typo'] ) ? $slide['typo'] : array() );
 
 		$classes = array(
@@ -330,38 +331,74 @@ class Wonom_Slider_Frontend {
 				<?php
 				$items   = array_values( $slide['collage'] );
 				$n       = count( $items );
-				$sizes   = (int) round( 100 / max( 1, $n ) ) . 'vw';
 				$contain = isset( $slide['collage_fit'] ) && 'contain' === $slide['collage_fit'];
-				$cstyle  = '--ws-cgap:' . (int) $slide['collage_gap'] . 'px';
+				$unit    = self::collage_unit( $items );
+				$vis_d   = self::collage_visible( $slide, false );
+				$vis_m   = self::collage_visible( $slide, true );
+				$nb_d    = self::collage_neighbours( $vis_d );
+				$nb_m    = self::collage_neighbours( $vis_m );
+				$tot_d   = self::collage_weight_sum( $vis_d );
+				$tot_m   = self::collage_weight_sum( $vis_m );
+				$cstyle  = '--ws-cgap:' . (int) $slide['collage_gap'] . 'px;--ws-cfade:' . (int) ( isset( $slide['collage_fade'] ) ? $slide['collage_fade'] : 20 ) . '%';
 				if ( $contain ) {
 					// Whole photos: the row is as tall as the slide (or narrower than it) – CSS needs the
-					// sum of the photo shapes and the total gap, for desktop and for the mobile subset.
-					$n_m    = self::collage_mobile_count( $slide['collage_mobile'], $n );
+					// sum of the slot shapes and the total gap, for desktop and for the mobile subset.
 					$gap    = (int) $slide['collage_gap'];   // whole photos never overlap, the gap applies with every seam
 					$cstyle .= sprintf(
 						';--ws-cr:%1$s;--ws-cr-m:%2$s;--ws-gaps:%3$dpx;--ws-gaps-m:%4$dpx',
-						self::num( self::collage_ratio_sum( $items, $n ) ),
-						self::num( self::collage_ratio_sum( $items, $n_m ) ),
-						$gap * max( 0, $n - 1 ),
-						$gap * max( 0, $n_m - 1 )
+						self::num( self::collage_ratio_sum( $vis_d, $unit, true ) ),
+						self::num( self::collage_ratio_sum( $vis_m, $unit, true ) ),
+						$gap * max( 0, count( $vis_d ) - 1 ),
+						$gap * max( 0, count( $vis_m ) - 1 )
 					);
 				}
+				$photo_no = 0;
 				?>
 			<div class="wonom-slide__media wonom-collage cols-<?php echo (int) $n; ?> seam-<?php echo esc_attr( $slide['collage_seam'] ); ?> m-<?php echo esc_attr( $slide['collage_mobile'] ); ?> fit-<?php echo $contain ? 'contain' : 'cover'; ?>" style="<?php echo esc_attr( $cstyle ); ?>">
 				<?php if ( $contain ) : ?><div class="wonom-collage__row"><?php endif; ?>
 				<?php foreach ( $items as $ci => $c ) : ?>
 					<?php
-					$eager = $is_first && $ci < 2;
-					$attr  = array(
+					$is_color = Wonom_Slider_Data::is_color_slot( $c );
+					$w_d      = self::slot_weight( $c );
+					$w_m      = isset( $vis_m[ $ci ] ) ? $vis_m[ $ci ]['_w'] : 0;
+					// Per-slot layout vars: width weight (desktop/mobile), shape for "whole photos",
+					// and which edges fade (p = next to a photo, c = next to a colour field).
+					$istyle = '--ws-cw:' . self::num( $w_d ) . ( $w_m && $w_m !== $w_d ? ';--ws-cwm:' . self::num( $w_m ) : '' );
+					if ( $contain ) {
+						$istyle .= ';--ws-ir:' . self::num( self::slot_ratio( $c, $unit, $w_d ) );
+						if ( $is_color && $w_m && $w_m !== $w_d ) {
+							$istyle .= ';--ws-irm:' . self::num( self::slot_ratio( $c, $unit, $w_m ) );
+						}
+					}
+					foreach ( array( 'd' => $nb_d, 'm' => $nb_m ) as $dev => $nb ) {
+						if ( ! $is_color && isset( $nb[ $ci ] ) ) {
+							foreach ( $nb[ $ci ] as $flag => $on ) {
+								$istyle .= $on ? ';--ws-' . $dev . $flag . ':1' : '';
+							}
+						}
+					}
+					$iclass = 'wonom-collage__item ' . ( $is_color ? 'is-color' : 'is-photo' ) . ( isset( $vis_m[ $ci ] ) ? '' : ' is-mhide' );
+					if ( $is_color ) :
+						?>
+					<div class="<?php echo esc_attr( $iclass ); ?>" style="<?php echo esc_attr( $istyle ); ?>"></div>
+						<?php
+						continue;
+					endif;
+					$istyle .= ';--ws-cf:' . (int) $c['focal_x'] . '% ' . (int) $c['focal_y'] . '%;--ws-cfm:' . (int) ( isset( $c['mfocal_x'] ) ? $c['mfocal_x'] : $c['focal_x'] ) . '% ' . (int) ( isset( $c['mfocal_y'] ) ? $c['mfocal_y'] : $c['focal_y'] ) . '%';
+					$eager  = $is_first && $photo_no < 2;
+					$vw_d   = max( 10, (int) round( 100 * $w_d / max( 0.5, $tot_d ) ) ) . 'vw';
+					$vw_m   = $w_m ? max( 10, (int) round( 100 * $w_m / max( 0.5, $tot_m ) ) ) . 'vw' : '1px';
+					$attr   = array(
 						'class'    => 'wonom-collage__img',
-						'alt'      => 0 === $ci ? ( $slide['alt'] ? $slide['alt'] : $slide['heading'] ) : '',
+						'alt'      => 0 === $photo_no ? ( $slide['alt'] ? $slide['alt'] : $slide['heading'] ) : '',
 						'loading'  => $eager ? 'eager' : 'lazy',
 						'decoding' => 'async',
-						'sizes'    => '(max-width: ' . (int) $bp . 'px) ' . ( 'first1' === $slide['collage_mobile'] ? '100vw' : ( 'first2' === $slide['collage_mobile'] ? '50vw' : ( 'first3' === $slide['collage_mobile'] ? '34vw' : $sizes ) ) ) . ', ' . $sizes,
+						'sizes'    => '(max-width: ' . (int) $bp . 'px) ' . $vw_m . ', ' . $vw_d,
 					);
-					if ( $is_first && 0 === $ci ) {
+					if ( $is_first && 0 === $photo_no ) {
 						$attr['fetchpriority'] = 'high';
 					}
+					++$photo_no;
 					if ( ! empty( $c['id'] ) ) {
 						$img_html = wp_get_attachment_image( $c['id'], 'large', false, $attr );
 					} else {
@@ -373,7 +410,7 @@ class Wonom_Slider_Frontend {
 						);
 					}
 					?>
-					<div class="wonom-collage__item" style="--ws-cf:<?php echo (int) $c['focal_x']; ?>% <?php echo (int) $c['focal_y']; ?>%;--ws-cfm:<?php echo (int) ( isset( $c['mfocal_x'] ) ? $c['mfocal_x'] : $c['focal_x'] ); ?>% <?php echo (int) ( isset( $c['mfocal_y'] ) ? $c['mfocal_y'] : $c['focal_y'] ); ?>%<?php echo $contain ? ';--ws-ir:' . esc_attr( self::num( self::photo_ratio( $c ) ) ) : ''; ?>">
+					<div class="<?php echo esc_attr( $iclass ); ?>" style="<?php echo esc_attr( $istyle ); ?>">
 						<?php echo $is_first ? $img_html : self::lazy_markup( $img_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 				<?php endforeach; ?>
@@ -527,19 +564,108 @@ class Wonom_Slider_Frontend {
 		return ( ! empty( $c['width'] ) && ! empty( $c['height'] ) ) ? $c['width'] / $c['height'] : 0.75;
 	}
 
-	/** Sum of the shapes of the first $count photos = shape of the row they form side by side. */
-	public static function collage_ratio_sum( $items, $count ) {
-		$sum = 0;
-		foreach ( array_slice( array_values( $items ), 0, max( 1, $count ) ) as $c ) {
-			$sum += self::photo_ratio( $c );
+	/** Gradient background (two colours) as --ws-bgi; empty for a plain colour. */
+	public static function bg_gradient_style( $slide ) {
+		$dirs = array( 'right' => '90deg', 'bottom' => '180deg', 'br' => '135deg', 'tr' => '45deg' );
+		$dir  = isset( $slide['bg_grad'] ) ? $slide['bg_grad'] : '';
+		$c1   = ! empty( $slide['bg_color'] ) ? sanitize_hex_color( $slide['bg_color'] ) : '';
+		$c2   = ! empty( $slide['bg_color2'] ) ? sanitize_hex_color( $slide['bg_color2'] ) : '';
+		if ( ! isset( $dirs[ $dir ] ) || ! $c1 || ! $c2 ) {
+			return '';
 		}
-		return $sum > 0 ? $sum : 0.75;
+		return '--ws-bgi:linear-gradient(' . $dirs[ $dir ] . ',' . $c1 . ',' . $c2 . ');';
 	}
 
-	/** How many collage photos the mobile view shows. */
-	public static function collage_mobile_count( $mode, $n ) {
-		$map = array( 'first3' => 3, 'first2' => 2, 'first1' => 1 );
-		return isset( $map[ $mode ] ) ? min( $map[ $mode ], $n ) : $n;
+	/** Width of a collage slot in "photos" (1 = one photo's share). */
+	public static function slot_weight( $c ) {
+		return isset( $c['w'] ) && (float) $c['w'] > 0 ? (float) $c['w'] : 1.0;
+	}
+
+	/** Shape of one "photo" for colour fields: the average shape of the collage photos. */
+	public static function collage_unit( $items ) {
+		$sum = 0;
+		$n   = 0;
+		foreach ( $items as $c ) {
+			if ( ! Wonom_Slider_Data::is_color_slot( $c ) ) {
+				$sum += self::photo_ratio( $c );
+				++$n;
+			}
+		}
+		return $n ? $sum / $n : 0.75;
+	}
+
+	/** Shape (width/height) of a slot: a photo keeps its own shape, a colour field is $w "photos" wide. */
+	public static function slot_ratio( $c, $unit, $w ) {
+		return Wonom_Slider_Data::is_color_slot( $c ) ? $w * $unit : self::photo_ratio( $c );
+	}
+
+	/**
+	 * Slots shown on desktop or on mobile, keyed by their position, each with its width '_w'.
+	 * Mobile follows collage_mobile: first N slots, all, or per slot (custom: wm 0 = hidden).
+	 */
+	public static function collage_visible( $slide, $mobile ) {
+		$items = array_values( isset( $slide['collage'] ) && is_array( $slide['collage'] ) ? $slide['collage'] : array() );
+		$mode  = isset( $slide['collage_mobile'] ) ? $slide['collage_mobile'] : 'all';
+		$limit = array( 'first3' => 3, 'first2' => 2, 'first1' => 1 );
+		$out   = array();
+		foreach ( $items as $i => $c ) {
+			$w = self::slot_weight( $c );
+			if ( $mobile ) {
+				if ( 'custom' === $mode ) {
+					$wm = isset( $c['wm'] ) ? (float) $c['wm'] : -1.0;
+					if ( 0.0 === $wm ) {
+						continue;
+					}
+					if ( $wm > 0 ) {
+						$w = $wm;
+					}
+				} elseif ( isset( $limit[ $mode ] ) && $i >= $limit[ $mode ] ) {
+					continue;
+				}
+			}
+			$c['_w']   = $w;
+			$out[ $i ] = $c;
+		}
+		if ( $mobile && ! $out ) {
+			return self::collage_visible( $slide, false ); // everything hidden on mobile: show the desktop row
+		}
+		return $out;
+	}
+
+	/** For each visible photo: is its left neighbour a photo (pl) or a colour field (cl), is its right one a colour field (cr). */
+	public static function collage_neighbours( $visible ) {
+		$keys = array_keys( $visible );
+		$out  = array();
+		foreach ( $keys as $p => $k ) {
+			$prev      = $p > 0 ? $visible[ $keys[ $p - 1 ] ] : null;
+			$next      = $p < count( $keys ) - 1 ? $visible[ $keys[ $p + 1 ] ] : null;
+			$out[ $k ] = array(
+				'pl' => $prev && ! Wonom_Slider_Data::is_color_slot( $prev ),
+				'cl' => $prev && Wonom_Slider_Data::is_color_slot( $prev ),
+				'cr' => $next && Wonom_Slider_Data::is_color_slot( $next ),
+			);
+		}
+		return $out;
+	}
+
+	public static function collage_weight_sum( $visible ) {
+		$sum = 0;
+		foreach ( $visible as $c ) {
+			$sum += $c['_w'];
+		}
+		return $sum;
+	}
+
+	/**
+	 * Shape of the row the visible slots form side by side. Photos count with their own shape
+	 * (× their width when cropped to fill), colour fields as w × the average photo shape.
+	 */
+	public static function collage_ratio_sum( $visible, $unit, $contain ) {
+		$sum = 0;
+		foreach ( $visible as $c ) {
+			$sum += Wonom_Slider_Data::is_color_slot( $c ) ? $c['_w'] * $unit : self::photo_ratio( $c ) * ( $contain ? 1 : $c['_w'] );
+		}
+		return $sum > 0 ? $sum : 0.75;
 	}
 
 	/** Locale-independent number for CSS. */
@@ -550,10 +676,10 @@ class Wonom_Slider_Frontend {
 	private static function inline_style( $settings, $first ) {
 		if ( Wonom_Slider_Data::slide_is_collage( $first ) ) {
 			// Collage: images side by side → ratio = sum of the photo shapes (N × w / h for equal photos).
-			$n       = count( $first['collage'] );
-			$n_m     = self::collage_mobile_count( $first['collage_mobile'], $n );
-			$ratio_d = self::ratio_value( $settings['ratio_desktop'], (int) round( self::collage_ratio_sum( $first['collage'], $n ) * 1000 ), 1000, '1920 / 660' );
-			$ratio_m = self::ratio_value( $settings['ratio_mobile'], (int) round( self::collage_ratio_sum( $first['collage'], $n_m ) * 1000 ), 1000, $ratio_d );
+			$unit    = self::collage_unit( $first['collage'] );
+			$contain = isset( $first['collage_fit'] ) && 'contain' === $first['collage_fit'];
+			$ratio_d = self::ratio_value( $settings['ratio_desktop'], (int) round( self::collage_ratio_sum( self::collage_visible( $first, false ), $unit, $contain ) * 1000 ), 1000, '1920 / 660' );
+			$ratio_m = self::ratio_value( $settings['ratio_mobile'], (int) round( self::collage_ratio_sum( self::collage_visible( $first, true ), $unit, $contain ) * 1000 ), 1000, $ratio_d );
 		} else {
 			$ratio_d = self::ratio_value( $settings['ratio_desktop'], $first['image_width'], $first['image_height'], '1920 / 660' );
 			$ratio_m = self::ratio_value(
@@ -631,9 +757,10 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slide.m-hide-text.m-pos-free .wonom-slide__content{display:none}"
 			. "{$s} .wonom-collage{--ws-seam:40px}"
 			. "{$s} .wonom-collage__item img{object-position:var(--ws-cfm,var(--ws-cf,50% 50%))}"
-			. "{$s} .wonom-collage.m-first3 .wonom-collage__item:nth-child(n+4){display:none}"
-			. "{$s} .wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3){display:none}"
-			. "{$s} .wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2){display:none}"
+			. "{$s} .wonom-collage__item{--ws-pl:var(--ws-mpl,0);--ws-cl:var(--ws-mcl,0);--ws-cr:var(--ws-mcr,0)}"
+			. "{$s} .wonom-collage:not(.fit-contain) .wonom-collage__item{flex-grow:var(--ws-cwm,var(--ws-cw,1))}"
+			. "{$s} .wonom-collage__item.is-mhide{display:none}"
+			. "{$s} .wonom-collage.fit-contain .wonom-collage__item{aspect-ratio:var(--ws-irm,var(--ws-ir,.75))}"
 			. "{$s} .wonom-collage.fit-contain .wonom-collage__row{height:min(100cqh,calc((100cqw - var(--ws-gaps-m,0px)) / var(--ws-cr-m,var(--ws-cr,1))))}"
 			. "{$s} .wonom-slide.has-frame{--ws-frame:calc(var(--ws-frame-d,0px) * .5)}"
 			. "{$s} .wonom-slider__arrow{width:38px!important;height:38px!important;opacity:1;background:rgba(255,255,255,.7)!important}"
@@ -653,6 +780,11 @@ class Wonom_Slider_Frontend {
 			. "{$s} .wonom-slider__track{aspect-ratio:var(--ws-ratio)}"
 			. "{$s} .wonom-slide__img,{$s} .wonom-slide__media img{object-position:var(--ws-focal)}"
 			. "{$s} .wonom-collage__item img{object-position:var(--ws-cf,50% 50%)}"
+			. "{$s} .wonom-collage{--ws-seam:90px}"
+			. "{$s} .wonom-collage__item{--ws-pl:var(--ws-dpl,0);--ws-cl:var(--ws-dcl,0);--ws-cr:var(--ws-dcr,0)}"
+			. "{$s} .wonom-collage:not(.fit-contain) .wonom-collage__item{flex-grow:var(--ws-cw,1)}"
+			. "{$s} .wonom-collage__item.is-mhide{display:block}"
+			. "{$s} .wonom-collage.fit-contain .wonom-collage__item{aspect-ratio:var(--ws-ir,.75)}"
 			. "{$s} .wonom-collage.fit-contain .wonom-collage__row{height:min(100cqh,calc((100cqw - var(--ws-gaps,0px)) / var(--ws-cr,1)))}"
 			. "{$s} .wonom-slide__content{padding:clamp(24px,5vw,72px)}"
 			. "{$s} .wonom-slide__heading{font-size:var(--ws-h-size);letter-spacing:var(--ws-h-spacing,.14em)}"

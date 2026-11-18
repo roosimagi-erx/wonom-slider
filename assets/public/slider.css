@@ -71,6 +71,7 @@
 	inset: 0;
 	display: flex;
 	background: var(--ws-bg);
+	background-image: var(--ws-bgi, none);
 	color: var(--ws-text);
 	opacity: 0;
 	visibility: hidden;
@@ -147,21 +148,29 @@
 	box-shadow: none;
 }
 
-/* --- collage (2–4 images side by side) --- */
+/* --- collage (up to 7 slots side by side: photos and empty colour fields) ---
+ * Per slot (inline): --ws-cw / --ws-cwm = width in "photos" on desktop / mobile; --ws-dpl, --ws-dcl,
+ * --ws-dcr (desktop) and --ws-mpl, --ws-mcl, --ws-mcr (mobile) = 1 when the left neighbour is a photo,
+ * the left neighbour is a colour field, the right neighbour is a colour field. */
 
 .wonom-slide__media.wonom-collage {
 	--ws-seam: 90px;
+	--ws-seamon: 0;
 	display: flex;
 	gap: var(--ws-cgap, 0);
 	background: var(--ws-bg);
+	background-image: var(--ws-bgi, none);
 }
 
 .wonom-collage.seam-fade,
-.wonom-collage.seam-blur { gap: 0; }
+.wonom-collage.seam-blur { gap: 0; --ws-seamon: 1; }
 
 .wonom-collage__item {
+	--ws-pl: var(--ws-dpl, 0);
+	--ws-cl: var(--ws-dcl, 0);
+	--ws-cr: var(--ws-dcr, 0);
 	position: relative;
-	flex: 1 1 0;
+	flex: var(--ws-cw, 1) 1 0;
 	min-width: 0;
 	overflow: hidden;
 }
@@ -179,21 +188,23 @@
 	box-shadow: none;
 }
 
-/* Fade / blur seam: each following image overlaps the previous one by --ws-seam and is masked in. */
-.wonom-collage.seam-fade .wonom-collage__item + .wonom-collage__item,
-.wonom-collage.seam-blur .wonom-collage__item + .wonom-collage__item {
-	margin-left: calc(-1 * var(--ws-seam));
-	-webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--ws-seam));
-	mask-image: linear-gradient(90deg, transparent, #000 var(--ws-seam));
+/* Fade / blur seam: a photo that follows a photo overlaps it by --ws-seam and is masked in.
+ * Next to a colour field a photo fades into the background over --ws-cfade of its own width. */
+.wonom-collage__item.is-photo {
+	--ws-ml: calc(var(--ws-seam) * var(--ws-pl) * var(--ws-seamon) + var(--ws-cfade, 20%) * var(--ws-cl));
+	--ws-mr: calc(var(--ws-cfade, 20%) * var(--ws-cr));
+	margin-left: calc(-1 * var(--ws-seam) * var(--ws-pl) * var(--ws-seamon));
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--ws-ml), #000 calc(100% - var(--ws-mr)), transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 var(--ws-ml), #000 calc(100% - var(--ws-mr)), transparent);
 }
 
-.wonom-collage.seam-blur .wonom-collage__item + .wonom-collage__item::before {
+.wonom-collage.seam-blur .wonom-collage__item.is-photo::before {
 	content: '';
 	position: absolute;
 	top: 0;
 	bottom: 0;
 	left: 0;
-	width: calc(var(--ws-seam) * 1.5);
+	width: calc(var(--ws-seam) * 1.5 * var(--ws-pl));
 	z-index: 1;
 	pointer-events: none;
 	-webkit-backdrop-filter: blur(14px);
@@ -226,14 +237,11 @@
 	aspect-ratio: var(--ws-ir, 0.75);
 }
 
-/* Whole photos sit side by side: no overlapping fade or blur seam (it would hide their edges). */
-.wonom-collage.fit-contain .wonom-collage__item + .wonom-collage__item {
-	margin-left: 0;
-	-webkit-mask-image: none;
-	mask-image: none;
-}
+/* Whole photos sit side by side: no overlapping fade or blur seam between photos (it would hide
+ * their edges); the fade into a neighbouring colour field stays. */
+.wonom-slide__media.wonom-collage.fit-contain { --ws-seamon: 0; }
 
-.wonom-collage.fit-contain .wonom-collage__item + .wonom-collage__item::before { display: none; }
+.wonom-collage.fit-contain .wonom-collage__item::before { display: none; }
 
 /* --- frame: media inset from the slide edge, rounded corners, background colour around --- */
 
@@ -606,9 +614,9 @@
 
 	.wonom-collage { --ws-seam: 40px; }
 	.wonom-collage__item img { object-position: var(--ws-cfm, var(--ws-cf, 50% 50%)); }
-	.wonom-collage.m-first3 .wonom-collage__item:nth-child(n+4) { display: none; }
-	.wonom-collage.m-first2 .wonom-collage__item:nth-child(n+3) { display: none; }
-	.wonom-collage.m-first1 .wonom-collage__item:nth-child(n+2) { display: none; }
+	.wonom-collage__item { --ws-pl: var(--ws-mpl, 0); --ws-cl: var(--ws-mcl, 0); --ws-cr: var(--ws-mcr, 0); flex-grow: var(--ws-cwm, var(--ws-cw, 1)); }
+	.wonom-collage__item.is-mhide { display: none; }
+	.wonom-collage.fit-contain .wonom-collage__item { aspect-ratio: var(--ws-irm, var(--ws-ir, 0.75)); }
 	.wonom-collage.fit-contain .wonom-collage__row { height: min(100cqh, calc((100cqw - var(--ws-gaps-m, 0px)) / var(--ws-cr-m, var(--ws-cr, 1)))); }
 	.wonom-slide.has-frame { --ws-frame: calc(var(--ws-frame-d, 0px) * 0.5); }
 

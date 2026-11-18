@@ -300,7 +300,10 @@
 		var st = slideStatus( s );
 		var open = openId === s.id;
 		var thumb = s.thumb || s.image_url;
-		if ( ! thumb && s.bg_mode === 'collage' && Array.isArray( s.collage ) && s.collage[ 0 ] ) { thumb = s.collage[ 0 ].thumb || s.collage[ 0 ].url; }
+		if ( ! thumb && s.bg_mode === 'collage' && Array.isArray( s.collage ) ) {
+			var firstPhoto = s.collage.filter( function ( c ) { return c && ! isColorSlot( c ) && ( c.thumb || c.url ); } )[ 0 ];
+			if ( firstPhoto ) { thumb = firstPhoto.thumb || firstPhoto.url; }
+		}
 		var h = '<div class="wonom-slide-card' + ( open ? ' is-open' : '' ) + ' type-' + s.type + ' st-' + st + '" data-id="' + esc( s.id ) + '">';
 		h += '<div class="wonom-slide-head">';
 		h += '<span class="wonom-drag" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span></span>';
@@ -358,7 +361,9 @@
 		return '<input type="' + ( opts.type || 'text' ) + '" data-field="' + key + '"' + ( lang ? ' data-lang="' + esc( lang ) + '"' : '' ) + ' value="' + esc( val ) + '" placeholder="' + esc( ph ) + '"' + ( opts.attrs || '' ) + '>';
 	}
 	function color( s, key ) {
-		return '<span class="wonom-color"><input type="color" data-field="' + key + '" value="' + esc( s[ key ] || '#000000' ) + '"><input type="text" class="wonom-color-hex" data-field="' + key + '" value="' + esc( s[ key ] || '' ) + '" maxlength="7"></span>';
+		// Pipette (Chrome/Edge): take the colour from anywhere on the screen, e.g. a photo in the preview.
+		var drop = window.EyeDropper ? '<button type="button" class="button wonom-eyedrop" data-action="eyedrop" title="' + esc( I.eyedropHint ) + '" aria-label="' + esc( I.eyedropHint ) + '"><span class="dashicons dashicons-color-picker"></span></button>' : '';
+		return '<span class="wonom-color"><input type="color" data-field="' + key + '" value="' + esc( s[ key ] || '#000000' ) + '"><input type="text" class="wonom-color-hex" data-field="' + key + '" value="' + esc( s[ key ] || '' ) + '" maxlength="7">' + drop + '</span>';
 	}
 	function segmented( key, value, options, allowEmpty ) {
 		var h = '<div class="wonom-switch wonom-switch--seg" role="group">';
@@ -428,11 +433,16 @@
 			h += field( I.collageFit, segmented( 'collage_fit', s.collage_fit || 'cover', [ [ 'cover', I.fitCover ], [ 'contain', I.fitContain ] ] ) );
 			if ( s.collage_fit === 'contain' && col.length ) { h += '<p class="wonom-hint wonom-fill-hint">' + esc( collageFillText( s ) ) + '</p>'; }
 			var slotCount = Math.min( COLLAGE_MAX, Math.max( 5, col.length + 1 ) );   // show one free slot, at least 5
+			var whole = s.collage_fit === 'contain', custom = s.collage_mobile === 'custom';
+			var hasColor = col.some( isColorSlot );
 			h += '<div class="wonom-grid wonom-grid--' + slotCount + ' wonom-collage-slots">';
 			for ( var ci = 0; ci < slotCount; ci++ ) {
-				var it = col[ ci ];
-				h += '<div class="wonom-imgbox wonom-cslot' + ( it ? ' has-image' : '' ) + '" data-slot="' + ci + '"><label' + ( it ? ' class="wonom-cslot__handle" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span>' : '>' ) + esc( sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
-				if ( it ) {
+				var it = col[ ci ], isCol = isColorSlot( it );
+				h += '<div class="wonom-imgbox wonom-cslot' + ( it ? ' has-image' : '' ) + ( isCol ? ' is-color' : '' ) + '" data-slot="' + ci + '"><label' + ( it ? ' class="wonom-cslot__handle" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span>' : '>' ) + esc( isCol ? sprintf( I.colorSlot, ci + 1 ) : sprintf( I.collageSlot, ci + 1 ) ) + '</label>';
+				if ( isCol ) {
+					h += '<div class="wonom-cslot__swatch" style="background:' + esc( s.bg_color || '#1d2433' ) + ';background-image:' + esc( bgGradientCss( s ) || 'none' ) + '"><span>' + esc( I.colorSlotInside ) + '</span></div>';
+					h += '<div class="wonom-imgactions"><button type="button" class="button" data-action="text-to-slot" title="' + esc( I.textToSlotHint ) + '">' + esc( I.textToSlot ) + '</button> <button type="button" class="button-link is-danger" data-action="remove-collage">' + esc( I.remove ) + '</button></div>';
+				} else if ( it ) {
 					var cm = stage.device === 'mobile';
 					var cfx = cm ? ( it.mfocal_x != null ? it.mfocal_x : it.focal_x ) : it.focal_x, cfy = cm ? ( it.mfocal_y != null ? it.mfocal_y : it.focal_y ) : it.focal_y;
 					h += '<div class="wonom-imgwrap is-portrait" data-action="focal-collage" title="' + esc( I.focalHint ) + '"><img src="' + esc( it.thumb || it.url ) + '" alt=""><span class="wonom-focal' + ( cm ? ' is-mobile' : '' ) + '" style="left:' + ( cfx == null ? 50 : cfx ) + '%;top:' + ( cfy == null ? 50 : cfy ) + '%"></span></div>';
@@ -440,17 +450,21 @@
 					h += '<div class="wonom-imgactions"><button type="button" class="button" data-action="pick-collage">' + esc( I.replace ) + '</button> <button type="button" class="button-link is-danger" data-action="remove-collage">' + esc( I.remove ) + '</button></div>';
 				} else {
 					h += '<button type="button" class="wonom-imgpick" data-action="pick-collage"><span class="dashicons dashicons-plus-alt2"></span>' + esc( ci === col.length ? I.collageAdd : I.chooseImage ) + '</button>';
+					if ( ci === col.length ) { h += '<button type="button" class="button wonom-addcolor" data-action="add-color-slot"><span class="dashicons dashicons-art"></span> ' + esc( I.addColorSlot ) + '</button>'; }
 				}
+				if ( it ) { h += slotWidthControls( it, whole, custom ); }
 				h += '</div>';
 			}
 			h += '</div>';
-			h += '<p class="wonom-hint">' + esc( I.collageHint ) + '</p>';
+			h += '<p class="wonom-hint">' + esc( I.collageHint ) + ' ' + esc( I.colorSlotHint ) + '</p>';
 			h += '<div class="wonom-grid wonom-grid--3">';
-			var whole = s.collage_fit === 'contain';
 			h += field( I.seam, '<select data-field="collage_seam"' + ( whole ? ' disabled title="' + esc( I.seamWholeHint ) + '"' : '' ) + '>' + [ [ 'hard', I.seamHard ], [ 'fade', I.seamFade ], [ 'blur', I.seamBlur ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_seam === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>', whole ? esc( I.seamWholeHint ) : '' );
 			h += field( whole ? I.collageGapWhole : I.collageGap, numInput( s, 'collage_gap', 0, 60, 1 ) );
-			h += field( I.collageMobile, '<select data-field="collage_mobile">' + [ [ 'all', I.mAll ], [ 'first3', I.mFirst3 ], [ 'first2', I.mFirst2 ], [ 'first1', I.mFirst1 ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_mobile === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
+			h += field( I.collageMobile, '<select data-field="collage_mobile">' + [ [ 'all', I.mAll ], [ 'first3', I.mFirst3 ], [ 'first2', I.mFirst2 ], [ 'first1', I.mFirst1 ], [ 'custom', I.mCustom ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( s.collage_mobile === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>', custom ? esc( I.mCustomHint ) : '' );
 			h += '</div>';
+			if ( hasColor ) {
+				h += '<div class="wonom-grid wonom-grid--3">' + field( I.collageFade, numInput( s, 'collage_fade', 0, 50, 1 ), esc( I.collageFadeHint ) ) + '</div>';
+			}
 		} else {
 			h += '<div class="wonom-grid wonom-grid--2">';
 			var ia = imageAdvice();
@@ -608,6 +622,10 @@
 		h += field( I.overlay, '<span class="wonom-range"><input type="range" min="0" max="90" step="5" data-field="overlay" value="' + ( s.overlay | 0 ) + '"><output>' + ( s.overlay | 0 ) + '%</output></span>', esc( I.overlayHint ) );
 		h += field( I.overlayColor, color( s, 'overlay_color' ) );
 		h += field( I.bgColor, color( s, 'bg_color' ), esc( I.bgHint ) );
+		h += '</div>';
+		h += '<div class="wonom-grid wonom-grid--3">';
+		h += field( I.bgGrad, '<select data-field="bg_grad">' + [ [ '', I.gradNone ], [ 'right', I.gradRight ], [ 'bottom', I.gradBottom ], [ 'br', I.gradBr ], [ 'tr', I.gradTr ] ].map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( ( s.bg_grad || '' ) === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select>' );
+		h += '<div class="js-grad"' + ( s.bg_grad ? '' : ' hidden' ) + '>' + field( I.bgColor2, color( s, 'bg_color2' ), esc( I.bgColor2Hint ) ) + '</div>';
 		h += '</div>';
 		h += field( I.posMode, segmented( 'pos_mode', s.pos_mode, [ [ 'grid', I.posGrid ], [ 'free', I.posFree ] ] ), esc( I.posHint ) );
 		h += '<div class="wonom-grid wonom-grid--3 wonom-posrow js-pos-free" data-for="desktop"' + ( s.pos_mode === 'free' ? '' : ' hidden' ) + '>';
@@ -821,11 +839,42 @@
 
 	/* Collages: up to 7 photos; "show photos whole" fills part of the width – tell how much. */
 	var COLLAGE_MAX = 7;
+	var SLOT_WIDTHS = [ 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4 ];
 	function photoRatio( c ) { return c && c.width && c.height ? c.width / c.height : 0.75; }
-	function collageRatio( s, count ) {
-		var list = ( Array.isArray( s.collage ) ? s.collage : [] ).slice( 0, count || COLLAGE_MAX ), sum = 0;
-		list.forEach( function ( c ) { sum += photoRatio( c ); } );
+	function isColorSlot( c ) { return !! c && c.type === 'color'; }
+	function slotW( c ) { return c && parseFloat( c.w ) > 0 ? parseFloat( c.w ) : 1; }
+	function fmtW( x ) { return String( x ).replace( '.', ',' ) + '×'; }
+	// Same as Wonom_Slider_Frontend::bg_gradient_style().
+	function bgGradientCss( s ) {
+		var dirs = { right: '90deg', bottom: '180deg', br: '135deg', tr: '45deg' };
+		return dirs[ s.bg_grad ] && s.bg_color && s.bg_color2 ? 'linear-gradient(' + dirs[ s.bg_grad ] + ',' + s.bg_color + ',' + s.bg_color2 + ')' : '';
+	}
+	// Average photo shape = the shape of one "photo" wide colour field.
+	function collageUnit( s ) {
+		var sum = 0, n = 0;
+		( s.collage || [] ).forEach( function ( c ) { if ( ! isColorSlot( c ) ) { sum += photoRatio( c ); n++; } } );
+		return n ? sum / n : 0.75;
+	}
+	// Shape of the desktop row (mirrors Wonom_Slider_Frontend::collage_ratio_sum()).
+	function collageRatio( s ) {
+		var unit = collageUnit( s ), whole = s.collage_fit === 'contain', sum = 0;
+		( Array.isArray( s.collage ) ? s.collage : [] ).slice( 0, COLLAGE_MAX ).forEach( function ( c ) {
+			sum += isColorSlot( c ) ? slotW( c ) * unit : photoRatio( c ) * ( whole ? 1 : slotW( c ) );
+		} );
 		return sum || 0.75;
+	}
+	// Width selects under a collage slot: desktop width in "photos" and, with "choose per slot", the mobile one.
+	function slotWidthControls( it, whole, custom ) {
+		var h = '<div class="wonom-cslot__w">';
+		if ( isColorSlot( it ) || ! whole ) {
+			h += '<label>' + esc( I.slotWidth ) + ' <select data-cslot="w">' + SLOT_WIDTHS.map( function ( x ) { return '<option value="' + x + '"' + ( slotW( it ) === x ? ' selected' : '' ) + '>' + fmtW( x ) + '</option>'; } ).join( '' ) + '</select></label>';
+		}
+		if ( custom ) {
+			var wm = it.wm == null ? -1 : parseFloat( it.wm ), opts = [ [ -1, I.slotSame ], [ 0, I.slotHidden ] ];
+			if ( isColorSlot( it ) || ! whole ) { SLOT_WIDTHS.forEach( function ( x ) { opts.push( [ x, fmtW( x ) ] ); } ); }
+			h += '<label>' + esc( I.slotMobile ) + ' <select data-cslot="wm">' + opts.map( function ( o ) { return '<option value="' + o[ 0 ] + '"' + ( wm === o[ 0 ] ? ' selected' : '' ) + '>' + esc( o[ 1 ] ) + '</option>'; } ).join( '' ) + '</select></label>';
+		}
+		return h + '</div>';
 	}
 	// Shape of the slider itself on a device: the first slide with a picture sets its natural shape,
 	// the height limit can make it wider (lower).
@@ -843,7 +892,7 @@
 		var raw = function ( dev ) { return rc / sliderBoxRatio( dev ) * 100; };   // > 100 = wider than the slider
 		var wideRaw = raw( 'screen' ), lapRaw = raw( 'desktop' );
 		var wide = Math.min( 100, Math.round( wideRaw ) ), lap = Math.min( 100, Math.round( lapRaw ) );
-		var perPhoto = rc / Math.max( 1, s.collage.length );
+		var perPhoto = collageUnit( s );
 		var need = Math.max( 0, Math.ceil( ( sliderBoxRatio( 'desktop' ) - rc ) / perPhoto - 0.15 ) );
 		var t = sprintf( I.collageFill, wide, lap );
 		if ( lap < 97 && need > 0 ) { t += ' ' + sprintf( I.collageFillAdd, Math.min( need, COLLAGE_MAX - s.collage.length ) ); }
@@ -1131,6 +1180,15 @@
 			if ( el && val ) { el.textContent = val; scheduleStage( s, 1500 ); return; }
 			scheduleStage( s, 600 ); return;
 		}
+		if ( slideEl && ( key === 'bg_color' || key === 'bg_color2' || key === 'bg_grad' ) ) {
+			var gi = bgGradientCss( s );
+			if ( gi ) { slideEl.style.setProperty( '--ws-bgi', gi ); } else { slideEl.style.removeProperty( '--ws-bgi' ); }
+			[].forEach.call( app.querySelectorAll( '.wonom-slide-card.is-open .wonom-cslot__swatch' ), function ( sw ) { sw.style.background = s.bg_color; sw.style.backgroundImage = gi || 'none'; } );
+		}
+		if ( key === 'collage_fade' && doc.querySelector( '.wonom-collage' ) ) {
+			doc.querySelector( '.wonom-collage' ).style.setProperty( '--ws-cfade', ( parseInt( s.collage_fade, 10 ) || 0 ) + '%' );
+			scheduleStage( s, 1500 ); return;
+		}
 		if ( slideEl && varMap[ key ] ) {
 			var v = s[ key ];
 			if ( /pos_/.test( key ) ) { v = parseFloat( v ) + '%'; }
@@ -1409,6 +1467,25 @@
 			case 'remove-collage':
 				s.collage.splice( parseInt( btn.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 ), 1 );
 				markDirty( 'slides' ); render(); break;
+			case 'add-color-slot':
+				s.collage = Array.isArray( s.collage ) ? s.collage.filter( Boolean ) : [];
+				if ( s.collage.length < COLLAGE_MAX ) {
+					s.collage.push( { type: 'color', w: 2, wm: -1 } );
+					// The darkening layer would tint the colour field too – switch it off once, and say so.
+					if ( ( s.overlay | 0 ) > 0 && ! s.collage.some( function ( c, k ) { return isColorSlot( c ) && k < s.collage.length - 1; } ) ) { s.overlay = 0; toast( I.overlayOffForColor, 'ok' ); }
+					markDirty( 'slides' ); render();
+				}
+				break;
+			case 'text-to-slot': textToSlot( s, parseInt( btn.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 ) ); break;
+			case 'eyedrop':
+				var dropWrap = btn.closest( '.wonom-color' ), dropIn = dropWrap && dropWrap.querySelector( 'input[type=color]' );
+				if ( dropIn && window.EyeDropper ) {
+					new window.EyeDropper().open().then( function ( r ) {
+						dropIn.value = r.sRGBHex;
+						dropIn.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+					} ).catch( function () { /* cancelled */ } );
+				}
+				break;
 			case 'focal-collage':
 				var cw = btn, cimg = cw.querySelector( 'img' ), cr = cimg.getBoundingClientRect();
 				var slotIdx = parseInt( cw.closest( '.wonom-cslot' ).getAttribute( 'data-slot' ), 10 );
@@ -1532,6 +1609,21 @@
 			s[ el.getAttribute( 'data-field' ) ] = el.checked;
 			markDirty( 'slides' ); render(); return;
 		}
+		if ( el.hasAttribute( 'data-cslot' ) && card ) {
+			var cs3 = findSlide( card.getAttribute( 'data-id' ) ), slotEl = el.closest( '.wonom-cslot' );
+			var slotI = slotEl ? parseInt( slotEl.getAttribute( 'data-slot' ), 10 ) : -1;
+			if ( cs3 && cs3.collage && cs3.collage[ slotI ] ) {
+				cs3.collage[ slotI ][ el.getAttribute( 'data-cslot' ) ] = parseFloat( el.value );
+				markDirty( 'slides' ); render();
+			}
+			return;
+		}
+		// Fields whose value changes what else the editor shows.
+		if ( el.tagName === 'SELECT' && card && ( el.getAttribute( 'data-field' ) === 'collage_mobile' || el.getAttribute( 'data-field' ) === 'bg_grad' ) ) {
+			var cs4 = findSlide( card.getAttribute( 'data-id' ) );
+			if ( el.getAttribute( 'data-field' ) === 'bg_grad' && el.value && ! cs4.bg_color2 ) { cs4.bg_color2 = '#ffffff'; }
+			markDirty( 'slides' ); render(); return;
+		}
 		if ( el.hasAttribute( 'data-date' ) && card ) {
 			var s2 = findSlide( card.getAttribute( 'data-id' ) );
 			var p = parseDisplay( el.value );
@@ -1641,7 +1733,7 @@
 			focal_x: 50, focal_y: 50, mobile_focal_x: 50, mobile_focal_y: 50,
 			mobile_align: '', mobile_valign: '', mobile_hide_text: false,
 			pos_mode: 'grid', pos_x: 50, pos_y: 50, pos_w: 60, mobile_pos_mode: '', mobile_pos_x: 50, mobile_pos_y: 50, mobile_pos_w: 90,
-			bg_mode: 'image', collage: [], collage_seam: 'fade', collage_gap: 0, collage_mobile: 'first2', frame_width: 0, frame_radius: 0,
+			bg_mode: 'image', collage: [], collage_seam: 'fade', collage_gap: 0, collage_mobile: 'first2', collage_fade: 20, bg_color2: '', bg_grad: '', frame_width: 0, frame_radius: 0,
 			typo: {}, i18n: {}
 		};
 		// Campaign slides go first (they usually should be seen first) with a default 14-day window.
@@ -1694,15 +1786,16 @@
 		collageFrame.on( 'select', function () {
 			var picked = collageFrame.state().get( 'selection' ).toJSON();
 			s.collage = Array.isArray( s.collage ) ? s.collage : [];
-			picked.forEach( function ( a, i ) {
-				var idx = slot + i;
-				if ( idx > COLLAGE_MAX - 1 ) { return; }
-				var th = ( a.sizes && ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ) ) ? ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ).url : a.url;
-				var prev = s.collage[ idx ] || {};
-				s.collage[ idx ] = { id: a.id, url: a.url, width: a.width || 0, height: a.height || 0, focal_x: prev.focal_x || 50, focal_y: prev.focal_y || 50, thumb: th };
-			} );
-			// No holes: compact the list.
 			s.collage = s.collage.filter( Boolean );
+			var at = Math.min( slot, s.collage.length );
+			picked.forEach( function ( a, i ) {
+				var th = ( a.sizes && ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ) ) ? ( a.sizes.medium || a.sizes.medium_large || a.sizes.large ).url : a.url;
+				var idx = at + i, replace = i === 0 && idx < s.collage.length;   // the first replaces the clicked slot,
+				if ( ! replace && s.collage.length >= COLLAGE_MAX ) { return; }      // the others are inserted after it
+				var prev = replace ? s.collage[ idx ] : {};
+				var slotData = { type: 'image', id: a.id, url: a.url, width: a.width || 0, height: a.height || 0, focal_x: prev.focal_x || 50, focal_y: prev.focal_y || 50, w: prev.w || 1, wm: prev.wm == null ? -1 : prev.wm, thumb: th };
+				if ( replace ) { s.collage[ idx ] = slotData; } else { s.collage.splice( idx, 0, slotData ); }
+			} );
 			if ( ! s.name && picked[ 0 ] && picked[ 0 ].title ) { s.name = picked[ 0 ].title; }
 			markDirty( 'slides' ); render();
 		} );
@@ -1711,6 +1804,25 @@
 			sel.reset();
 		} );
 		collageFrame.open();
+	}
+
+	// Put the text block in the middle of a colour field, measured on the stage for the device shown there.
+	function textToSlot( s, idx ) {
+		var doc = null;
+		try { doc = stage.iframe && stage.slideId === s.id ? stage.iframe.contentDocument : null; } catch ( e ) { doc = null; }
+		var item = doc && doc.querySelectorAll( '.wonom-collage__item' )[ idx ], slideEl = doc && doc.querySelector( '.wonom-slide' );
+		if ( ! item || ! slideEl ) { toast( I.stageLoading, 'err' ); return; }
+		var r = item.getBoundingClientRect(), sr = slideEl.getBoundingClientRect();
+		if ( ! r.width || ! sr.width ) { toast( I.textToSlotHidden, 'err' ); return; }
+		var x = Math.round( ( r.left + r.width / 2 - sr.left ) / sr.width * 1000 ) / 10;
+		var w = Math.max( 10, Math.min( 100, Math.round( r.width / sr.width * 85 * 10 ) / 10 ) );   // 85 % of the field
+		if ( stage.device === 'mobile' ) {
+			s.mobile_pos_mode = 'free'; s.mobile_pos_x = x; s.mobile_pos_y = 50; s.mobile_pos_w = w;
+		} else {
+			s.pos_mode = 'free'; s.pos_x = x; s.pos_y = 50; s.pos_w = w;
+		}
+		markDirty( 'slides' ); render();
+		toast( stage.device === 'mobile' ? I.textToSlotDoneMobile : I.textToSlotDone, 'ok' );
 	}
 
 	function stageCollageFocal( s, idx ) {
