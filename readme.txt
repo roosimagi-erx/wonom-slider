@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,9 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.8.1 - 2026-11-18 =
+* Parandus: slaidide lehe ülemine eelvaade ei värise enam. Eelvaade joonistati suures ekraani laiuses ja vähendati CSS-i „transform“ abil, mistõttu fotod ja tekstid värelesid slaidide vahetumise ajal, eriti suurel monitoril ja vähendatud brauseri suumiga. Nüüd vähendab brauser lehe otse (CSS zoom) ja eelvaade on terav ja rahulik; mõõdud ja kärbe on samad mis poes.
 
 = 1.8.0 - 2026-11-18 =
 * Parandus: nupp „Kontrolli uuendusi kohe“ ei pane enam kõiki pluginaid uuesti kontrollima. Varem kustutati WordPressi kogu uuenduste nimekiri ja käivitati kõigi pluginate kontroll (ka wordpress.org-i päring), mis võib suures poes aeguda (HTTP 524). Nüüd värskendatakse ainult Wonom Slideri enda kirjet.
@@ -74,8 +77,5 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 
 = 1.7.0 - 2026-10-05 =
 * Uus: sisuallikas „Praegu eetris olev kampaania (automaatne)”. Slaid võtab alati Kampaaniaribal parasjagu eetris oleva kampaania (tekstid, sooduskood, link, ajakava), kampaaniat ei pea valima. Kui ühtki eetris pole, võtab slaid järgmise ajastatud kampaania ja on kuni selle alguseni peidetud (olek „Ootab kampaaniat”); kui ka tulemas pole ühtki, on slaid peidetud. Kampaania muutmine, kustutamine või lisamine Kampaaniaribal tühjendab vahemälu ja planeerib ajastuse ümber.
-
-= 1.6.6 - 2026-10-05 =
-* Parandus: 1.6.5 edasilükatud piltide atribuut `data-src` võeti WoodMarti enda lazy-load skripti poolt üle ja kõik pildid laaditi ikkagi kohe. Nüüd on atribuudid `data-wonom-src` / `data-wonom-srcset`, mida teised skriptid ei puutu.
 
 Full history: CHANGELOG.md on GitHub.

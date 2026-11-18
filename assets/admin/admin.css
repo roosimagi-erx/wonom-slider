@@ -403,3 +403,6 @@ body.wonom-app .wonom-settings textarea.wonom-code { width: 100%; font-family: u
 .wonom-size__safe-label i { display: inline-block; width: 12px; height: 8px; background: rgba(37, 99, 235, 0.22); border: 1px dashed var(--w-primary); }
 .wonom-ok-text { color: var(--w-ok); }
 body.wonom-app [hidden] { display: none !important; }
+/* Autoplaying preview: shrunk with CSS zoom inside the iframe (crisp, no shimmer during fades). */
+.wonom-vp.is-zoomed { display: block; }
+.wonom-vp.is-zoomed iframe { width: 100%; position: static; transform: none; transition: none; }

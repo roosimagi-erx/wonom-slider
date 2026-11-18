@@ -268,7 +268,11 @@
 		h += '<button type="button" class="button" data-action="preview-refresh"><span class="dashicons dashicons-update"></span> ' + esc( I.refresh ) + '</button>';
 		h += '</div>';
 		var scaled = preview.device === 'screen' || preview.device === 'desktop' || preview.device === 'wide', pv = VIEWPORT[ preview.device ] || VIEWPORT.screen;
-		h += '<div class="wonom-preview-stage is-' + ( scaled ? 'desktop' : preview.device ) + '"><div class="wonom-vp' + ( scaled ? ' is-scaled' : '' ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="width:' + pv.w + 'px"' : '' ) + '></iframe></div></div>';
+		// The autoplaying preview is shrunk with CSS zoom inside its own document (see previewZoom), not
+		// with transform: scale() – a transformed iframe re-samples every frame during the slide fades
+		// and the photos and texts visibly shimmer. Zoom lays the page out at the device width and
+		// paints it directly at the small size.
+		h += '<div class="wonom-preview-stage is-' + ( scaled ? 'desktop' : preview.device ) + '"><div class="wonom-vp' + ( scaled ? ' is-zoomed' : '' ) + '"><iframe id="wonom-preview-frame" title="' + esc( I.preview ) + '"' + ( scaled ? ' style="height:300px"' : '' ) + '></iframe></div></div>';
 		if ( scaled ) { h += '<p class="wonom-hint wonom-preview-note">' + esc( sprintf( preview.device === 'wide' ? I.previewWideNote : ( preview.device === 'screen' ? I.previewScreenNote : I.previewWidthNote ), pv.w, pv.h ) ) + '</p>'; }
 		h += '</div>';
 		return h;
@@ -285,7 +289,7 @@
 			var body = res.html || '<p style="font:14px/1.5 system-ui,sans-serif;color:#555;padding:40px;text-align:center">' + esc( I.stageEmpty ) + '</p>';
 			f.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">' + ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
-				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6}' + capStyle( preview.device ) + ( res.custom_css || '' ) + '</style></head><body>' + body
+				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6}' + ( f.parentNode.classList.contains( 'is-zoomed' ) ? 'html{zoom:' + previewZoom( f ) + '}' : '' ) + capStyle( preview.device ) + ( res.custom_css || '' ) + '</style></head><body>' + body
 				+ '<script src="' + esc( res.js ) + '"><\/script></body></html>';
 		} ).catch( function ( e ) { toast( e && e.message ? e.message : 'Preview error', 'err' ); } );
 	}
@@ -664,15 +668,27 @@
 	}
 
 	// Same-origin preview iframe: size it to the slider so no empty area remains below.
+	// Zoom factor that shows the device width (e.g. 2545 px) inside the preview box.
+	function previewZoom( f ) {
+		var vw = ( VIEWPORT[ preview.device ] || VIEWPORT.screen ).w;
+		var avail = ( f && f.parentNode && f.parentNode.clientWidth ) || vw;
+		return Math.round( Math.min( 1, avail / vw ) * 10000 ) / 10000;
+	}
+
 	function fitPreview() {
 		var f = document.getElementById( 'wonom-preview-frame' );
 		if ( ! f ) { return; }
 		try {
 			var d = f.contentDocument, sl = d && d.querySelector( '.wonom-slider' );
 			if ( sl ) {
-				var ph = Math.max( 120, Math.ceil( sl.getBoundingClientRect().height ) );
-				if ( f.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( f, ( VIEWPORT[ preview.device ] || VIEWPORT.screen ).w, ph ); }
-				else { f.style.height = ph + 'px'; }
+				if ( f.parentNode.classList.contains( 'is-zoomed' ) ) {
+					// offsetHeight is in the zoomed page's own units; multiply to get the painted size.
+					var z = previewZoom( f );
+					d.documentElement.style.zoom = z;
+					f.style.height = Math.max( 60, Math.ceil( sl.offsetHeight * z ) ) + 'px';
+				} else {
+					f.style.height = Math.max( 120, Math.ceil( sl.getBoundingClientRect().height ) ) + 'px';
+				}
 				[].forEach.call( d.images, function ( img ) { if ( ! img.complete ) { img.addEventListener( 'load', fitPreview ); } } );
 			}
 		} catch ( e ) { /* cross-origin – keep default height */ }
