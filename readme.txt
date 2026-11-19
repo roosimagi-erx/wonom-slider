@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.4
+Stable tag: 1.9.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,11 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.9.5 - 2026-11-19 =
+* Parandus: ingliskeelne avaleht (`/en/`) on tühjendatavate lehtede hulgas. WPML-i keele avaleht võetakse nüüd WPML-i enda keelevahetaja aadressist.
+* Muudatus: ühte liiki eelvaatepäringuid on serveri poole teel korraga ainult üks. Kui klõpsata kiiresti, saadetakse uus päring alles siis, kui eelmine on lõppenud, ja vahepealsed muudatused liidetakse üheks päringuks. Slaidi eelvaade joonistatakse 0,25 s pärast viimast klõpsu.
+* Muudatus: kui WP-Cron ei käi (nagu testsaidil), küsib avatud admin-leht ajastatud tühjenduse ise, kui see on käes. Ka siis tehakse ainult üks tühjendus.
 
 = 1.9.4 - 2026-11-19 =
 Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
@@ -95,9 +100,5 @@ Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
 * Uus: kollaaži valik „Fotode paigutus“. „Näita fotosid tervena“ hoiab iga foto oma kujus ja ei kärbi midagi: fotod on slaidi kõrgused (või veidi madalamad, kui need kokku slaiderist laiemaks läheksid) ja paigutatakse keskele, vaba ruum on slaidi taustavärviga. Redaktor näitab, mitu protsenti laiusest fotod suurel monitoril ja sülearvutil täidavad ning mitu fotot lisada, et laius täituks. Senine „Täida slaid (fotosid kärbitakse)“ jääb vaikimisi.
 * Uus: kollaažis võib olla kuni 7 fotot (enne 5). Uus pesa tekib, kui eelmised on täis.
 * Parandus: kui slaideri esimene slaid on kollaaž, arvutatakse slaideri kuju nüüd kõigi fotode tegelikest mõõtudest, mitte ainult esimese foto järgi.
-
-= 1.7.7 - 2026-11-10 =
-* Muudatus: arvutipildi juhend lähtub nüüd sellest, et slaider on igal ekraanil täies kõrguses (40 % ekraanist, nagu enne). Soovitus on kaks mõõtu: kogu pilt 2400 × 650 px (suurel monitoril paistab tervena) ja turvaala keskel 2400 × 460 px, mis paistab igal ekraanil. Turvaala on juhendis joonisel näha. Näod, tooted ja tekst käivad turvaala sisse, ülemisse ja alumisse ribasse ainult taevas, põrand või taust. 1.7.6 soovitatud 2400 × 460 tegi slaideri suurel monitoril madalaks ja kollaažidest lõigati liiga palju.
-* Uus: eelvaates on nupp „Suur ekraan“ (brauseri ala 2560 × 1300 px) lisaks „Sülearvutile“, nii et näed nii kõige rohkem kui ka kõige vähem kärbitud vaadet.
 
 Full history: CHANGELOG.md on GitHub.

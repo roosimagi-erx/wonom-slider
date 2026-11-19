@@ -172,6 +172,17 @@ class Wonom_Slider_Rest {
 		);
 		register_rest_route(
 			self::NS,
+			'/purge-due',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'purge_due' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
 			'/pages-scan',
 			array(
 				array(
@@ -250,6 +261,12 @@ class Wonom_Slider_Rest {
 		}
 		self::end_busy( $lock );
 		return rest_ensure_response( (object) $out );
+	}
+
+	/** The editor asks for the debounced purge once it is due (for sites where WP-Cron does not run). */
+	public static function purge_due() {
+		Wonom_Slider_Cache::run_if_due();
+		return rest_ensure_response( Wonom_Slider_Cache::status() );
 	}
 
 	public static function pages_scan() {

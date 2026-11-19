@@ -103,6 +103,14 @@ class Wonom_Slider_Cache {
 		update_option( self::OPT_PENDING, $at, false );
 	}
 
+	/** Run the debounced purge now if its time has come (a newer save moves it later). */
+	public static function run_if_due() {
+		$pending = (int) get_option( self::OPT_PENDING, 0 );
+		if ( $pending && $pending <= time() ) {
+			self::run_deferred();
+		}
+	}
+
 	public static function run_deferred() {
 		delete_option( self::OPT_PENDING );
 		wp_clear_scheduled_hook( self::DEFER_HOOK );
@@ -326,12 +334,23 @@ class Wonom_Slider_Cache {
 	}
 
 	private static function home_urls() {
-		$urls = array( home_url( '/' ) );
+		$home = home_url( '/' );
+		$urls = array( $home );
 		foreach ( Wonom_Slider_Data::get_languages() as $l ) {
 			if ( function_exists( 'pll_home_url' ) ) {
 				$urls[] = pll_home_url( $l['slug'] );
 			} elseif ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
-				$urls[] = apply_filters( 'wpml_permalink', home_url( '/' ), $l['slug'], true );
+				global $sitepress;
+				// WPML's own language home (what its language switcher links to).
+				$u = ( is_object( $sitepress ) && method_exists( $sitepress, 'language_url' ) ) ? (string) $sitepress->language_url( $l['slug'] ) : '';
+				if ( '' === $u ) {
+					$u = (string) apply_filters( 'wpml_permalink', $home, $l['slug'], true );
+				}
+				// Language in directories (/en/): never fall back to the default home for another language.
+				if ( empty( $l['default'] ) && untrailingslashit( $u ) === untrailingslashit( $home ) && 1 === (int) apply_filters( 'wpml_setting', 0, 'language_negotiation_type' ) ) {
+					$u = home_url( '/' . $l['slug'] . '/' );
+				}
+				$urls[] = false === strpos( $u, '?' ) ? trailingslashit( $u ) : $u;
 			}
 		}
 		return $urls;

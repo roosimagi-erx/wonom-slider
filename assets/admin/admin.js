@@ -112,42 +112,48 @@
 	}
 
 	/*
-	 * Preview requests share the shop's PHP processes, so per kind (render | preview | thumbs) only the
-	 * newest request counts: a new one aborts the previous, each gives up after 10 s, and a 429 "busy"
-	 * from the server (it still works on the previous one) is retried a little later – never in parallel.
-	 * Resolves with the response; rejects with { aborted: true } when superseded.
+	 * Preview requests share the shop's PHP processes. Per kind (render | preview | thumbs) at most ONE
+	 * request is on its way at any time: a newer request replaces the waiting one and is sent only when
+	 * the running one has finished (its answer is then thrown away) – an aborted fetch would not stop
+	 * the server anyway. A request gives up after 10 s (AbortController), and a 429 "busy" from the
+	 * server is retried a little later. Resolves with the response; rejects with { aborted: true }
+	 * when a newer request replaced it.
 	 */
 	var inflight = {};
 	function latest( kind, path, method, body ) {
-		if ( inflight[ kind ] ) { inflight[ kind ].ctrl.abort(); }
-		var job = { ctrl: null, tries: 0 };
-		inflight[ kind ] = job;
+		var slot = inflight[ kind ] || ( inflight[ kind ] = { busy: false, next: null, current: null } );
 		return new Promise( function ( resolve, reject ) {
-			function attempt() {
-				if ( inflight[ kind ] !== job ) { reject( { aborted: true } ); return; }
-				job.ctrl = window.AbortController ? new AbortController() : { abort: function () {}, signal: undefined };
-				var timer = setTimeout( function () { job.timedOut = true; job.ctrl.abort(); }, 10000 );
-				api( path, method, body, job.ctrl.signal ).then( function ( res ) {
-					clearTimeout( timer );
-					if ( inflight[ kind ] !== job ) { reject( { aborted: true } ); return; }
-					inflight[ kind ] = null;
-					resolve( res );
-				} ).catch( function ( err ) {
-					clearTimeout( timer );
-					if ( inflight[ kind ] !== job ) { reject( { aborted: true } ); return; }
-					if ( err && err.code === 'wonom_busy' && job.tries < 8 ) {
-						job.tries++;
-						setTimeout( attempt, 1200 + job.tries * 300 );
-						return;
-					}
-					inflight[ kind ] = null;
-					if ( job.timedOut ) { reject( { message: I.serverSlow } ); return; }
-					if ( err && ( err.name === 'AbortError' || err.code === 'fetch_error' && ! err.message ) ) { reject( { aborted: true } ); return; }
-					reject( err );
-				} );
-			}
-			attempt();
+			if ( slot.next ) { slot.next.reject( { aborted: true } ); }
+			if ( slot.current ) { slot.current.superseded = true; }
+			slot.next = { path: path, method: method, body: body, resolve: resolve, reject: reject, tries: 0 };
+			if ( ! slot.busy ) { runSlot( slot ); }
 		} );
+	}
+	function runSlot( slot ) {
+		var job = slot.next;
+		if ( ! job ) { return; }
+		slot.next = null; slot.busy = true; slot.current = job;
+		function finish( err, res ) {
+			slot.busy = false; slot.current = null;
+			if ( job.superseded ) { job.reject( { aborted: true } ); } else if ( err ) { job.reject( err ); } else { job.resolve( res ); }
+			if ( slot.next ) { runSlot( slot ); }
+		}
+		function send() {
+			var ctrl = window.AbortController ? new AbortController() : null, timedOut = false;
+			var timer = setTimeout( function () { timedOut = true; if ( ctrl ) { ctrl.abort(); } }, 10000 );
+			api( job.path, job.method, job.body, ctrl ? ctrl.signal : undefined ).then( function ( res ) {
+				clearTimeout( timer ); finish( null, res );
+			} ).catch( function ( err ) {
+				clearTimeout( timer );
+				if ( err && err.code === 'wonom_busy' && job.tries < 8 && ! job.superseded ) {
+					job.tries++;
+					setTimeout( send, 1200 + job.tries * 300 );
+					return;
+				}
+				finish( timedOut ? { message: I.serverSlow } : ( err || {} ), null );
+			} );
+		}
+		send();
 	}
 
 	function toast( msg, type ) {
@@ -196,6 +202,7 @@
 			saveBtn.textContent = I.save;
 			toast( I.allSaved + ( savedContent && state.cache && state.cache.enabled ? ' ' + I.purgeSoon : '' ), 'ok' );
 			if ( savedContent ) { thumbHtml = {}; }   // the saved slides changed – fetch the miniatures again
+			if ( savedContent && state.cache && state.cache.enabled ) { schedulePurgeDue(); }
 			render();
 			if ( savedContent ) { refreshPreview( true ); }
 		} ).catch( function ( err ) {
@@ -203,6 +210,16 @@
 			saveBtn.textContent = I.save;
 			toast( I.saveFailed + ( err && err.message ? ': ' + err.message : '' ), 'err' );
 		} );
+	}
+
+	// The purge runs 30 s after the last save via WP-Cron. Where WP-Cron is switched off and not driven
+	// by the server, the open editor asks for it when it is due (the server purges only if it is due).
+	var purgeDueTimer = null;
+	function schedulePurgeDue() {
+		clearTimeout( purgeDueTimer );
+		purgeDueTimer = setTimeout( function () {
+			api( '/purge-due', 'POST', {} ).then( function ( st ) { if ( st ) { state.cache = st; } } ).catch( function () { /* cron or the next admin page load does it */ } );
+		}, 33000 );
 	}
 
 	// PHP encodes empty associative arrays as [] – make sure map-like fields are real objects.
@@ -1043,7 +1060,7 @@
 		if ( ! host || ! s ) { stage.iframe = null; stage.slideId = null; return; }
 		stage.slideId = s.id;
 		host.className = 'wonom-stage is-' + stage.device;
-		renderStage( s );
+		scheduleStage( s, 250 );   // rapid clicks re-draw the editor many times – render once they settle
 	}
 
 	function scheduleStage( s, delay ) {
