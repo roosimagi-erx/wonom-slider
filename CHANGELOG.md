@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.7 - 2026-11-19
+
+- Muudatus: plugina asendamine ZIP-i üleslaadimisega („Asenda praegune versioon üleslaadituga“) käitub nagu uuendus. Kui automaatne tühjendus on sees, tühjendatakse 30 s pärast slaideriga lehed. Kui see on väljas, ei tühjendata midagi.
+
 ## 1.9.6 - 2026-11-19
 
 - Parandus: serveri eelvaatelukk on nüüd aatomiline (andmebaasi `INSERT IGNORE`). Kui sama kasutaja eelvaatepäringuid tuleb korraga mitu, renderdab server ainult ühte ja teised saavad kohe vastuse „hõivatud“. Varem võisid päris samaaegsed päringud luku kontrollist mööda minna.

@@ -48,6 +48,7 @@ class Wonom_Slider_Cache {
 		add_action( 'init', array( __CLASS__, 'ensure_pulse' ) );
 		add_action( 'admin_init', array( __CLASS__, 'catch_up' ) );
 		add_action( 'upgrader_process_complete', array( __CLASS__, 'on_upgrade' ), 20, 2 );
+		add_action( 'upgrader_overwrote_package', array( __CLASS__, 'on_overwrite' ), 20, 3 );
 		// Remember which pages contain the slider (Elementor widget, block or shortcode).
 		add_action( 'save_post', array( __CLASS__, 'scan_post' ), 20 );
 		add_action( 'updated_post_meta', array( __CLASS__, 'scan_meta' ), 10, 3 );
@@ -545,6 +546,15 @@ class Wonom_Slider_Cache {
 		}
 		$plugins = ! empty( $data['plugins'] ) && is_array( $data['plugins'] ) ? $data['plugins'] : ( ! empty( $data['plugin'] ) ? array( $data['plugin'] ) : array() );
 		if ( in_array( WONOM_SLIDER_BASENAME, $plugins, true ) && self::enabled() ) {
+			self::request_purge();
+		}
+	}
+
+	/**
+	 * The plugin was replaced by uploading a zip ("Replace current with uploaded") – same rule as an update.
+	 */
+	public static function on_overwrite( $package, $data, $type ) {
+		if ( 'plugin' === $type && is_array( $data ) && isset( $data['TextDomain'] ) && 'wonom-slider' === $data['TextDomain'] && self::enabled() ) {
 			self::request_purge();
 		}
 	}

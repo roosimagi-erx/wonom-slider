@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.6
+Stable tag: 1.9.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,9 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.9.7 - 2026-11-19 =
+* Muudatus: plugina asendamine ZIP-i üleslaadimisega („Asenda praegune versioon üleslaadituga“) käitub nagu uuendus. Kui automaatne tühjendus on sees, tühjendatakse 30 s pärast slaideriga lehed. Kui see on väljas, ei tühjendata midagi.
 
 = 1.9.6 - 2026-11-19 =
 * Parandus: serveri eelvaatelukk on nüüd aatomiline (andmebaasi `INSERT IGNORE`). Kui sama kasutaja eelvaatepäringuid tuleb korraga mitu, renderdab server ainult ühte ja teised saavad kohe vastuse „hõivatud“. Varem võisid päris samaaegsed päringud luku kontrollist mööda minna.
@@ -95,8 +98,5 @@ Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
 
 = 1.7.10 - 2026-11-10 =
 * Parandus: kollaaži täitmise vihje ümardab nüüd õigesti: „fotorida on slaidist madalam“ ilmub ainult siis, kui see päriselt nii on, ja sülearvuti jaoks pakutakse õiget lisafotode arvu (5 fotoga: lisa 2).
-
-= 1.7.9 - 2026-11-10 =
-* Parandus: „Näita fotosid tervena“ režiimis on fotod alati kõrvuti (seadistatud vahega). Hajumise ja hägu üleminek kattis seni iga foto serva 90 px ulatuses, mistõttu fotod polnud päriselt terved ja rida täitis seitsme fotoga ainult umbes 70 % laiusest. Ülemineku valik on selles režiimis välja lülitatud ja selgitusega.
 
 Full history: CHANGELOG.md on GitHub.
