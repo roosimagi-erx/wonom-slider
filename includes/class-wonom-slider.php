@@ -68,5 +68,6 @@ final class Wonom_Slider {
 	public static function deactivate() {
 		wp_clear_scheduled_hook( Wonom_Slider_Cache::CRON_HOOK );
 		wp_clear_scheduled_hook( Wonom_Slider_Cache::PULSE_HOOK );
+		wp_clear_scheduled_hook( Wonom_Slider_Cache::DEFER_HOOK );
 	}
 }

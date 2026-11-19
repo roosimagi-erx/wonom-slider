@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.9.4 - 2026-11-19
+
+Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
+
+- **Vahemälu tühjendatakse ainult slaideriga lehtedel**, mitte kogu saidil. Need lehed on avaleht igas keeles, lehed, kust leiti slaideri vidin, plokk või lühikood, lehed, kus slaiderit näidati, ja seadetes lisatud aadressid. FlyingPress tühjendab ja eellaadib ainult need lehed. Kogu saidi eellaadimist ei käivitata. Seaded → Lehe vahemälu näitab, milliseid lehti tühjendatakse.
+- **Elementori CSS-i ei tühjendata enam.** Slaideri stiilid tulevad plugina enda failidest.
+- **Cloudflare saab ainult nende lehtede aadressid**, mitte kunagi „kõik tühjaks“. Testsaidilt (test., staging. jne) Cloudflare'i päringut ei tehta, isegi kui token on sisestatud.
+- **Üks tühjendus ühe salvestamise kohta.** Tühjendus toimub 30 s pärast viimast salvestust; slaidide ja seadete korraga salvestamine ning mitu kampaaniamuudatust järjest teevad ühe tühjenduse.
+- **Plugina uuendamine järgib automaatse tühjenduse seadet.** Kui see on väljas, ei tühjendata midagi.
+- **Admini eelvaated hoiavad serveri protsesse vähem kinni.**
+  - Vanad eelvaatepäringud katkestatakse.
+  - Server teeb ühe kasutaja kohta korraga ainult ühe eelvaate ja annab kiire „hõivatud“ vastuse, mille peale admin proovib hetke pärast uuesti.
+  - Ükski eelvaade ei oota üle 10 s.
+  - Ülemine eelvaade küsitakse serverist ainult pärast salvestamist või eelvaate valikute muutmist.
+  - Admin-leht ei renderda avamisel enam kõiki slaide. Pisipildid laaditakse alles nähtavale tulles ja väikeses mõõdus.
+
 ## 1.9.3 - 2026-11-18
 
 - Parandus: lohistamisega sätitud laius (nt 1,15×) on lahtri laiuse valikus näha ka pärast lahtrite ümberjärjestamist.

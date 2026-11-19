@@ -101,12 +101,52 @@
 		return sprintf( I.duration, hrs >= 48 ? sprintf( I.days, Math.round( hrs / 24 ) ) : sprintf( I.hours, hrs ) );
 	}
 
-	function api( path, method, body ) {
+	function api( path, method, body, signal ) {
 		return window.wp.apiFetch( {
 			url: CFG.rest + path,
 			method: method || 'GET',
 			data: body,
+			signal: signal,
 			headers: { 'X-WP-Nonce': CFG.nonce }
+		} );
+	}
+
+	/*
+	 * Preview requests share the shop's PHP processes, so per kind (render | preview | thumbs) only the
+	 * newest request counts: a new one aborts the previous, each gives up after 10 s, and a 429 "busy"
+	 * from the server (it still works on the previous one) is retried a little later – never in parallel.
+	 * Resolves with the response; rejects with { aborted: true } when superseded.
+	 */
+	var inflight = {};
+	function latest( kind, path, method, body ) {
+		if ( inflight[ kind ] ) { inflight[ kind ].ctrl.abort(); }
+		var job = { ctrl: null, tries: 0 };
+		inflight[ kind ] = job;
+		return new Promise( function ( resolve, reject ) {
+			function attempt() {
+				if ( inflight[ kind ] !== job ) { reject( { aborted: true } ); return; }
+				job.ctrl = window.AbortController ? new AbortController() : { abort: function () {}, signal: undefined };
+				var timer = setTimeout( function () { job.timedOut = true; job.ctrl.abort(); }, 10000 );
+				api( path, method, body, job.ctrl.signal ).then( function ( res ) {
+					clearTimeout( timer );
+					if ( inflight[ kind ] !== job ) { reject( { aborted: true } ); return; }
+					inflight[ kind ] = null;
+					resolve( res );
+				} ).catch( function ( err ) {
+					clearTimeout( timer );
+					if ( inflight[ kind ] !== job ) { reject( { aborted: true } ); return; }
+					if ( err && err.code === 'wonom_busy' && job.tries < 8 ) {
+						job.tries++;
+						setTimeout( attempt, 1200 + job.tries * 300 );
+						return;
+					}
+					inflight[ kind ] = null;
+					if ( job.timedOut ) { reject( { message: I.serverSlow } ); return; }
+					if ( err && ( err.name === 'AbortError' || err.code === 'fetch_error' && ! err.message ) ) { reject( { aborted: true } ); return; }
+					reject( err );
+				} );
+			}
+			attempt();
 		} );
 	}
 
@@ -150,12 +190,14 @@
 			chain = chain.then( function () { return api( '/advanced', 'POST', { advanced: state.advanced } ); } );
 		}
 		return chain.then( function ( res ) {
+			var savedContent = dirty.slides || dirty.settings;
 			if ( res && res.slides ) { applyState( res ); }
 			clearDirty();
 			saveBtn.textContent = I.save;
-			toast( I.allSaved, 'ok' );
+			toast( I.allSaved + ( savedContent && state.cache && state.cache.enabled ? ' ' + I.purgeSoon : '' ), 'ok' );
+			if ( savedContent ) { thumbHtml = {}; }   // the saved slides changed – fetch the miniatures again
 			render();
-			refreshPreview();
+			if ( savedContent ) { refreshPreview( true ); }
 		} ).catch( function ( err ) {
 			saveBtn.disabled = false;
 			saveBtn.textContent = I.save;
@@ -279,21 +321,33 @@
 	}
 	// The preview is fetched through REST and shown via srcdoc, so page optimisers
 	// (lazy-load placeholders, delayed JavaScript) cannot interfere with it.
-	var previewReq = 0;
-	function refreshPreview() {
+	// The top preview shows the SAVED slider: the server is asked only when the saved data or the
+	// preview options changed (force), and at most once per 1.5 s; otherwise the last answer is shown
+	// again, so re-drawing the editor (every click) no longer costs a request.
+	var previewCache = { key: '', res: null }, previewTimer = null;
+	function previewKey() { return ( preview.all ? 1 : 0 ) + '|' + ( preview.lang || '' ); }
+	function refreshPreview( force ) {
 		var f = document.getElementById( 'wonom-preview-frame' );
 		if ( ! f ) { return; }
-		var req = ++previewReq;
-		api( '/preview?all=' + ( preview.all ? 1 : 0 ) + ( preview.lang ? '&lang=' + encodeURIComponent( preview.lang ) : '' ) + '&t=' + Date.now() ).then( function ( res ) {
-			if ( req !== previewReq || ! document.getElementById( 'wonom-preview-frame' ) ) { return; }
-			var body = res.html || '<p style="font:14px/1.5 system-ui,sans-serif;color:#555;padding:40px;text-align:center">' + esc( I.stageEmpty ) + '</p>';
-			f.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-				+ '<link rel="stylesheet" href="' + esc( res.css ) + '">' + ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
-				// overflow:hidden – the frame is sized to the slider; a scrollbar appearing for a rounding
-				// pixel would narrow the slider, shrink the frame, vanish again… and flicker endlessly.
-				+ '<style>html,body{margin:0;padding:0;background:#f3f4f6;overflow:hidden}' + ( f.parentNode.classList.contains( 'is-zoomed' ) ? 'html{zoom:' + previewZoom( f ) + '}' : '' ) + capStyle( preview.device ) + ( res.custom_css || '' ) + '</style></head><body>' + body
-				+ '<script src="' + esc( res.js ) + '"><\/script></body></html>';
-		} ).catch( function ( e ) { toast( e && e.message ? e.message : 'Preview error', 'err' ); } );
+		if ( ! force && previewCache.res && previewCache.key === previewKey() ) { showPreview( f, previewCache.res ); return; }
+		clearTimeout( previewTimer );
+		previewTimer = setTimeout( function () {
+			var key = previewKey();
+			latest( 'preview', '/preview?all=' + ( preview.all ? 1 : 0 ) + ( preview.lang ? '&lang=' + encodeURIComponent( preview.lang ) : '' ) + '&t=' + Date.now() ).then( function ( res ) {
+				previewCache = { key: key, res: res };
+				var f2 = document.getElementById( 'wonom-preview-frame' );
+				if ( f2 ) { showPreview( f2, res ); }
+			} ).catch( function ( e ) { if ( ! e || ! e.aborted ) { toast( e && e.message ? e.message : 'Preview error', 'err' ); } } );
+		}, previewCache.res ? 1500 : 0 );
+	}
+	function showPreview( f, res ) {
+		var body = res.html || '<p style="font:14px/1.5 system-ui,sans-serif;color:#555;padding:40px;text-align:center">' + esc( I.stageEmpty ) + '</p>';
+		f.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+			+ '<link rel="stylesheet" href="' + esc( res.css ) + '">' + ( res.fonts ? '<link rel="stylesheet" href="' + esc( res.fonts ) + '">' : '' )
+			// overflow:hidden – the frame is sized to the slider; a scrollbar appearing for a rounding
+			// pixel would narrow the slider, shrink the frame, vanish again… and flicker endlessly.
+			+ '<style>html,body{margin:0;padding:0;background:#f3f4f6;overflow:hidden}' + ( f.parentNode.classList.contains( 'is-zoomed' ) ? 'html{zoom:' + previewZoom( f ) + '}' : '' ) + capStyle( preview.device ) + ( res.custom_css || '' ) + '</style></head><body>' + body
+			+ '<script src="' + esc( res.js ) + '"><\/script></body></html>';
 	}
 
 	function renderCard( s, i ) {
@@ -309,17 +363,16 @@
 		h += '<span class="wonom-drag" title="' + esc( I.dragToReorder ) + '"><span class="dashicons dashicons-menu"></span></span>';
 		h += '<span class="wonom-order">' + ( i + 1 ) + '</span>';
 		var thumbInner;
-		if ( s.preview ) {
-			// Exact front-end output in its own document (same as the big preview), filled in by fitThumbs().
-			thumbInner = '';
-		} else if ( thumb ) {
+		if ( thumb ) {
 			thumbInner = '<img src="' + esc( thumb ) + '" alt="">';
 		} else if ( hasContent( s ) ) {
 			thumbInner = '<span class="wonom-thumb-text" style="background:' + esc( s.bg_color || '#1d2433' ) + ';color:' + esc( s.text_color || '#fff' ) + '">' + esc( ( s.heading || s.text || s.eyebrow || 'Aa' ).slice( 0, 14 ) ) + '</span>';
 		} else {
 			thumbInner = '<span class="dashicons dashicons-format-image"></span>';
 		}
-		h += '<div class="wonom-thumb' + ( s.preview ? ' wonom-thumb--live' : '' ) + '" data-action="open">' + thumbInner + '</div>';
+		// Saved slides get the exact front-end output as miniature once the card is visible (fitThumbs);
+		// until then the static image shows.
+		h += '<div class="wonom-thumb' + ( s.live === true ? ' wonom-thumb--live' : '' ) + '" data-action="open">' + thumbInner + '</div>';
 		h += '<div class="wonom-slide-meta" data-action="open">';
 		h += '<div class="wonom-slide-title">';
 		if ( open ) {
@@ -719,12 +772,47 @@
 	// markup and stylesheet, rendered at desktop width and scaled down – the same pipeline as the
 	// big preview, so the card shows precisely what visitors see.
 	var THUMB_W = 0, THUMB_BOX_W = 160;   // set to the editor's screen width (see VIEWPORT.screen)
+	// Live miniatures: fetched only for cards that are on screen, several in one request (/thumbs),
+	// kept until the slides are saved again.
+	var thumbHtml = {}, thumbWant = {}, thumbTimer = null, thumbObserver = null;
 	function fitThumbs() {
+		if ( ! thumbObserver && window.IntersectionObserver ) {
+			thumbObserver = new IntersectionObserver( function ( entries ) {
+				entries.forEach( function ( en ) {
+					if ( ! en.isIntersecting ) { return; }
+					var id = en.target.closest( '.wonom-slide-card' ).getAttribute( 'data-id' );
+					thumbObserver.unobserve( en.target );
+					if ( thumbHtml[ id ] === undefined ) { thumbWant[ id ] = true; }
+				} );
+				clearTimeout( thumbTimer );
+				thumbTimer = setTimeout( loadThumbs, 300 );
+				drawThumbs();
+			}, { rootMargin: '200px' } );
+		}
+		[].forEach.call( app.querySelectorAll( '.wonom-slide-card .wonom-thumb--live' ), function ( box ) {
+			if ( box.querySelector( 'iframe' ) ) { return; }
+			var id = box.closest( '.wonom-slide-card' ).getAttribute( 'data-id' );
+			if ( thumbHtml[ id ] !== undefined ) { return; }
+			if ( thumbObserver ) { thumbObserver.observe( box ); } else { thumbWant[ id ] = true; }
+		} );
+		if ( ! thumbObserver ) { loadThumbs(); }
+		drawThumbs();
+	}
+	function loadThumbs() {
+		var ids = Object.keys( thumbWant ).slice( 0, 12 );
+		if ( ! ids.length ) { return; }
+		latest( 'thumbs', '/thumbs?ids=' + encodeURIComponent( ids.join( ',' ) ) ).then( function ( res ) {
+			ids.forEach( function ( id ) { delete thumbWant[ id ]; thumbHtml[ id ] = res && res[ id ] ? res[ id ] : ''; } );
+			drawThumbs();
+			if ( Object.keys( thumbWant ).length ) { loadThumbs(); }
+		} ).catch( function () { /* superseded or busy – the static images stay */ } );
+	}
+	function drawThumbs() {
 		var assets = ( state.assets || ( WONOM_SLIDER.state && WONOM_SLIDER.state.assets ) || {} );
 		var scale = THUMB_BOX_W / THUMB_W;
 		[].forEach.call( app.querySelectorAll( '.wonom-slide-card' ), function ( card ) {
 			var box = card.querySelector( '.wonom-thumb--live' ), s = findSlide( card.getAttribute( 'data-id' ) );
-			if ( ! box || ! s || ! s.preview || box.querySelector( 'iframe' ) ) { return; }
+			if ( ! box || ! s || ! thumbHtml[ s.id ] || box.querySelector( 'iframe' ) ) { return; }
 			var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 				+ '<link rel="stylesheet" href="' + esc( assets.css || '' ) + '">'
 				+ ( assets.fonts ? '<link rel="stylesheet" href="' + esc( assets.fonts ) + '">' : '' )
@@ -733,7 +821,8 @@
 				+ '.wonom-slider__arrow,.wonom-slider__dots,.wonom-slider__progress{display:none!important}'
 				+ '.wonom-slide__badge,.wonom-slide__eyebrow,.wonom-slide__heading,.wonom-slide__text,.wonom-slide__actions{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}'
 				+ ( state.settings && state.settings.custom_css ? state.settings.custom_css : '' )
-				+ '</style></head><body>' + s.preview + '</body></html>';
+				// The miniature is ~160 px wide: let the browser pick small image files (medium) right away.
+				+ '</style></head><body>' + thumbHtml[ s.id ].replace( /\ssizes="[^"]*"/g, ' sizes="320px"' ) + '</body></html>';
 			var iframe = document.createElement( 'iframe' );
 			iframe.className = 'wonom-thumb__frame';
 			iframe.setAttribute( 'title', s.name || '' );
@@ -751,7 +840,7 @@
 					if ( ds ) { img.setAttribute( 'src', ds ); img.removeAttribute( 'data-wonom-src' ); img.removeAttribute( 'data-src' ); }
 					if ( dss ) { img.setAttribute( 'srcset', dss ); img.removeAttribute( 'data-wonom-srcset' ); img.removeAttribute( 'data-srcset' ); }
 					img.classList.remove( 'wd-lazy-fade' );
-					img.setAttribute( 'sizes', THUMB_W + 'px' );
+					img.setAttribute( 'sizes', '320px' );
 				} );
 				[].forEach.call( d.querySelectorAll( 'source[data-wonom-srcset], source[data-srcset]' ), function ( so ) { so.setAttribute( 'srcset', so.getAttribute( 'data-wonom-srcset' ) || so.getAttribute( 'data-srcset' ) ); so.removeAttribute( 'data-wonom-srcset' ); so.removeAttribute( 'data-srcset' ); } );
 				var h = sl.offsetHeight || Math.round( THUMB_W * 0.34 );
@@ -966,7 +1055,7 @@
 		var host = app.querySelector( '[data-stage]' );
 		if ( ! host || stage.slideId !== s.id ) { return; }
 		var req = ++stage.req;
-		api( '/render', 'POST', { slide: s, settings: state.settings, lang: langTab[ s.id ] || defaultLang() } ).then( function ( res ) {
+		latest( 'render', '/render', 'POST', { slide: s, settings: state.settings, lang: langTab[ s.id ] || defaultLang() } ).then( function ( res ) {
 			if ( req !== stage.req || stage.slideId !== s.id ) { return; }
 			if ( ! res.html ) {
 				host.innerHTML = '<div class="wonom-stage-empty">' + esc( I.stageEmpty ) + '</div>';
@@ -1010,7 +1099,11 @@
 			} );
 			iframe.srcdoc = doc;
 		} ).catch( function ( e ) {
-			host.innerHTML = '<div class="wonom-stage-empty">' + esc( e && e.message ? e.message : 'Error' ) + '</div>';
+			if ( e && e.aborted ) { return; }   // a newer render replaced this one
+			if ( req !== stage.req ) { return; }
+			// Keep the last picture on screen if there is one; say why it is not updated.
+			if ( stage.iframe && host.contains( stage.iframe ) ) { toast( e && e.message ? e.message : 'Error', 'err' ); return; }
+			host.innerHTML = '<div class="wonom-stage-empty">' + esc( e && e.message ? e.message : 'Error' ) + ' <button type="button" class="button-link" data-action="stage-retry">' + esc( I.retry ) + '</button></div>';
 		} );
 	}
 
@@ -1542,6 +1635,13 @@
 		} else {
 			cacheInner += '<p class="wonom-warn">' + esc( CR.last ? sprintf( I.cronLate, CR.last ) : I.cronNever ) + ' ' + esc( C.wp_cron_off ? I.cronOff : I.cronLateHint ) + '</p>';
 		}
+		// Which pages are purged (only these – never the whole site).
+		cacheInner += '<div class="wonom-field"><label>' + esc( I.purgePages ) + '</label><ul class="wonom-purge-urls">' + ( C.urls || [] ).map( function ( u ) { return '<li><code>' + esc( u ) + '</code></li>'; } ).join( '' ) + '</ul>'
+			+ '<p class="wonom-hint">' + esc( I.purgePagesHint ) + ' <button type="button" class="button-link" data-action="pages-scan">' + esc( I.pagesScan ) + '</button></p></div>';
+		cacheInner += field( I.purgeUrlsExtra, '<textarea rows="3" data-adv="purge_urls" placeholder="/kampaania/&#10;https://…">' + esc( A.purge_urls || '' ) + '</textarea>', esc( I.purgeUrlsHint ) );
+		if ( C.pending ) { cacheInner += '<p class="wonom-hint">' + esc( sprintf( I.purgePending, C.pending ) ) + '</p>'; }
+		if ( C.last ) { cacheInner += '<p class="wonom-hint">' + esc( sprintf( I.purgeLast, C.last.time, ( C.last.done || [] ).join( ', ' ) || '–' ) ) + '</p>'; }
+		if ( C.live_host === false ) { cacheInner += '<p class="wonom-hint wonom-warn">' + esc( I.cfTestHost ) + '</p>'; }
 		cacheInner += '<div class="wonom-grid wonom-grid--2">' + field( I.cfZone, '<input type="text" data-adv="cf_zone" value="' + esc( A.cf_zone || '' ) + '" autocomplete="off">' ) + field( I.cfToken, '<input type="text" data-adv="cf_token" value="' + esc( A.cf_token || '' ) + '" autocomplete="off">', esc( I.cfHint ) ) + '</div>';
 		cacheInner += '<div class="wonom-row"><button type="button" class="button" data-action="purge">' + esc( I.purgeNow ) + '</button></div>';
 		cacheInner += '<p class="wonom-hint">' + esc( I.delayJsHint ) + '</p><p class="wonom-codeline"><code>wonom-slider</code><button type="button" class="button" data-action="copy" data-copy="wonom-slider">' + esc( I.copy ) + '</button></p>';
@@ -1693,7 +1793,12 @@
 				render(); break;
 			case 'preview-device': preview.device = btn.getAttribute( 'data-device' ); render(); break;
 			case 'preview-lang': preview.lang = btn.getAttribute( 'data-lang' ); render(); break;
-			case 'preview-refresh': refreshPreview(); break;
+			case 'preview-refresh': refreshPreview( true ); break;
+			case 'stage-retry': if ( s ) { renderStage( s ); } break;
+			case 'pages-scan':
+				btn.disabled = true;
+				api( '/pages-scan', 'POST', {} ).then( function ( st ) { state.cache = st; render(); toast( I.pagesScanned, 'ok' ); } ).catch( function ( e2 ) { btn.disabled = false; toast( e2.message || 'Error', 'err' ); } );
+				break;
 			case 'cal-nav':
 				var dir = parseInt( btn.getAttribute( 'data-dir' ), 10 );
 				if ( dir === 0 ) { calView = null; } else { calView.m += dir; if ( calView.m < 1 ) { calView.m = 12; calView.y--; } if ( calView.m > 12 ) { calView.m = 1; calView.y++; } }
@@ -1850,7 +1955,7 @@
 			markDirty( 'advanced' );
 		}
 		if ( el.hasAttribute( 'data-action' ) && el.getAttribute( 'data-action' ) === 'preview-all' ) {
-			preview.all = el.checked; refreshPreview();
+			preview.all = el.checked; refreshPreview( true );
 		}
 	} );
 

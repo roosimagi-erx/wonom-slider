@@ -161,6 +161,28 @@ class Wonom_Slider_Rest {
 		);
 		register_rest_route(
 			self::NS,
+			'/thumbs',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'thumbs' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
+			'/pages-scan',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'pages_scan' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
 			'/import',
 			array(
 				array(
@@ -177,6 +199,65 @@ class Wonom_Slider_Rest {
 	}
 
 	/**
+	 * One preview render per user and kind at a time: PHP processes are shared with the live shop,
+	 * so a second request while the first still runs is answered at once with 429 (the editor
+	 * retries) instead of occupying another process. The lock row is inserted atomically
+	 * (add_option fails when it exists) and goes stale after 15 s.
+	 *
+	 * @param string $kind render | preview | thumbs.
+	 * @return string|WP_Error Lock name, or an error when busy.
+	 */
+	private static function begin_busy( $kind ) {
+		$name = 'wonom_slider_busy_' . get_current_user_id() . '_' . $kind;
+		if ( ! add_option( $name, time(), '', false ) ) {
+			$since = (int) get_option( $name, 0 );
+			if ( $since && time() - $since < 15 ) {
+				return new WP_Error( 'wonom_busy', __( 'The server is still working on the previous preview.', 'wonom-slider' ), array( 'status' => 429 ) );
+			}
+			update_option( $name, time(), false );
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 10 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		}
+		return $name;
+	}
+
+	private static function end_busy( $name ) {
+		delete_option( $name );
+	}
+
+	/**
+	 * Live miniatures for the slide list, only for the given (visible) slides.
+	 */
+	public static function thumbs( WP_REST_Request $req ) {
+		$ids  = array_filter( array_map( 'sanitize_key', explode( ',', (string) $req->get_param( 'ids' ) ) ) );
+		$lock = self::begin_busy( 'thumbs' );
+		if ( is_wp_error( $lock ) ) {
+			return $lock;
+		}
+		$out      = array();
+		$settings = Wonom_Slider_Data::get_settings();
+		$shape    = self::shop_ratio_slides();
+		foreach ( Wonom_Slider_Data::get_slides() as $slide ) {
+			if ( count( $out ) >= 12 ) {
+				break;
+			}
+			if ( in_array( sanitize_key( $slide['id'] ), $ids, true ) ) {
+				$out[ $slide['id'] ] = Wonom_Slider_Data::slide_has_content( $slide )
+					? Wonom_Slider_Frontend::render( array( 'slides' => array( $slide ), 'settings' => $settings, 'ratio_slides' => $shape ) )
+					: '';
+			}
+		}
+		self::end_busy( $lock );
+		return rest_ensure_response( (object) $out );
+	}
+
+	public static function pages_scan() {
+		Wonom_Slider_Cache::maybe_initial_scan( true );
+		return rest_ensure_response( Wonom_Slider_Cache::status() );
+	}
+
+	/**
 	 * Full editor state.
 	 */
 	public static function get_state() {
@@ -186,12 +267,10 @@ class Wonom_Slider_Rest {
 	public static function state() {
 		$slides   = Wonom_Slider_Data::get_slides();
 		$settings = Wonom_Slider_Data::get_settings();
-		$shape    = self::shop_ratio_slides();
 		foreach ( $slides as $k => $slide ) {
-			// Live miniature for the slide list: the exact front-end markup of this slide alone, in the shop's slider shape.
-			$slides[ $k ]['preview'] = Wonom_Slider_Data::slide_has_content( $slide )
-				? Wonom_Slider_Frontend::render( array( 'slides' => array( $slide ), 'settings' => $settings, 'ratio_slides' => $shape ) )
-				: '';
+			// Live miniatures are no longer rendered here (all slides at once on every admin page load):
+			// the editor fetches them from /thumbs when the cards become visible.
+			$slides[ $k ]['live'] = Wonom_Slider_Data::slide_has_content( $slide );
 			// Map-like fields must reach JavaScript as objects, never as [] (empty PHP arrays).
 			$slides[ $k ]['i18n'] = (object) ( is_array( $slide['i18n'] ) ? $slide['i18n'] : array() );
 			$slides[ $k ]['typo'] = (object) ( is_array( $slide['typo'] ) ? $slide['typo'] : array() );
@@ -247,6 +326,16 @@ class Wonom_Slider_Rest {
 	 * front-end optimisers (lazy-load placeholders, delayed JavaScript) cannot interfere.
 	 */
 	public static function preview( WP_REST_Request $req ) {
+		$lock = self::begin_busy( 'preview' );
+		if ( is_wp_error( $lock ) ) {
+			return $lock;
+		}
+		$res = self::preview_response( $req );
+		self::end_busy( $lock );
+		return $res;
+	}
+
+	private static function preview_response( WP_REST_Request $req ) {
 		$all  = Wonom_Slider_Data::to_bool( $req->get_param( 'all' ) );
 		$lang = sanitize_key( (string) $req->get_param( 'lang' ) );
 		$args = array();
@@ -291,6 +380,16 @@ class Wonom_Slider_Rest {
 	 * Returns the slider HTML plus the stylesheet URLs the stage iframe needs.
 	 */
 	public static function render_slide( WP_REST_Request $req ) {
+		$lock = self::begin_busy( 'render' );
+		if ( is_wp_error( $lock ) ) {
+			return $lock;
+		}
+		$res = self::render_slide_response( $req );
+		self::end_busy( $lock );
+		return $res;
+	}
+
+	private static function render_slide_response( WP_REST_Request $req ) {
 		$slide    = $req->get_param( 'slide' );
 		$settings = $req->get_param( 'settings' );
 		$lang     = sanitize_key( (string) $req->get_param( 'lang' ) );

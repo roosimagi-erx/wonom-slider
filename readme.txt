@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.3
+Stable tag: 1.9.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,20 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.9.4 - 2026-11-19 =
+Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
+* **Vahemälu tühjendatakse ainult slaideriga lehtedel**, mitte kogu saidil. Need lehed on avaleht igas keeles, lehed, kust leiti slaideri vidin, plokk või lühikood, lehed, kus slaiderit näidati, ja seadetes lisatud aadressid. FlyingPress tühjendab ja eellaadib ainult need lehed. Kogu saidi eellaadimist ei käivitata. Seaded → Lehe vahemälu näitab, milliseid lehti tühjendatakse.
+* **Elementori CSS-i ei tühjendata enam.** Slaideri stiilid tulevad plugina enda failidest.
+* **Cloudflare saab ainult nende lehtede aadressid**, mitte kunagi „kõik tühjaks“. Testsaidilt (test., staging. jne) Cloudflare'i päringut ei tehta, isegi kui token on sisestatud.
+* **Üks tühjendus ühe salvestamise kohta.** Tühjendus toimub 30 s pärast viimast salvestust; slaidide ja seadete korraga salvestamine ning mitu kampaaniamuudatust järjest teevad ühe tühjenduse.
+* **Plugina uuendamine järgib automaatse tühjenduse seadet.** Kui see on väljas, ei tühjendata midagi.
+* **Admini eelvaated hoiavad serveri protsesse vähem kinni.**
+* Vanad eelvaatepäringud katkestatakse.
+* Server teeb ühe kasutaja kohta korraga ainult ühe eelvaate ja annab kiire „hõivatud“ vastuse, mille peale admin proovib hetke pärast uuesti.
+* Ükski eelvaade ei oota üle 10 s.
+* Ülemine eelvaade küsitakse serverist ainult pärast salvestamist või eelvaate valikute muutmist.
+* Admin-leht ei renderda avamisel enam kõiki slaide. Pisipildid laaditakse alles nähtavale tulles ja väikeses mõõdus.
 
 = 1.9.3 - 2026-11-18 =
 * Parandus: lohistamisega sätitud laius (nt 1,15×) on lahtri laiuse valikus näha ka pärast lahtrite ümberjärjestamist.
@@ -85,9 +99,5 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 = 1.7.7 - 2026-11-10 =
 * Muudatus: arvutipildi juhend lähtub nüüd sellest, et slaider on igal ekraanil täies kõrguses (40 % ekraanist, nagu enne). Soovitus on kaks mõõtu: kogu pilt 2400 × 650 px (suurel monitoril paistab tervena) ja turvaala keskel 2400 × 460 px, mis paistab igal ekraanil. Turvaala on juhendis joonisel näha. Näod, tooted ja tekst käivad turvaala sisse, ülemisse ja alumisse ribasse ainult taevas, põrand või taust. 1.7.6 soovitatud 2400 × 460 tegi slaideri suurel monitoril madalaks ja kollaažidest lõigati liiga palju.
 * Uus: eelvaates on nupp „Suur ekraan“ (brauseri ala 2560 × 1300 px) lisaks „Sülearvutile“, nii et näed nii kõige rohkem kui ka kõige vähem kärbitud vaadet.
-
-= 1.7.6 - 2026-11-10 =
-* Parandus: arvutipildi soovitus ja eelvaade lähtuvad nüüd tüüpilisest sülearvutist (brauseri ala 1536 × 730 px). Kõrguse piirang on protsent ekraani kõrgusest, nii et sülearvutil ja tavalisel 1080p monitoril on nähtav ala kõige laiem ja pilti kärbitakse kõige rohkem. 1.7.5 arvutas suurema ekraani järgi ja soovitas 2400 × 620, mis sülearvutil kaotas ikka umbes 20 % kõrgusest. 40 % piiranguga on õige mõõt 2400 × 460 px: see on igal levinud ekraanil terve, suuremal ekraanil on slaider lihtsalt madalam.
-* Külgede suhe kuvatakse eesti keeles komaga (5,2 : 1, 4 : 5).
 
 Full history: CHANGELOG.md on GitHub.

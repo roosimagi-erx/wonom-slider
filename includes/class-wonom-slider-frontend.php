@@ -140,6 +140,11 @@ class Wonom_Slider_Frontend {
 			return '';
 		}
 
+		// A real shop page shows the slider: remember it, so saving purges exactly the slider pages.
+		if ( ! isset( $args['slides'] ) && ! is_admin() && ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) && did_action( 'wp' ) && ! is_preview() && is_singular() ) {
+			Wonom_Slider_Cache::remember_page( get_queried_object_id() );
+		}
+
 		$lang = isset( $args['lang'] ) ? sanitize_key( $args['lang'] ) : Wonom_Slider_Data::current_language();
 		foreach ( $slides as $k => $slide ) {
 			if ( class_exists( 'Wonom_Slider_Campaigns' ) ) {

@@ -33,6 +33,7 @@ class Wonom_Slider_Data {
 				'auto_purge'          => true,
 				'cf_zone'             => '',
 				'cf_token'            => '',
+				'purge_urls'          => '', // extra slider pages to purge, one URL or path per line
 			)
 		);
 	}
@@ -59,6 +60,16 @@ class Wonom_Slider_Data {
 		}
 		if ( isset( $in['cf_zone'] ) ) {
 			$out['cf_zone'] = preg_replace( '/[^a-f0-9]/', '', strtolower( (string) $in['cf_zone'] ) );
+		}
+		if ( isset( $in['purge_urls'] ) ) {
+			$lines = array();
+			foreach ( preg_split( '/\R/', (string) $in['purge_urls'] ) as $line ) {
+				$line = trim( sanitize_text_field( $line ) );
+				if ( '' !== $line && ( '/' === $line[0] || preg_match( '#^https?://#i', $line ) ) ) {
+					$lines[] = $line;
+				}
+			}
+			$out['purge_urls'] = implode( "\n", array_slice( array_unique( $lines ), 0, 30 ) );
 		}
 		foreach ( array( 'update_token', 'deepl_key', 'cf_token' ) as $secret ) {
 			if ( isset( $in[ $secret ] ) ) {
@@ -95,6 +106,7 @@ class Wonom_Slider_Data {
 			'auto_purge'          => (bool) $a['auto_purge'],
 			'cf_zone'             => $a['cf_zone'],
 			'cf_token'            => $a['cf_token'] ? '••••••••' . substr( $a['cf_token'], -4 ) : '',
+			'purge_urls'          => (string) $a['purge_urls'],
 		);
 	}
 

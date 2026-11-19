@@ -372,6 +372,9 @@ msgstr "Ekspordi JSON"
 msgid "Extra CSS class"
 msgstr "Lisa CSS-klass"
 
+msgid "Extra pages to purge"
+msgstr "Lisaks tühjendatavad lehed"
+
 msgid "Fade"
 msgstr "Hajumine"
 
@@ -579,6 +582,9 @@ msgstr "Sülearvuti"
 msgid "Large screen"
 msgstr "Suur ekraan"
 
+msgid "Last purge %1$s: %2$s"
+msgstr "Viimane tühjendus %1$s: %2$s"
+
 msgid "Latest release on GitHub: %1$s (installed: %2$s)."
 msgstr "Viimane väljalase GitHubis: %1$s (paigaldatud: %2$s)."
 
@@ -756,6 +762,9 @@ msgstr "Telefonis jäävad punktid tihti teksti peale – vii need serva või pe
 msgid "On your screen the photos are wider than the slider, so the row is a little lower than the slide."
 msgstr "Sinu ekraanil on fotod kokku slaiderist laiemad, seega on fotorida slaidist veidi madalam."
 
+msgid "One address or path per line, e.g. /campaign/ – for pages that show the slider through a template."
+msgstr "Üks aadress või rada rea kohta, nt /kampaania/ – lehtedele, kus slaider tuleb malli kaudu."
+
 msgid "One image"
 msgstr "Üks pilt"
 
@@ -767,6 +776,9 @@ msgstr "Vaja ainult siis, kui Cloudflare hoiab HTML-i vahemälus (APO või „Ca
 
 msgid "Only shown in the admin, e.g. “Autumn campaign”."
 msgstr "Näidatakse ainult adminis, nt „Sügiskampaania”."
+
+msgid "Only these pages are purged (and preloaded) – never the whole site and never Elementor CSS. Home pages in every language, pages where the slider widget, block or shortcode was found, and pages where the slider was shown."
+msgstr "Tühjendatakse (ja eellaaditakse) ainult need lehed – mitte kunagi kogu saiti ega Elementori CSS-i. Avalehed kõigis keeltes, lehed, kust leiti slaideri vidin, plokk või lühikood, ja lehed, kus slaiderit näidati."
 
 msgid "Open calendar"
 msgstr "Ava kalender"
@@ -800,6 +812,9 @@ msgstr "Polsterdus (px)"
 
 msgid "Page cache"
 msgstr "Lehe vahemälu"
+
+msgid "Pages that are purged"
+msgstr "Tühjendatavad lehed"
 
 msgid "Pause on hover"
 msgstr "Peata hiirega peal olles"
@@ -842,6 +857,9 @@ msgstr "Selle hoidla avaldatud väljalasked pakutakse WordPressis plugina uuendu
 
 msgid "Purge cache now"
 msgstr "Tühjenda vahemälu kohe"
+
+msgid "Purge scheduled for %s (30 s after the last save)."
+msgstr "Tühjendus on ajastatud kellaajale %s (30 s pärast viimast salvestust)."
 
 msgid "Purge the page cache automatically when slides change and at scheduled start/end times"
 msgstr "Tühjenda lehe vahemälu automaatselt slaidide muutmisel ning ajastatud alguse ja lõpu hetkel"
@@ -915,6 +933,9 @@ msgstr "Ajastatud slaidid kuu vaates. Ajakavata slaidid on alati nähtavad ja ne
 msgid "Seam between images"
 msgstr "Piltide vaheline üleminek"
 
+msgid "Search the slider pages again"
+msgstr "Otsi slaideriga lehed uuesti"
+
 msgid "Second button link"
 msgstr "Teise nupu link"
 
@@ -986,6 +1007,9 @@ msgstr "Libisemine"
 
 msgid "Slide type"
 msgstr "Slaidi tüüp"
+
+msgid "Slider pages searched."
+msgstr "Slaideriga lehed otsitud."
 
 msgid "Slider preview"
 msgstr "Slaideri eelvaade"
@@ -1086,8 +1110,17 @@ msgstr "Taust läheb taustavärvist üle sellesse värvi."
 msgid "The linked campaign no longer exists – the slide is hidden."
 msgstr "Seotud kampaaniat enam pole – slaid on peidus."
 
+msgid "The server did not answer within 10 seconds – the preview was not updated. Try again in a moment."
+msgstr "Server ei vastanud 10 sekundi jooksul – eelvaadet ei uuendatud. Proovi hetke pärast uuesti."
+
+msgid "The server is still working on the previous preview."
+msgstr "Server töötleb veel eelmist eelvaadet."
+
 msgid "The slider editor needs JavaScript."
 msgstr "Slaideri redaktor vajab JavaScripti."
+
+msgid "The slider pages are purged in about 30 seconds."
+msgstr "Slaideriga lehtede vahemälu tühjendatakse umbes 30 sekundi pärast."
 
 msgid "Theme template (PHP):"
 msgstr "Teema mall (PHP):"
@@ -1097,6 +1130,9 @@ msgstr "Kõrguse piirangut pole, slaider järgib pilti. 3 : 1 on tasakaalukas b�
 
 msgid "This colour field is not shown in this view."
 msgstr "See värvipind ei ole selles vaates nähtav."
+
+msgid "This is a test site: Cloudflare is never purged from here (the zone is shared with the live shop). Leave the Cloudflare token empty here."
+msgstr "See on testsait: siit Cloudflare'i ei tühjendata (tsoon on live-poega ühine). Jäta Cloudflare'i token siin tühjaks."
 
 msgid "Time per slide (ms)"
 msgstr "Aeg slaidi kohta (ms)"
@@ -1133,6 +1169,9 @@ msgstr "Tõlgin…"
 
 msgid "Translation failed"
 msgstr "Tõlkimine ebaõnnestus"
+
+msgid "Try again"
+msgstr "Proovi uuesti"
 
 msgid "Typography"
 msgstr "Tüpograafia"
