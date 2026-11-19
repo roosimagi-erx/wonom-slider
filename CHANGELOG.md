@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.10.0 - 2026-11-20
+## 1.10.0 - 2026-11-19
 
 ### Ajastatud slaid vahetub täpselt õigel hetkel, ilma vahemälu tühjendamata
 
