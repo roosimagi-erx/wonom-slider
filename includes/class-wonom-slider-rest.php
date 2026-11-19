@@ -212,20 +212,29 @@ class Wonom_Slider_Rest {
 	/**
 	 * One preview render per user and kind at a time: PHP processes are shared with the live shop,
 	 * so a second request while the first still runs is answered at once with 429 (the editor
-	 * retries) instead of occupying another process. The lock row is inserted atomically
-	 * (add_option fails when it exists) and goes stale after 15 s.
+	 * retries) instead of occupying another process. The lock row is taken atomically in the
+	 * database (INSERT IGNORE on the unique option name – add_option() is not atomic) and goes
+	 * stale after 15 s; the WordPress option cache is bypassed on purpose.
 	 *
 	 * @param string $kind render | preview | thumbs.
 	 * @return string|WP_Error Lock name, or an error when busy.
 	 */
 	private static function begin_busy( $kind ) {
+		global $wpdb;
 		$name = 'wonom_slider_busy_' . get_current_user_id() . '_' . $kind;
-		if ( ! add_option( $name, time(), '', false ) ) {
-			$since = (int) get_option( $name, 0 );
-			if ( $since && time() - $since < 15 ) {
-				return new WP_Error( 'wonom_busy', __( 'The server is still working on the previous preview.', 'wonom-slider' ), array( 'status' => 429 ) );
+		$now  = time();
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery
+		$got = (int) $wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')", $name, (string) $now ) );
+		if ( ! $got ) {
+			$since = (int) $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $name ) );
+			// A stale lock (crashed request) is taken over – only by one request (compare and swap).
+			if ( $now - $since >= 15 ) {
+				$got = (int) $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s", (string) $now, $name, (string) $since ) );
 			}
-			update_option( $name, time(), false );
+		}
+		// phpcs:enable
+		if ( ! $got ) {
+			return new WP_Error( 'wonom_busy', __( 'The server is still working on the previous preview.', 'wonom-slider' ), array( 'status' => 429 ) );
 		}
 		if ( function_exists( 'set_time_limit' ) ) {
 			@set_time_limit( 10 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
@@ -234,7 +243,8 @@ class Wonom_Slider_Rest {
 	}
 
 	private static function end_busy( $name ) {
-		delete_option( $name );
+		global $wpdb;
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name = %s", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
 
 	/**

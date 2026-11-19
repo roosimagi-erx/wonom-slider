@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.5
+Stable tag: 1.9.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,9 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.9.6 - 2026-11-19 =
+* Parandus: serveri eelvaatelukk on nüüd aatomiline (andmebaasi `INSERT IGNORE`). Kui sama kasutaja eelvaatepäringuid tuleb korraga mitu, renderdab server ainult ühte ja teised saavad kohe vastuse „hõivatud“. Varem võisid päris samaaegsed päringud luku kontrollist mööda minna.
 
 = 1.9.5 - 2026-11-19 =
 * Parandus: ingliskeelne avaleht (`/en/`) on tühjendatavate lehtede hulgas. WPML-i keele avaleht võetakse nüüd WPML-i enda keelevahetaja aadressist.
@@ -95,10 +98,5 @@ Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
 
 = 1.7.9 - 2026-11-10 =
 * Parandus: „Näita fotosid tervena“ režiimis on fotod alati kõrvuti (seadistatud vahega). Hajumise ja hägu üleminek kattis seni iga foto serva 90 px ulatuses, mistõttu fotod polnud päriselt terved ja rida täitis seitsme fotoga ainult umbes 70 % laiusest. Ülemineku valik on selles režiimis välja lülitatud ja selgitusega.
-
-= 1.7.8 - 2026-11-10 =
-* Uus: kollaaži valik „Fotode paigutus“. „Näita fotosid tervena“ hoiab iga foto oma kujus ja ei kärbi midagi: fotod on slaidi kõrgused (või veidi madalamad, kui need kokku slaiderist laiemaks läheksid) ja paigutatakse keskele, vaba ruum on slaidi taustavärviga. Redaktor näitab, mitu protsenti laiusest fotod suurel monitoril ja sülearvutil täidavad ning mitu fotot lisada, et laius täituks. Senine „Täida slaid (fotosid kärbitakse)“ jääb vaikimisi.
-* Uus: kollaažis võib olla kuni 7 fotot (enne 5). Uus pesa tekib, kui eelmised on täis.
-* Parandus: kui slaideri esimene slaid on kollaaž, arvutatakse slaideri kuju nüüd kõigi fotode tegelikest mõõtudest, mitte ainult esimese foto järgi.
 
 Full history: CHANGELOG.md on GitHub.
