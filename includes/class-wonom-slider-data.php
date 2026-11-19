@@ -17,6 +17,13 @@ class Wonom_Slider_Data {
 	const COLLAGE_MAX = 7;
 
 	/**
+	 * Slides that start within this many days are rendered into the page ahead of time (hidden, with
+	 * their start and end), so the browser shows and hides them at the exact moment – a cached page
+	 * needs no purge and no cron for a scheduled change.
+	 */
+	const WINDOW_DAYS = 14;
+
+	/**
 	 * Advanced options (updates, translation, uninstall).
 	 *
 	 * @return array
@@ -954,10 +961,123 @@ class Wonom_Slider_Data {
 		if ( '' !== $slide['start'] && strtotime( $slide['start'] ) > $now ) {
 			return 'scheduled';
 		}
-		if ( '' !== $slide['end'] && strtotime( $slide['end'] ) < $now ) {
+		if ( '' !== $slide['end'] && self::end_local( $slide['end'] ) <= $now ) {
 			return 'expired';
 		}
 		return 'active';
+	}
+
+	/**
+	 * First moment a slide with this end time is no longer shown (site-local pseudo timestamp).
+	 * An end given to the minute includes that whole minute: "23:59" runs until midnight, so a
+	 * slide ending at 23:59 and one starting at 00:00 change over without a gap.
+	 */
+	public static function end_local( $end ) {
+		$t = strtotime( (string) $end );
+		return $t ? $t + ( preg_match( '/\d{2}:\d{2}:\d{2}/', (string) $end ) ? 1 : 60 ) : 0;
+	}
+
+	/**
+	 * Start and end of a slide as real (UTC) timestamps: [ start, end ], 0 = not set.
+	 * The end is exclusive – the first second the slide is hidden.
+	 */
+	public static function bounds( $slide ) {
+		$out = array( 0, 0 );
+		foreach ( array( 'start', 'end' ) as $i => $k ) {
+			if ( empty( $slide[ $k ] ) ) {
+				continue;
+			}
+			$dt = date_create( (string) $slide[ $k ], wp_timezone() );
+			if ( $dt ) {
+				$out[ $i ] = $dt->getTimestamp() + ( 'end' === $k ? ( preg_match( '/\d{2}:\d{2}:\d{2}/', (string) $slide[ $k ] ) ? 1 : 60 ) : 0 );
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Slides for a real page: everything visible now plus everything that starts within
+	 * WINDOW_DAYS. Each slide carries `_start` / `_end` (UTC, end exclusive, 0 = none), `_live`
+	 * (visible at render time) and, for automatic campaign slides, `_group`: the slide is rendered
+	 * once per current or upcoming campaign and only one of a group shows at a time.
+	 *
+	 * @param int $days Look-ahead in days.
+	 * @return array[]
+	 */
+	public static function get_window_slides( $days = self::WINDOW_DAYS ) {
+		$now      = time();
+		$horizon  = $now + max( 0, (int) $days ) * DAY_IN_SECONDS;
+		$raw      = get_option( self::OPTION_SLIDES, array() );
+		$has_camp = class_exists( 'Wonom_Slider_Campaigns' );
+		$out      = array();
+		foreach ( is_array( $raw ) ? $raw : array() as $slide ) {
+			if ( ! is_array( $slide ) ) {
+				continue;
+			}
+			$slide    = wp_parse_args( $slide, self::default_slide() );
+			$variants = array();
+			if ( $has_camp && isset( $slide['source'] ) && 'auto' === $slide['source'] ) {
+				foreach ( Wonom_Slider_Campaigns::window_ids( $horizon ) as $cid ) {
+					$v           = $slide;
+					$v['_cid']   = (int) $cid;
+					$v           = Wonom_Slider_Campaigns::apply( $v );
+					$v['_group'] = (string) $slide['id'];
+					$v['id']     = $slide['id'] . '-c' . (int) $cid;
+					$variants[]  = $v;
+				}
+			} else {
+				$variants[] = $has_camp ? Wonom_Slider_Campaigns::apply( $slide ) : $slide;
+			}
+			foreach ( $variants as $v ) {
+				if ( empty( $v['enabled'] ) || ! self::slide_has_content( $v ) ) {
+					continue;
+				}
+				list( $s, $e ) = self::bounds( $v );
+				if ( ( $e && $e <= $now ) || ( $s && $s > $horizon ) ) {
+					continue; // over, or too far ahead.
+				}
+				$v['_start'] = $s;
+				$v['_end']   = $e;
+				$v['_live']  = ! $s || $s <= $now;
+				$out[]       = $v;
+			}
+		}
+		// Of several live slides of one group (overlapping campaigns) the latest start wins.
+		$best = array();
+		foreach ( $out as $i => $v ) {
+			if ( $v['_live'] && ! empty( $v['_group'] ) && ( ! isset( $best[ $v['_group'] ] ) || $v['_start'] > $out[ $best[ $v['_group'] ] ]['_start'] ) ) {
+				$best[ $v['_group'] ] = $i;
+			}
+		}
+		foreach ( $out as $i => $v ) {
+			if ( $v['_live'] && ! empty( $v['_group'] ) && $best[ $v['_group'] ] !== $i ) {
+				$out[ $i ]['_live'] = false;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Next moment (UTC) at which a cached slider page should be rebuilt: a slide starts, ends, or
+	 * comes within WINDOW_DAYS of its start (from then on it has to be in the page).
+	 *
+	 * @return int 0 when nothing is scheduled.
+	 */
+	public static function next_change_utc() {
+		$now  = time();
+		$next = 0;
+		foreach ( self::get_window_slides( 400 ) as $v ) {
+			$points = array( $v['_start'], $v['_end'] );
+			if ( $v['_start'] ) {
+				$points[] = $v['_start'] - self::WINDOW_DAYS * DAY_IN_SECONDS;
+			}
+			foreach ( $points as $t ) {
+				if ( $t > $now && ( ! $next || $t < $next ) ) {
+					$next = $t;
+				}
+			}
+		}
+		return $next;
 	}
 
 	/**
@@ -974,32 +1094,10 @@ class Wonom_Slider_Data {
 		if ( '' !== $slide['start'] && strtotime( $slide['start'] ) > $now ) {
 			return false;
 		}
-		if ( '' !== $slide['end'] && strtotime( $slide['end'] ) < $now ) {
+		if ( '' !== $slide['end'] && self::end_local( $slide['end'] ) <= $now ) {
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * Earliest future moment at which the visible set changes.
-	 *
-	 * @return int|null Site-local timestamp or null.
-	 */
-	public static function next_change_timestamp() {
-		$now  = self::now();
-		$next = null;
-		foreach ( self::get_slides() as $slide ) {
-			foreach ( array( 'start', 'end' ) as $k ) {
-				if ( '' === $slide[ $k ] ) {
-					continue;
-				}
-				$t = strtotime( $slide[ $k ] );
-				if ( $t > $now && ( null === $next || $t < $next ) ) {
-					$next = $t;
-				}
-			}
-		}
-		return $next;
 	}
 
 	/* ---------- helpers ---------- */

@@ -519,7 +519,7 @@ class Wonom_Slider_Rest {
 		$res = wp_remote_post(
 			$endpoint,
 			array(
-				'timeout' => 20,
+				'timeout' => 15,
 				'headers' => array(
 					'Authorization' => 'DeepL-Auth-Key ' . $key,
 					'Content-Type'  => 'application/json',

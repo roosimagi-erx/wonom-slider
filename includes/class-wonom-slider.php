@@ -63,6 +63,8 @@ final class Wonom_Slider {
 			add_option( Wonom_Slider_Data::OPTION_SLIDES, array(), '', false );
 		}
 		set_transient( 'wonom_slider_activated', 1, 60 );
+		// Deactivating removed the scheduled tick: plan it again on the next admin page load.
+		update_option( 'wonom_slider_resched', 1, false );
 	}
 
 	public static function deactivate() {

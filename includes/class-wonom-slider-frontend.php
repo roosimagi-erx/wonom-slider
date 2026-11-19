@@ -126,7 +126,11 @@ class Wonom_Slider_Frontend {
 	public static function render( $args = array() ) {
 		$args     = is_array( $args ) ? $args : array();
 		$settings = isset( $args['settings'] ) && is_array( $args['settings'] ) ? $args['settings'] : Wonom_Slider_Data::get_settings();
-		$slides   = isset( $args['slides'] ) && is_array( $args['slides'] ) ? $args['slides'] : Wonom_Slider_Data::get_active_slides();
+		// A real page gets the visible slides plus the ones that start soon (hidden, with their start
+		// and end): the browser switches them at the exact moment, also on a cached page. Editor
+		// previews pass their own slides and stay as they are.
+		$timed    = ! ( isset( $args['slides'] ) && is_array( $args['slides'] ) );
+		$slides   = $timed ? Wonom_Slider_Data::get_window_slides() : $args['slides'];
 
 		/**
 		 * Filter the slides about to be rendered.
@@ -164,7 +168,19 @@ class Wonom_Slider_Frontend {
 			woodmart_lazy_loading_deinit( true );
 		}
 
-		$count   = count( $slides );
+		$slides = array_values( $slides );
+		$total  = count( $slides );   // slides in the markup
+		$live   = array();            // the ones visible right now
+		$timing = false;              // does any slide start or end at a set time?
+		foreach ( $slides as $slide ) {
+			if ( ! isset( $slide['_live'] ) || $slide['_live'] ) {
+				$live[] = $slide;
+			}
+			if ( $timed && ( ! empty( $slide['_start'] ) || ! empty( $slide['_end'] ) ) ) {
+				$timing = true;
+			}
+		}
+		$count   = count( $live );
 		$uid     = 'wonom-slider-' . wp_unique_id();
 		$classes = array( 'wonom-slider', 'is-' . $settings['transition'] );
 		if ( ! empty( $args['class'] ) ) {
@@ -184,12 +200,12 @@ class Wonom_Slider_Frontend {
 		if ( 'hide' === $settings['arrows_mobile'] ) {
 			$classes[] = 'm-arrows-hide';
 		}
-		if ( 1 === $count ) {
+		if ( $count < 2 ) {
 			$classes[] = 'is-single';
 		}
 
 		$config = array(
-			'autoplay'     => (bool) $settings['autoplay'] && $count > 1,
+			'autoplay'     => (bool) $settings['autoplay'] && $total > 1,
 			'interval'     => (int) $settings['interval'],
 			'speed'        => (int) $settings['speed'],
 			'transition'   => $settings['transition'],
@@ -201,8 +217,8 @@ class Wonom_Slider_Frontend {
 		// The slider ratio follows the first slide that actually has an image (text-only slides carry no dimensions).
 		// Editor previews pass 'ratio_slides' = the slides that are live in the shop, so a single slide or a
 		// preview that includes scheduled/expired slides still gets exactly the shop's slider shape.
-		$ratio_pool  = ! empty( $args['ratio_slides'] ) && is_array( $args['ratio_slides'] ) ? array_values( $args['ratio_slides'] ) : $slides;
-		$ratio_slide = $slides[0];
+		$ratio_pool  = ! empty( $args['ratio_slides'] ) && is_array( $args['ratio_slides'] ) ? array_values( $args['ratio_slides'] ) : ( $live ? $live : $slides );
+		$ratio_slide = $live ? $live[0] : $slides[0];
 		foreach ( $ratio_pool as $candidate ) {
 			$main = Wonom_Slider_Data::slide_main_image( $candidate );
 			if ( $main['width'] && $main['height'] ) {
@@ -218,13 +234,24 @@ class Wonom_Slider_Frontend {
 			echo '<style>' . self::mobile_css( '#' . $uid, (int) $settings['mobile_breakpoint'] ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		?>
-		<section id="<?php echo esc_attr( $uid ); ?>" class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( $style ); ?>" data-wonom-slider='<?php echo esc_attr( wp_json_encode( $config ) ); ?>' aria-roledescription="carousel" aria-label="<?php esc_attr_e( 'Featured', 'wonom-slider' ); ?>">
+		<section id="<?php echo esc_attr( $uid ); ?>" class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( $style ); ?>" data-wonom-slider='<?php echo esc_attr( wp_json_encode( $config ) ); ?>'<?php echo $timing ? ' data-ws-now="' . (int) time() . '" data-ws-clock="' . esc_url( WONOM_SLIDER_URL . 'assets/public/slider.css?ver=' . WONOM_SLIDER_VERSION ) . '"' : ''; ?><?php echo $count ? '' : ' hidden'; ?> aria-roledescription="carousel" aria-label="<?php esc_attr_e( 'Featured', 'wonom-slider' ); ?>">
 			<div class="wonom-slider__track">
-				<?php foreach ( $slides as $i => $slide ) : ?>
-					<?php echo self::render_slide( $slide, $i, $count, $settings ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<?php endforeach; ?>
+				<?php
+				$pos = 0; // position among the slides visible now; a hidden (upcoming) slide is never "first".
+				foreach ( $slides as $slide ) {
+					$is_live = ! isset( $slide['_live'] ) || $slide['_live'];
+					$main = Wonom_Slider_Data::slide_main_image( $slide );
+					if ( $timing && $main['width'] && $main['height'] ) {
+						// The slider takes its shape from the first slide with an image; when the
+						// visible set changes the script needs the shape of the new first one.
+						$slide['_ratio'] = implode( '|', self::ratio_pair( $settings, $slide ) );
+					}
+					echo self::render_slide( $slide, $is_live ? $pos : -1, $count, $settings ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					$pos += $is_live ? 1 : 0;
+				}
+				?>
 			</div>
-			<?php if ( $count > 1 ) : ?>
+			<?php if ( $total > 1 ) : ?>
 				<?php if ( ! empty( $settings['show_arrows'] ) ) : ?>
 					<button type="button" class="wonom-slider__arrow wonom-slider__arrow--prev" data-dir="-1" aria-label="<?php esc_attr_e( 'Previous slide', 'wonom-slider' ); ?>">
 						<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -234,7 +261,7 @@ class Wonom_Slider_Frontend {
 					</button>
 				<?php endif; ?>
 				<?php if ( ! empty( $settings['show_dots'] ) ) : ?>
-					<div class="wonom-slider__dots" role="tablist">
+					<div class="wonom-slider__dots" role="tablist" data-label="<?php /* translators: %d slide number */ echo esc_attr( __( 'Go to slide %d', 'wonom-slider' ) ); ?>">
 						<?php for ( $i = 0; $i < $count; $i++ ) : ?>
 							<button type="button" class="wonom-slider__dot<?php echo 0 === $i ? ' is-active' : ''; ?>" data-index="<?php echo (int) $i; ?>" role="tab" aria-selected="<?php echo 0 === $i ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %d slide number */ __( 'Go to slide %d', 'wonom-slider' ), $i + 1 ) ); ?>"></button>
 						<?php endfor; ?>
@@ -246,6 +273,9 @@ class Wonom_Slider_Frontend {
 			<?php endif; ?>
 		</section>
 		<?php
+		if ( $timing ) {
+			echo self::timing_script( $uid ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
 		$html = ob_get_clean();
 
 		if ( $wd_lazy ) {
@@ -263,6 +293,16 @@ class Wonom_Slider_Frontend {
 	 */
 	private static function render_slide( $slide, $index, $count, $settings ) {
 		$is_first = 0 === $index;
+		$upcoming = $index < 0; // rendered ahead of its start: hidden until the browser's clock reaches it.
+		// Timing for the script: start / end (UTC seconds, end exclusive), group (one campaign slide
+		// at a time) and the slider shape this slide gives when it is the first one.
+		$timing = '';
+		foreach ( array( '_start' => 'start', '_end' => 'end', '_group' => 'group', '_ratio' => 'ratio' ) as $key => $name ) {
+			if ( ! empty( $slide[ $key ] ) ) {
+				$timing .= ' data-ws-' . $name . '="' . esc_attr( $slide[ $key ] ) . '"';
+			}
+		}
+		$timing .= $upcoming ? ' hidden' : '';
 		$has_link = ! empty( $slide['link_whole_slide'] ) && ! empty( $slide['button_url'] );
 		$target   = ! empty( $slide['button_new_tab'] ) ? ' target="_blank" rel="noopener"' : '';
 		$bp       = (int) $settings['mobile_breakpoint'] - 1;
@@ -328,7 +368,7 @@ class Wonom_Slider_Frontend {
 
 		ob_start();
 		?>
-		<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo $slide_style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" data-id="<?php echo esc_attr( $slide['id'] ); ?>" role="group" aria-roledescription="slide" aria-label="<?php echo esc_attr( sprintf( '%d / %d', $index + 1, $count ) ); ?>"<?php echo $is_first ? '' : ' aria-hidden="true"'; ?>>
+		<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo $slide_style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" data-id="<?php echo esc_attr( $slide['id'] ); ?>"<?php echo $timing; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> role="group" aria-roledescription="slide" aria-label="<?php echo esc_attr( $upcoming ? '' : sprintf( '%d / %d', $index + 1, $count ) ); ?>"<?php echo $is_first ? '' : ' aria-hidden="true"'; ?>>
 			<?php if ( $has_link ) : ?>
 				<a class="wonom-slide__link" href="<?php echo esc_url( $slide['button_url'] ); ?>"<?php echo $target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> aria-label="<?php echo esc_attr( $slide['heading'] ? $slide['heading'] : $slide['name'] ); ?>"></a>
 			<?php endif; ?>
@@ -678,9 +718,35 @@ class Wonom_Slider_Frontend {
 		return rtrim( rtrim( number_format( (float) $v, 4, '.', '' ), '0' ), '.' );
 	}
 
-	private static function inline_style( $settings, $first ) {
+	/**
+	 * Tiny inline script right after a slider that has timed slides. A cached page may be older
+	 * than a start or end: before anything is painted it hides what is over, shows what has
+	 * started and loads the image of the slide that is first now. slider.js does the same and
+	 * keeps watching the clock; this only removes the flash of an outdated slide.
+	 */
+	private static function timing_script( $uid ) {
+		$js = '(function(){try{var r=document.getElementById(' . wp_json_encode( $uid ) . ');if(!r)return;'
+			. 'var n=Math.max(Date.now()/1000,+r.getAttribute("data-ws-now")||0),a=[].slice.call(r.querySelectorAll(".wonom-slide")),b={},v=[];'
+			. 'function g(e,k){return +e.getAttribute("data-ws-"+k)||0}'
+			. 'a.forEach(function(e){var s=g(e,"start"),x=g(e,"end"),q=e.getAttribute("data-ws-group");e._on=(!s||n>=s)&&(!x||n<x);if(e._on&&q&&(!b[q]||s>g(b[q],"start")))b[q]=e});'
+			. 'a.forEach(function(e){var q=e.getAttribute("data-ws-group");if(e._on&&q&&b[q]!==e)e._on=false;if(e._on){v.push(e);e.removeAttribute("hidden")}else{e.setAttribute("hidden","");e.classList.remove("is-active");e.setAttribute("aria-hidden","true")}});'
+			. 'if(!v.length){r.setAttribute("hidden","");return}r.removeAttribute("hidden");'
+			. 'var f=v[0],o="";v.some(function(e){o=e.getAttribute("data-ws-ratio");return !!o});'
+			. 'if(o){o=o.split("|");r.style.setProperty("--ws-ratio",o[0]);r.style.setProperty("--ws-ratio-mobile",o[1]||o[0])}'
+			. 'if(f.classList.contains("is-active"))return;'
+			. 'v.forEach(function(e){e.classList.remove("is-active")});f.classList.add("is-active");f.removeAttribute("aria-hidden");'
+			. '[].forEach.call(f.querySelectorAll("source[data-wonom-srcset]"),function(s){s.setAttribute("srcset",s.getAttribute("data-wonom-srcset"));s.removeAttribute("data-wonom-srcset")});'
+			. '[].forEach.call(f.querySelectorAll("img[data-wonom-src]"),function(i,k){i.loading="eager";if(!k)i.setAttribute("fetchpriority","high");var t=i.getAttribute("data-wonom-srcset");if(t){i.setAttribute("srcset",t);i.removeAttribute("data-wonom-srcset")}i.setAttribute("src",i.getAttribute("data-wonom-src"));i.removeAttribute("data-wonom-src")});'
+			. '}catch(e){}})();';
+		// "wonom-slider" in the tag keeps speed plugins (delay / defer JS) from postponing it.
+		return '<script data-no-optimize="1" data-no-defer="1" data-no-delay="1" data-cfasync="false" data-no-minify="1">/* wonom-slider timing */' . $js . '</script>';
+	}
+
+	/**
+	 * Slider shape a slide gives when it is the first one: [ desktop, mobile ] aspect ratios.
+	 */
+	public static function ratio_pair( $settings, $first ) {
 		if ( Wonom_Slider_Data::slide_is_collage( $first ) ) {
-			// Collage: images side by side → ratio = sum of the photo shapes (N × w / h for equal photos).
 			$unit    = self::collage_unit( $first['collage'] );
 			$contain = isset( $first['collage_fit'] ) && 'contain' === $first['collage_fit'];
 			$ratio_d = self::ratio_value( $settings['ratio_desktop'], (int) round( self::collage_ratio_sum( self::collage_visible( $first, false ), $unit, $contain ) * 1000 ), 1000, '1920 / 660' );
@@ -691,10 +757,14 @@ class Wonom_Slider_Frontend {
 				$settings['ratio_mobile'],
 				$first['mobile_image_width'] ? $first['mobile_image_width'] : $first['image_width'],
 				$first['mobile_image_height'] ? $first['mobile_image_height'] : $first['image_height'],
-				// No image anywhere (text-only slider): 4:3 gives the texts room on phones.
 				$first['image_width'] ? $ratio_d : '4 / 3'
 			);
 		}
+		return array( $ratio_d, $ratio_m );
+	}
+
+	private static function inline_style( $settings, $first ) {
+		list( $ratio_d, $ratio_m ) = self::ratio_pair( $settings, $first );
 
 		$vars = array(
 			'--ws-ratio'          => $ratio_d,

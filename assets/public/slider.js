@@ -6,16 +6,56 @@
 	// which would otherwise pause autoplay forever.
 	var HOVER = window.matchMedia && window.matchMedia( '(hover: hover) and (pointer: fine)' ).matches;
 
+	/* ---------- clock for timed slides ----------
+	 * Slides with a start or an end are in the page ahead of time; the browser shows and hides them
+	 * by the clock, so a cached page needs no purge at the moment of change. The device clock is
+	 * used; when a change is near it is compared once per session with the Date header of a static
+	 * file (no PHP involved) and corrected if it is off by two minutes or more. */
+	var skew = 0;            // seconds to add to the device clock
+	var clockAsked = false;
+	var timedSliders = [];
+
+	function nowSec( floor ) {
+		// Never earlier than the moment the page was built on the server.
+		return Math.max( Date.now() / 1000 + skew, floor || 0 );
+	}
+
+	function setSkew( s ) {
+		if ( s === skew ) { return; }
+		skew = s;
+		timedSliders.forEach( function ( sl ) { sl.applyTiming(); sl.watch(); } );
+	}
+
+	function checkClock( url ) {
+		if ( clockAsked || ! url || ! window.fetch ) { return; }
+		clockAsked = true;
+		try {
+			var saved = JSON.parse( window.sessionStorage.getItem( 'wonomSliderClock' ) || 'null' );
+			if ( saved && typeof saved.s === 'number' ) { setSkew( saved.s ); return; }
+		} catch ( e ) { /* storage blocked */ }
+		var t0 = Date.now();
+		window.fetch( url, { method: 'HEAD', cache: 'no-store', credentials: 'omit' } ).then( function ( res ) {
+			var server = Date.parse( res.headers.get( 'date' ) || '' );
+			if ( ! server ) { return; }
+			var s = Math.round( ( server - ( t0 + Date.now() ) / 2 ) / 1000 );
+			if ( Math.abs( s ) < 120 ) { s = 0; }
+			try { window.sessionStorage.setItem( 'wonomSliderClock', JSON.stringify( { s: s } ) ); } catch ( e ) { /* storage blocked */ }
+			setSkew( s );
+		} ).catch( function () { /* offline or another origin: keep the device clock */ } );
+	}
+
 	/**
 	 * Resolve third-party lazy-load placeholders (data-src / data-srcset / data-lazy-src…) on a slide.
 	 * Themes and optimisers rewrite <img> tags; if their script is absent or late (editor preview,
 	 * delayed JS), the slide would stay blank. Harmless when the attributes are not present.
+	 * `eager` also lifts loading="lazy": a slide that is still hidden would otherwise not fetch.
 	 */
-	function hydrate( slide ) {
+	function hydrate( slide, eager ) {
 		if ( ! slide ) { return; }
 		[].forEach.call( slide.querySelectorAll( 'img' ), function ( img ) {
 			var src = img.getAttribute( 'data-wonom-src' ) || img.getAttribute( 'data-src' ) || img.getAttribute( 'data-lazy-src' ) || img.getAttribute( 'data-original' );
 			var set = img.getAttribute( 'data-wonom-srcset' ) || img.getAttribute( 'data-srcset' ) || img.getAttribute( 'data-lazy-srcset' );
+			if ( eager ) { img.loading = 'eager'; }
 			if ( src && ( ! img.getAttribute( 'src' ) || /lazy|placeholder|blank|data:image\/(svg|gif)/i.test( img.getAttribute( 'src' ) ) ) ) {
 				img.setAttribute( 'src', src );
 				img.removeAttribute( 'data-wonom-src' ); img.removeAttribute( 'data-src' ); img.removeAttribute( 'data-lazy-src' ); img.removeAttribute( 'data-original' );
@@ -57,22 +97,46 @@
 			progress: !! cfg.progress
 		};
 
-		this.slides = [].slice.call( root.querySelectorAll( '.wonom-slide' ) );
+		// `all` = every slide in the markup, `slides` = the ones shown right now (timed slides come and go).
+		this.all = [].slice.call( root.querySelectorAll( '.wonom-slide' ) );
+		this.slides = this.all.filter( function ( el ) { return ! el.hasAttribute( 'hidden' ); } );
+		this.floor = parseInt( root.getAttribute( 'data-ws-now' ), 10 ) || 0;
+		this.timed = this.all.map( function ( el ) {
+			return {
+				el: el,
+				start: parseInt( el.getAttribute( 'data-ws-start' ), 10 ) || 0,
+				end: parseInt( el.getAttribute( 'data-ws-end' ), 10 ) || 0,   // exclusive
+				group: el.getAttribute( 'data-ws-group' ) || ''
+			};
+		} );
+		this.hasTiming = this.timed.some( function ( t ) { return t.start || t.end; } );
+		this.dotsWrap = root.querySelector( '.wonom-slider__dots' );
 		this.dots = [].slice.call( root.querySelectorAll( '.wonom-slider__dot' ) );
 		this.progress = root.querySelector( '.wonom-slider__progress' );
 		this.track = root.querySelector( '.wonom-slider__track' );
 		this.index = 0;
 		this.timer = null;
+		this.clockTimer = null;
 		this.paused = false;
 		this.animating = false;
 		this.count = this.slides.length;
 
 		this.sizeTrack();
-		hydrate( this.slides[ 0 ] );
 
-		if ( this.count < 2 ) {
-			root.classList.add( 'is-single' );
-			return;
+		if ( ! this.hasTiming ) {
+			hydrate( this.slides[ 0 ] );
+			if ( this.count < 2 ) {
+				root.classList.add( 'is-single' );
+				return;
+			}
+			this.bind();
+			this.go( 0, 0, true );
+		} else {
+			if ( this.all.length > 1 ) { this.bind(); }
+			timedSliders.push( this );
+			this.applyTiming( true );
+			this.watch();
+			this.bindClock();
 		}
 
 		// Slides 2…n ship their images deferred (data-src). Fetch the second slide once the
@@ -80,10 +144,131 @@
 		var second = this.slides[ 1 ];
 		( window.requestIdleCallback || function ( f ) { setTimeout( f, 1500 ); } )( function () { hydrate( second ); } );
 
-		this.bind();
-		this.go( 0, 0, true );
 		this.play();
 	}
+
+	/* ---------- timed slides ---------- */
+
+	/**
+	 * Show the slides whose time it is and hide the rest. Returns true when the visible set changed.
+	 */
+	Slider.prototype.applyTiming = function ( init ) {
+		if ( ! this.hasTiming ) { return false; }
+		var self = this, root = this.root, n = nowSec( this.floor ), best = {}, vis = [];
+
+		this.timed.forEach( function ( t ) {
+			t.on = ( ! t.start || n >= t.start ) && ( ! t.end || n < t.end );
+			// One slide of a group at a time (automatic campaign slide): the latest start wins.
+			if ( t.on && t.group && ( ! best[ t.group ] || t.start > best[ t.group ].start ) ) { best[ t.group ] = t; }
+		} );
+		this.timed.forEach( function ( t ) {
+			if ( t.on && t.group && best[ t.group ] !== t ) { t.on = false; }
+			if ( t.on ) { vis.push( t.el ); }
+		} );
+
+		var same = vis.length === this.slides.length && vis.every( function ( el, i ) { return el === self.slides[ i ]; } );
+		if ( same && ! init ) { return false; }
+
+		var active = this.slides[ this.index ];
+		this.all.forEach( function ( el ) {
+			if ( vis.indexOf( el ) < 0 ) {
+				el.setAttribute( 'hidden', '' );
+				el.classList.remove( 'is-active', 'is-prev', 'is-next' );
+				el.setAttribute( 'aria-hidden', 'true' );
+			} else {
+				el.removeAttribute( 'hidden' );
+			}
+		} );
+		this.slides = vis;
+		this.count = vis.length;
+
+		if ( ! this.count ) {
+			root.setAttribute( 'hidden', '' );
+			clearInterval( this.timer );
+			return true;
+		}
+		root.removeAttribute( 'hidden' );
+		root.classList.toggle( 'is-single', this.count < 2 );
+		vis.forEach( function ( el, i ) { el.setAttribute( 'aria-label', ( i + 1 ) + ' / ' + vis.length ); } );
+		this.buildDots();
+
+		// The slider takes its shape from the first slide that has an image.
+		var ratio = '';
+		vis.some( function ( el ) { ratio = el.getAttribute( 'data-ws-ratio' ) || ''; return !! ratio; } );
+		if ( ratio ) {
+			var p = ratio.split( '|' );
+			root.style.setProperty( '--ws-ratio', p[ 0 ] );
+			root.style.setProperty( '--ws-ratio-mobile', p[ 1 ] || p[ 0 ] );
+		}
+		if ( this.resize ) { this.resize(); }
+
+		var idx = init ? 0 : vis.indexOf( active );
+		this.animating = false;
+		this.go( idx < 0 ? 0 : idx, 0, true );
+		if ( ! init ) { this.play(); }
+		return true;
+	};
+
+	/** One dot per visible slide. */
+	Slider.prototype.buildDots = function () {
+		var wrap = this.dotsWrap;
+		if ( ! wrap ) { return; }
+		if ( wrap.children.length !== this.count ) {
+			var label = wrap.getAttribute( 'data-label' ) || '%d';
+			wrap.textContent = '';
+			for ( var i = 0; i < this.count; i++ ) {
+				var b = document.createElement( 'button' );
+				b.type = 'button';
+				b.className = 'wonom-slider__dot';
+				b.setAttribute( 'data-index', i );
+				b.setAttribute( 'role', 'tab' );
+				b.setAttribute( 'aria-selected', 'false' );
+				b.setAttribute( 'aria-label', label.replace( '%d', i + 1 ) );
+				wrap.appendChild( b );
+			}
+		}
+		this.dots = [].slice.call( wrap.querySelectorAll( '.wonom-slider__dot' ) );
+	};
+
+	/**
+	 * Wake up at the next start or end (and two minutes before a start, to fetch its images).
+	 * A timer, never a request to the server.
+	 */
+	Slider.prototype.watch = function () {
+		var self = this;
+		clearTimeout( this.clockTimer );
+		if ( ! this.hasTiming ) { return; }
+		var n = nowSec( this.floor ), next = 0;
+		this.timed.forEach( function ( t ) {
+			[ t.start ? t.start - 120 : 0, t.start, t.end ].forEach( function ( p ) {
+				if ( p > n && ( ! next || p < next ) ) { next = p; }
+			} );
+			if ( t.start > n && t.start - n <= 125 ) { hydrate( t.el, true ); }
+		} );
+		if ( ! next ) { return; }
+		this.clockTimer = setTimeout( function () {
+			self.applyTiming();
+			self.watch();
+		}, Math.min( ( next - n ) * 1000 + 250, 3600000 ) );
+	};
+
+	Slider.prototype.bindClock = function () {
+		var self = this, n = nowSec( this.floor ), near = false;
+		// Timers are throttled in background tabs and stop while the device sleeps.
+		document.addEventListener( 'visibilitychange', function () {
+			if ( ! document.hidden ) { self.applyTiming(); self.watch(); }
+		} );
+		window.addEventListener( 'pageshow', function ( e ) {
+			if ( e.persisted ) { self.applyTiming(); self.watch(); }
+		} );
+		// Ask for the real time only when it matters: a change since the page was built or within two days.
+		this.timed.forEach( function ( t ) {
+			[ t.start, t.end ].forEach( function ( p ) {
+				if ( p && p > self.floor - 60 && p < n + 172800 ) { near = true; }
+			} );
+		} );
+		if ( near ) { checkClock( this.root.getAttribute( 'data-ws-clock' ) ); }
+	};
 
 	Slider.prototype.bind = function () {
 		var self = this, root = this.root;
@@ -94,11 +279,14 @@
 			} );
 		} );
 
-		this.dots.forEach( function ( dot, i ) {
-			dot.addEventListener( 'click', function () {
-				self.go( i, i > self.index ? 1 : -1, false, true );
+		// Delegated: the dots are rebuilt when a timed slide appears or disappears.
+		if ( this.dotsWrap ) {
+			this.dotsWrap.addEventListener( 'click', function ( e ) {
+				var dot = e.target && e.target.closest ? e.target.closest( '.wonom-slider__dot' ) : null;
+				var i = dot ? self.dots.indexOf( dot ) : -1;
+				if ( i >= 0 ) { self.go( i, i > self.index ? 1 : -1, false, true ); }
 			} );
-		} );
+		}
 
 		if ( this.cfg.pauseOnHover && HOVER ) {
 			root.addEventListener( 'mouseenter', function () { self.pause(); } );
@@ -215,6 +403,7 @@
 			if ( track.style.height !== px ) { track.style.height = px; }
 		}
 		apply();
+		this.resize = apply; // the shape changes when a timed slide becomes the first one
 		if ( 'ResizeObserver' in window ) {
 			// React to width changes only, and outside the observer callback, to avoid
 			// "ResizeObserver loop" warnings (setting the height resizes the observed box).
@@ -232,6 +421,7 @@
 	};
 
 	Slider.prototype.step = function ( dir, user ) {
+		if ( this.count < 2 ) { return; }
 		var next = this.index + dir;
 		if ( next >= this.count ) {
 			if ( ! this.cfg.loop ) { return; }
@@ -313,8 +503,8 @@
 
 	Slider.prototype.play = function () {
 		var self = this;
-		if ( ! this.cfg.autoplay ) { return; }
 		clearInterval( this.timer );
+		if ( ! this.cfg.autoplay || this.count < 2 ) { return; }
 		this.timer = setInterval( function () {
 			if ( ! self.paused ) {
 				self.step( 1, false );

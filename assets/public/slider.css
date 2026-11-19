@@ -649,3 +649,9 @@
 
 /* Elementor: let full-width sections stretch the slider. */
 .elementor-widget-wonom_slider .wonom-slider { margin: 0 auto; }
+
+/* Timed slides: rendered ahead of their start and hidden until the browser clock reaches it. */
+.wonom-slider[hidden],
+.wonom-slider .wonom-slide[hidden] {
+	display: none !important;
+}

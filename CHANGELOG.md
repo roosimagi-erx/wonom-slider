@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.10.0 - 2026-11-20
+
+### Ajastatud slaid vahetub täpselt õigel hetkel, ilma vahemälu tühjendamata
+
+Seni otsustas server lehe kokkupanemise hetkel, millised slaidid on eetris. Vahemälus olev leht näitas seetõttu vana seisu, kuni ajastatud töö (cron) lehe uuesti tühjendas. Kui cron käis iga 5 minuti tagant, vahetus slaid mõni minut pärast õiget aega.
+
+- **Tulevased slaidid on lehel ette olemas.** Slaid, mis algab lähema 14 päeva jooksul, pannakse lehele kohe kaasa, peidetult ja koos oma algus- ja lõpuajaga. Külastaja brauser näitab seda täpselt alguse hetkel ja peidab lõppenud slaidi täpselt lõpu hetkel. See toimib ka vahemälust tulnud lehel ja ka siis, kui leht on külastajal juba lahti: slaid vahetub ilma lehte uuesti laadimata.
+- **Vahetuse hetkel ei tühjendata enam midagi.** Kampaania algus südaööl ei vaja ei croni ega vahemälu tühjendust. Slaideriga lehed tühjendatakse varuks alles 35 minutit hiljem (ainult need lehed), et leht oleks õige ka ilma skriptita.
+- **„Automaatne kampaania“ slaid teab ka järgmist kampaaniat.** Slaid pannakse lehele iga praeguse ja lähema 14 päeva jooksul algava kampaania kohta. Korraga on näha üks: kui üks kampaania lõpeb ja teine algab samal hetkel, vahetub slaid kohe.
+- **Tulevase slaidi pilte ette ei laadita.** Pildid laaditakse umbes kaks minutit enne slaidi algust. Kui külastaja avab pärast vahetust vana vahemälus oleva lehe, näidatakse kohe õiget slaidi ja selle pilt laaditakse esimesena.
+- **Vale kellaga seade.** Brauser kasutab seadme kella. Kui vahetus on lähedal, võrdleb ta seda korra poe serveri kellaga (staatilise faili päisest, ilma PHP-päringuta) ja kui seadme kell on üle kahe minuti vale, arvestab erinevust.
+- **Lõpuaeg kehtib minuti lõpuni.** Slaid, mille lõpp on 23:59, on eetris kuni südaööni. Varem kadus see kell 23:59:00, nii et 00:00 algava slaidini jäi minutine vahe.
+
+### Muu
+
+- Parandus: pärast plugina välja- ja sisselülitamist ajastatakse slaidide varutühjendus ise uuesti. Varem tuli selleks slaiderit korra salvestada.
+- Muudatus: kui ajastatud tühjendus on hiljaks jäänud (cron ei käinud), pannakse see admin-lehe avamisel järjekorda nagu pärast salvestamist. Varem tehti tühjendus kohe selle lehe avamise ajal.
+- Muudatus: DeepL-i tõlkepäringu ajapiir on 15 sekundit (oli 20).
+- Arendajale: filter `wonom_slider_tick_delay` muudab varutühjenduse viivitust (vaikimisi 2100 sekundit).
+
 ## 1.9.7 - 2026-11-19
 
 - Muudatus: plugina asendamine ZIP-i üleslaadimisega („Asenda praegune versioon üleslaadituga“) käitub nagu uuendus. Kui automaatne tühjendus on sees, tühjendatakse 30 s pärast slaideriga lehed. Kui see on väljas, ei tühjendata midagi.

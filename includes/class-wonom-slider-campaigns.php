@@ -95,6 +95,43 @@ class Wonom_Slider_Campaigns {
 	}
 
 	/**
+	 * Enabled campaigns that are live or start before $horizon (UTC timestamp), earliest first.
+	 * An automatic slide is rendered once for each of them, so the page already holds the next
+	 * campaign and the browser switches at the exact start – no cache purge needed.
+	 *
+	 * @param int $horizon Latest start (UTC timestamp).
+	 * @return int[]
+	 */
+	public static function window_ids( $horizon ) {
+		if ( ! self::available() ) {
+			return array();
+		}
+		$posts = get_posts(
+			array(
+				'post_type'      => self::CPT,
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'fields'         => 'ids',
+			)
+		);
+		$now = time();
+		$out = array();
+		foreach ( $posts as $id ) {
+			if ( ! (int) get_post_meta( $id, '_wkr_enabled', true ) ) {
+				continue;
+			}
+			$s = (int) get_post_meta( $id, '_wkr_start_utc', true );
+			$e = (int) get_post_meta( $id, '_wkr_end_utc', true );
+			if ( ! $s || ! $e || $e < $s || $e < $now || $s > (int) $horizon ) {
+				continue;
+			}
+			$out[ (int) $id ] = $s;
+		}
+		asort( $out );
+		return array_keys( $out );
+	}
+
+	/**
 	 * Fields of the current campaign for the editor (REST /campaign/current).
 	 */
 	public static function current_fields() {
@@ -231,7 +268,8 @@ class Wonom_Slider_Campaigns {
 	 */
 	public static function apply( $slide ) {
 		if ( ! empty( $slide['source'] ) && 'auto' === $slide['source'] ) {
-			$cid = self::current();
+			// `_cid`: the page render asks for one specific campaign (see get_window_slides()).
+			$cid = ! empty( $slide['_cid'] ) ? (int) $slide['_cid'] : self::current();
 			if ( ! $cid ) {
 				// Nothing live or upcoming: the slide waits, hidden, with no leftover content.
 				$slide['enabled']         = false;

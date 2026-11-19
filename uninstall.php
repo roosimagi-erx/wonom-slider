@@ -25,6 +25,7 @@ delete_option( 'wonom_slider_purge_pending' );
 delete_option( 'wonom_slider_pages' );
 delete_option( 'wonom_slider_pages_scanned' );
 delete_option( 'wonom_slider_last_purge' );
+delete_option( 'wonom_slider_resched' );
 // Preview locks (wonom_slider_busy_<user>_<kind>) left behind by an interrupted request.
 global $wpdb;
 $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'wonom_slider_busy_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery

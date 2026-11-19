@@ -75,7 +75,8 @@ languages/wonom-slider-et.l10n.php – eesti tõlge (WP 6.5+ PHP-formaat)
 ```
 
 Haagid: `wonom_slider_slides` (filter: slaidid enne renderdamist), `wonom_slider_html`, `wonom_slider_languages`,
-`wonom_slider_current_language`, `wonom_slider_translate` (oma tõlketeenus), `wonom_slider_flush_caches`, `wonom_slider_saved`.
+`wonom_slider_current_language`, `wonom_slider_translate` (oma tõlketeenus), `wonom_slider_flush_caches`, `wonom_slider_saved`,
+`wonom_slider_tick_delay` (filter: mitu sekundit pärast ajastatud vahetust tehakse slaideriga lehtede varutühjendus).
 
 JS-sündmus: `wonom-slider:change` (`detail.index`, `detail.slide`). `window.WonomSlider.init(scope)` initsialiseerib dünaamiliselt lisatud slaiderid.
 

@@ -28,7 +28,9 @@ class Wonom_Slider_Cache {
 	const OPT_PENDING = 'wonom_slider_purge_pending'; // time of the debounced purge
 	const OPT_PAGES   = 'wonom_slider_pages';         // post IDs of pages that show the slider
 	const OPT_SCANNED = 'wonom_slider_pages_scanned'; // one-off search for slider pages done
+	const OPT_RESCHED = 'wonom_slider_resched';       // set on activation: plan the scheduled tick again
 	const DELAY       = 30;                           // seconds between the last save and the purge
+	const TICK_DELAY  = 2100;                         // seconds between a scheduled change and its backup purge (35 min)
 	const MAX_URLS    = 30;                           // Cloudflare Free: 30 files per purge request
 	const MAX_PAGES   = 40;
 
@@ -74,16 +76,24 @@ class Wonom_Slider_Cache {
 	}
 
 	/**
-	 * Safety net: when a scheduled start/end purge is overdue (cron did not run), do it on the next
-	 * admin page load instead of waiting – the shop owner visiting the admin fixes the cached page.
+	 * Safety net on an admin page load, never on a visitor's request.
+	 * - After (re)activation the scheduled tick is planned again (deactivating removes it).
+	 * - When the tick is overdue (cron did not run) the purge is queued like after a save; it is
+	 *   not done here.
 	 */
 	public static function catch_up() {
 		if ( wp_doing_ajax() ) {
 			return;
 		}
+		if ( get_option( self::OPT_RESCHED ) ) {
+			delete_option( self::OPT_RESCHED );
+			self::schedule_next_change();
+		}
 		$next = wp_next_scheduled( self::CRON_HOOK );
 		if ( $next && $next < time() - 5 * MINUTE_IN_SECONDS ) {
-			self::purge();
+			if ( self::enabled() ) {
+				self::request_purge();
+			}
 			self::schedule_next_change();
 		}
 		// A debounced purge that WP-Cron did not run within 90 s.
@@ -560,23 +570,27 @@ class Wonom_Slider_Cache {
 	}
 
 	/**
-	 * Schedule a one-off purge at the next start/end moment of any slide,
-	 * so campaign slides appear and disappear on time even on cached pages.
+	 * Plan the backup tick after the next scheduled change.
+	 *
+	 * The change itself needs neither cron nor a purge: slides that start soon are already in the
+	 * page and the browser switches them by the clock (see Wonom_Slider_Data::get_window_slides()).
+	 * The tick only rebuilds the slider pages some time later, so the cached HTML is right again
+	 * without the script (first image, search engines) and the next upcoming slide gets into it.
+	 * It runs TICK_DELAY after the change – a start at midnight is not a moment to purge anything.
 	 */
 	public static function schedule_next_change() {
 		wp_clear_scheduled_hook( self::CRON_HOOK );
-		$next_local = Wonom_Slider_Data::next_change_timestamp();
-		if ( ! $next_local ) {
+		$next = Wonom_Slider_Data::next_change_utc();
+		if ( ! $next ) {
 			return;
 		}
-		try {
-			$dt     = new DateTime( '@' . $next_local );
-			$local  = new DateTime( $dt->format( 'Y-m-d H:i:s' ), wp_timezone() );
-			$utc_ts = $local->getTimestamp();
-		} catch ( Exception $e ) {
-			$utc_ts = $next_local - (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
-		}
-		wp_schedule_single_event( $utc_ts + 5, self::CRON_HOOK );
+		/**
+		 * Seconds between a scheduled change and the backup purge of the slider pages.
+		 *
+		 * @param int $delay
+		 */
+		$delay = max( 0, (int) apply_filters( 'wonom_slider_tick_delay', self::TICK_DELAY ) );
+		wp_schedule_single_event( $next + $delay, self::CRON_HOOK );
 	}
 
 	/**
