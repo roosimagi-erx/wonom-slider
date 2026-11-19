@@ -1,6 +1,9 @@
 # Wonom Slider – juhised Claude'ile
 
-Ühised Wonom pluginate reeglid: @../wonom-woocommerce-plugin-alus.md
+Enne tööd loe täielikult läbi kaks ühist juhendit kaustast
+`C:\Users\User\OneDrive - Wonom Digital OÜ\Wonom juhendid\`: `wonom-woocommerce-plugin-alus.md` ja
+`wonom-pluginad-serveri-koormuse-reeglid*.md`. Need failid ei käi reposse (`.gitignore` hoiab need väljas);
+ära kopeeri neid siia ega tsiteeri neid koodis, commit-teadetes, CHANGELOG-is ega väljalaske märkmetes.
 
 ## Väljalase (Claude teeb ise, kasutaja ainult uuendab WordPressis)
 
@@ -21,15 +24,12 @@
 4. Ütle kasutajale: **Wonom Slider → Seaded → „Kontrolli uuendusi kohe“ → „Uuenda kohe“**
    (või Pluginad-lehel). Ilma nuputa näeb pood uuendust 6 tunni jooksul.
 
-**Suurem või riskantsem muudatus – testsait enne poode:**
+**Eelväljalaseid ei kasutata.** Kõik väljalasked on tavalised. Väljalaske märkmete esimene rida on
+„TESTIMATA“, kuni kasutaja on versiooni testsaidil kinnitanud; siis muuda see reaks
+„Kinnitatud testis PP.KK.AAAA“ (`gh release edit vX.Y.Z --notes-file …`). Üks versioon korraga: uut ei
+avalda enne, kui eelmine on testis kinnitatud ja live'is paigaldatud.
 
-```powershell
-.\build-release.ps1 -Version X.Y.Z -Release -Prerelease   # GitHubi eelväljalase: poed seda ei näe
-# testsait: Pluginad → Lisa uus → Laadi üles → wonom-slider.zip → „Asenda praegune“, testi
-.\build-release.ps1 -Version X.Y.Z -Promote              # tavaliseks väljalaskeks: poed näevad uuendust
-```
-
-Tagasipööramine testsaidil: lae alla eelmise väljalaske ZIP
+Tagasipööramine: lae alla eelmise väljalaske ZIP
 (`https://github.com/roosimagi-erx/wonom-slider/releases/download/vA.B.C/wonom-slider.zip`) ja
 paigalda see samamoodi „Asenda praegune“ valikuga. Andmed (`wonom_slider_*` optionid) jäävad alles.
 
@@ -42,7 +42,10 @@ tühja CHANGELOG-i sektsiooniga, olemasoleva tagi või väljalaskega, mitte-`mai
 
 ## Töökord
 
-- **Kõigepealt testsait** test.emmaandtheo.ee. Live emmaandtheo.ee uuendab kasutaja ise või ainult tema loal.
+- **Kõigepealt testsait** test.emmaandtheo.ee, siis live. WordPressis (test ja live) paigaldab ja salvestab
+  ainult kasutaja; Claude ei muuda WordPressis midagi, kui seda eraldi ei paluta.
+- Paigaldus käib nii: deaktiveeri → Lisa uus → laadi ZIP üles → „Asenda praegune“ → aktiveeri. Pärast seda
+  tuleb slaiderit korra salvestada, et ajastatud vahetus uuesti ajastuks.
 - Väljalase on avalik (hoidla on avalik) ja live-admin pakub uuendust kohe, seega ära avalda poolikut tööd.
 - Kohalikult pole PHP-d ega Node'i: enne väljalaset kontrolli sulgude tasakaalu (awk) ja vajadusel
   admin-JS-i testraamistikus (scratchpad `harness/serve.ps1`, port 8765).

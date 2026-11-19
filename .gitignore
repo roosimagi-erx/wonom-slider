@@ -10,6 +10,11 @@ desktop.ini
 build/
 *.zip
 
+# Internal guides and notes: never in the repository
+wonom-woocommerce-plugin-alus*.md
+wonom-pluginad-serveri-koormuse-reeglid*.md
+*KOORMUS*.md
+
 # Dependencies (none at the moment)
 node_modules/
 vendor/
