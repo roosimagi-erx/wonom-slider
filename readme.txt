@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,22 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.11.0 - 2026-11-24 =
+### Kellaajad nagu Kampaaniaribas: lõpp 00:00 tähendab südaööd
+Seni loeti slaidi lõpu minut slaidi sisse: lõpp 23:59 kestis südaööni, aga lõpp 00:00 kestis kella 00:01-ni. Kampaaniariba loeb aega teistpidi ja nii tuli kahes pluginas samale ajale panna erinev kellaaeg. Kui slaidi lõpuks pandi 00:00, oli vahetuse ajal üks minut kaks kampaaniaslaidi korraga eetris.
+* **Uus reegel (sama mis Kampaaniaribas):** algus kuulub slaidi sisse, lõpp mitte. Slaid on eetris alguse hetkest kuni lõpu hetkeni, lõpu hetk kuulub juba järgmisele slaidile. Päeva lõpuni kestva slaidi lõpuks pane **järgmine kuupäev kell 00:00**, näiteks 24.–25.11 kestval slaidil algus 24.11 00:00 ja lõpp 26.11 00:00. Järgmine slaid algab samal hetkel ja vahetus on täpne, ilma kattumise ja vaheta.
+* **Juba sisestatud ajad ei muutu.** Uuendamisel muudetakse olemasolevad lõpud kujul „23:59“ kujule „järgmine päev 00:00“ (sama hetk, uues kirjapildis). Kui sisestad edaspidi lõpuks 23:59, salvestatakse see samuti järgmise päeva 00:00-na.
+* **Automaatne kampaaniaslaid** kasutab nüüd täpselt Kampaaniariba lõpuhetke. Varem lisandus sellele üks minut.
+* Kiirvalikud „+7 päeva“, „+14 päeva“ ja „Kuu lõpp“ annavad nüüd järgmise päeva 00:00. Kalendris ei näidata kell 00:00 lõppevat slaidi enam järgmise päeva lahtris. Lõpu välja all on selgitus.
+### Tühjendus ootab serveri vaiksed ajad ära
+* **Uus seade „Vaiksed ajad“** (Seaded → Lehe vahemälu). Kui slaideriga lehtede tühjendus langeb mõnda neist vahemikest, tehakse see kohe pärast vahemiku lõppu. Vaikimisi on seal poe serveri sünkide ajad (iga tund :28–:33, 08:55–09:35, 13:55–14:50, 15:55–16:35, 23:55–00:25, 01:55–02:35). Salvestada võib ka nendel aegadel, ainult uus slaid ilmub avalehele siis vahemiku lõpus. Tühjaks jäetud väli lülitab ootamise välja.
+* Seadetes on näha, milleni tühjendus lükati. Lahti olev slaideri admin-leht käivitab selle õigel ajal ise.
+* Käsitsi nupp „Tühjenda vahemälu kohe“ töötab endiselt kohe.
+### Muu
+* Parandus: kui plugin paigaldatakse ZIP-failist (deaktiveeri → laadi üles → aktiveeri), tühjendatakse pärast aktiveerimist slaideriga lehed (kui automaatne tühjendus on sees). Varem jäid vahemällu vana versiooni lehed ilma tulevaste slaidideta, kuni slaiderit korra salvestati. Nupuga „Uuenda“ toimis see ka varem.
+* Uus: slaidide nimekirjas ja redaktoris on hoiatus, kui slaidi teise keele (nt inglise) tekst puudub või on sõna-sõnalt sama mis mõnel teisel slaidil, kuigi eestikeelne tekst on erinev. Nii jääb silma kopeeritud slaidi parandamata tõlge.
+* Arendajale: filter `wonom_slider_quiet_ranges` muudab vaikseid aegu.
 
 = 1.10.0 - 2026-11-19 =
 ### Ajastatud slaid vahetub täpselt õigel hetkel, ilma vahemälu tühjendamata
@@ -106,9 +122,5 @@ Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
 
 = 1.7.12 - 2026-11-10 =
 * Parandus: eelvaade, lava ja pisipildid kasutavad slaideri kuju, mis poes päriselt eetris on (esimene eetris olev pildiga slaid). Varem võttis lava kuju muudetavast slaidist endast ja eelvaade linnukesega „Näita ka ajastatud ja väljalülitatud slaide“ esimesest, ka aegunud slaidist, nii et need võisid poest erineda.
-
-= 1.7.11 - 2026-11-10 =
-* Muudatus: lava, slaidide pisipildid ja vaikimisi eelvaade joonistatakse nüüd sinu enda brauseriakna mõõtudes (nupp „Sinu ekraan“). Mida näed redaktoris, seda näed samal ekraanil ka poes 100 % suumiga. Varem kasutati tüüpilise sülearvuti mõõte ja lava oli suurel monitoril palju madalam kui pood. Akna suuruse muutmisel joonistatakse eelvaated uuesti.
-* Eelvaate nupud „Sülearvuti“ ja „Suur ekraan“ jäävad alles, et saaksid kontrollida ka teisi ekraane.
 
 Full history: CHANGELOG.md on GitHub.
