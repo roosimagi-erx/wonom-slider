@@ -30,6 +30,7 @@ final class Wonom_Slider {
 	}
 
 	public function boot() {
+		Wonom_Slider_Data::maybe_upgrade();
 		Wonom_Slider_Frontend::init();
 		Wonom_Slider_Rest::init();
 		Wonom_Slider_Updater::init();

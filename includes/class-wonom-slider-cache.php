@@ -11,7 +11,8 @@
  * - only the slider pages are purged (home pages per language, pages where the slider was
  *   found or rendered, URLs added in the settings) – never the whole site, never Elementor CSS;
  * - Cloudflare gets only those URLs, never purge_everything, and nothing from a test host;
- * - saves are debounced: one purge DELAY seconds after the last save (slides + settings = one).
+ * - saves are debounced: one purge DELAY seconds after the last save (slides + settings = one);
+ * - no purge in the quiet times from the settings (server jobs): it waits until they are over.
  *
  * @package Wonom_Slider
  */
@@ -41,7 +42,7 @@ class Wonom_Slider_Cache {
 	public static function init() {
 		add_action( 'wonom_slider_saved', array( __CLASS__, 'auto_purge' ) );
 		add_action( 'wonom_slider_saved', array( __CLASS__, 'schedule_next_change' ) );
-		add_action( self::CRON_HOOK, array( __CLASS__, 'purge' ) );
+		add_action( self::CRON_HOOK, array( __CLASS__, 'tick' ) );
 		add_action( self::CRON_HOOK, array( __CLASS__, 'schedule_next_change' ) );
 		add_action( self::CRON_HOOK, array( __CLASS__, 'record_pulse' ) );
 		add_action( self::PULSE_HOOK, array( __CLASS__, 'record_pulse' ) );
@@ -77,7 +78,9 @@ class Wonom_Slider_Cache {
 
 	/**
 	 * Safety net on an admin page load, never on a visitor's request.
-	 * - After (re)activation the scheduled tick is planned again (deactivating removes it).
+	 * - After (re)activation the scheduled tick is planned again (deactivating removes it) and the
+	 *   slider pages are rebuilt, like after an update: a zip installed while the plugin was
+	 *   deactivated never ran its update hook, so the cached pages would miss the upcoming slides.
 	 * - When the tick is overdue (cron did not run) the purge is queued like after a save; it is
 	 *   not done here.
 	 */
@@ -88,6 +91,9 @@ class Wonom_Slider_Cache {
 		if ( get_option( self::OPT_RESCHED ) ) {
 			delete_option( self::OPT_RESCHED );
 			self::schedule_next_change();
+			if ( self::enabled() ) {
+				self::request_purge();
+			}
 		}
 		$next = wp_next_scheduled( self::CRON_HOOK );
 		if ( $next && $next < time() - 5 * MINUTE_IN_SECONDS ) {
@@ -108,10 +114,78 @@ class Wonom_Slider_Cache {
 	 * last one – saving slides and settings together, or several campaign edits, purge once.
 	 */
 	public static function request_purge() {
-		$at = time() + self::DELAY;
+		self::defer_to( self::allowed_at( time() + self::DELAY ) );
+	}
+
+	private static function defer_to( $at ) {
 		wp_clear_scheduled_hook( self::DEFER_HOOK );
 		wp_schedule_single_event( $at, self::DEFER_HOOK );
 		update_option( self::OPT_PENDING, $at, false );
+	}
+
+	/**
+	 * First moment at or after $ts that lies outside the quiet times (settings, local time).
+	 * Server jobs run in those windows; a purge rebuilds pages through PHP, so it waits.
+	 *
+	 * @param int $ts Timestamp.
+	 * @return int
+	 */
+	public static function allowed_at( $ts ) {
+		$adv    = Wonom_Slider_Data::get_advanced();
+		$ranges = Wonom_Slider_Data::quiet_ranges( (string) $adv['quiet_times'] );
+		/**
+		 * Filter the quiet ranges: [ hourly(bool), from_seconds, to_seconds ][].
+		 *
+		 * @param array[] $ranges
+		 */
+		$ranges = (array) apply_filters( 'wonom_slider_quiet_ranges', $ranges );
+		if ( ! $ranges ) {
+			return (int) $ts;
+		}
+		$tz = wp_timezone();
+		for ( $guard = 0; $guard < 50; $guard++ ) {
+			$dt    = new DateTime( '@' . (int) $ts );
+			$dt->setTimezone( $tz );
+			$day   = (int) $dt->format( 'G' ) * 3600 + (int) $dt->format( 'i' ) * 60 + (int) $dt->format( 's' );
+			$moved = false;
+			foreach ( $ranges as $r ) {
+				list( $hourly, $a, $b ) = array( ! empty( $r[0] ), (int) $r[1], (int) $r[2] );
+				$period = $hourly ? 3600 : 86400;
+				$s      = $hourly ? $day % 3600 : $day;
+				$wait   = 0;
+				if ( $a < $b && $s >= $a && $s < $b ) {
+					$wait = $b - $s;
+				} elseif ( $a > $b && $s >= $a ) {
+					$wait = $period - $s + $b; // range passes midnight / the full hour.
+				} elseif ( $a > $b && $s < $b ) {
+					$wait = $b - $s;
+				}
+				if ( $wait > 0 ) {
+					$ts   += $wait;
+					$moved = true;
+				}
+			}
+			if ( ! $moved ) {
+				break;
+			}
+		}
+		return (int) $ts;
+	}
+
+	/** Whether a purge may run now (outside the quiet times). */
+	public static function allowed_now() {
+		return self::allowed_at( time() ) <= time();
+	}
+
+	/**
+	 * The scheduled backup tick: rebuild the slider pages now, or as soon as the quiet time is over.
+	 */
+	public static function tick() {
+		if ( self::allowed_now() ) {
+			self::purge();
+		} else {
+			self::defer_to( self::allowed_at( time() ) );
+		}
 	}
 
 	/** Run the debounced purge now if its time has come (a newer save moves it later). */
@@ -123,6 +197,11 @@ class Wonom_Slider_Cache {
 	}
 
 	public static function run_deferred() {
+		// Late cron or a catch-up that lands in a quiet time: wait until it is over.
+		if ( ! self::allowed_now() ) {
+			self::defer_to( self::allowed_at( time() ) );
+			return;
+		}
 		delete_option( self::OPT_PENDING );
 		wp_clear_scheduled_hook( self::DEFER_HOOK );
 		self::purge();
@@ -616,6 +695,9 @@ class Wonom_Slider_Cache {
 			'urls'        => self::urls(),
 			'live_host'   => self::is_live_host(),
 			'pending'     => $pending ? wp_date( 'H:i:s', $pending ) : '',
+			'pending_in'  => $pending ? max( 0, $pending - time() ) : 0,
+			// Waits longer than the normal delay: the save fell into a quiet time.
+			'pending_quiet' => $pending && $pending - time() > self::DELAY + 5,
 			'last'        => is_array( $last ) && ! empty( $last['time'] ) ? array(
 				'time' => wp_date( 'd.m.Y H:i:s', (int) $last['time'] ),
 				'done' => isset( $last['done'] ) ? (array) $last['done'] : array(),

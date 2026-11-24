@@ -23,6 +23,15 @@ class Wonom_Slider_Data {
 	 */
 	const WINDOW_DAYS = 14;
 
+	/** Version of the stored slide data (see maybe_upgrade()). */
+	const DATA_VERSION = 2;
+
+	/**
+	 * Local times in which no cache purge runs (one range per line, ":MM-:MM" = every hour).
+	 * Server jobs run then; a purge that falls into one waits until it is over.
+	 */
+	const DEFAULT_QUIET = ":28-:33\n08:55-09:35\n13:55-14:50\n15:55-16:35\n23:55-00:25\n01:55-02:35";
+
 	/**
 	 * Advanced options (updates, translation, uninstall).
 	 *
@@ -41,6 +50,7 @@ class Wonom_Slider_Data {
 				'cf_zone'             => '',
 				'cf_token'            => '',
 				'purge_urls'          => '', // extra slider pages to purge, one URL or path per line
+				'quiet_times'         => self::DEFAULT_QUIET, // no purge in these local times, one range per line
 			)
 		);
 	}
@@ -78,6 +88,9 @@ class Wonom_Slider_Data {
 			}
 			$out['purge_urls'] = implode( "\n", array_slice( array_unique( $lines ), 0, 30 ) );
 		}
+		if ( isset( $in['quiet_times'] ) ) {
+			$out['quiet_times'] = implode( "\n", array_map( array( __CLASS__, 'quiet_line' ), self::quiet_ranges( (string) $in['quiet_times'] ) ) );
+		}
 		foreach ( array( 'update_token', 'deepl_key', 'cf_token' ) as $secret ) {
 			if ( isset( $in[ $secret ] ) ) {
 				$v = trim( (string) $in[ $secret ] );
@@ -114,6 +127,7 @@ class Wonom_Slider_Data {
 			'cf_zone'             => $a['cf_zone'],
 			'cf_token'            => $a['cf_token'] ? '••••••••' . substr( $a['cf_token'], -4 ) : '',
 			'purge_urls'          => (string) $a['purge_urls'],
+			'quiet_times'         => (string) $a['quiet_times'],
 		);
 	}
 
@@ -657,7 +671,7 @@ class Wonom_Slider_Data {
 		$out['mobile_pos_w']    = $pct( isset( $in['mobile_pos_w'] ) ? $in['mobile_pos_w'] : null, $d['mobile_pos_w'], 10, 100 );
 
 		$out['start'] = isset( $in['start'] ) ? self::sanitize_datetime( $in['start'] ) : '';
-		$out['end']   = isset( $in['end'] ) ? self::sanitize_datetime( $in['end'] ) : '';
+		$out['end']   = isset( $in['end'] ) ? self::normalize_end( self::sanitize_datetime( $in['end'] ) ) : '';
 
 		$out['typo'] = isset( $in['typo'] ) ? self::sanitize_typo( $in['typo'] ) : array();
 
@@ -969,12 +983,14 @@ class Wonom_Slider_Data {
 
 	/**
 	 * First moment a slide with this end time is no longer shown (site-local pseudo timestamp).
-	 * An end given to the minute includes that whole minute: "23:59" runs until midnight, so a
-	 * slide ending at 23:59 and one starting at 00:00 change over without a gap.
+	 *
+	 * Same rule as the campaigns in Kampaaniariba: the start belongs to the slide, the end does
+	 * not – a slide is on air while start <= now < end. A slide that runs to the end of a day
+	 * ends at 00:00 of the next date, and the next one starts at that same moment.
 	 */
 	public static function end_local( $end ) {
 		$t = strtotime( (string) $end );
-		return $t ? $t + ( preg_match( '/\d{2}:\d{2}:\d{2}/', (string) $end ) ? 1 : 60 ) : 0;
+		return $t ? $t : 0;
 	}
 
 	/**
@@ -989,10 +1005,91 @@ class Wonom_Slider_Data {
 			}
 			$dt = date_create( (string) $slide[ $k ], wp_timezone() );
 			if ( $dt ) {
-				$out[ $i ] = $dt->getTimestamp() + ( 'end' === $k ? ( preg_match( '/\d{2}:\d{2}:\d{2}/', (string) $slide[ $k ] ) ? 1 : 60 ) : 0 );
+				$out[ $i ] = $dt->getTimestamp();
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * An end entered as "…:59" meant "until the end of that minute" (the rule before 1.11.0):
+	 * store it as the next full minute, e.g. 25.11 23:59 -> 26.11 00:00.
+	 *
+	 * @param string $end "YYYY-MM-DDTHH:MM" or ''.
+	 * @return string
+	 */
+	public static function normalize_end( $end ) {
+		$end = (string) $end;
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:59$/', $end ) ) {
+			return $end;
+		}
+		$t = strtotime( $end . ' UTC' ); // wall-clock arithmetic, no time zone shift.
+		return $t ? gmdate( 'Y-m-d\TH:i', $t + 60 ) : $end;
+	}
+
+	/**
+	 * One-off conversion of the stored slides after an update (cheap check on every load).
+	 * 2 (1.11.0): ends "…:59" become the next full minute, so the saved times read the same
+	 * way as in Kampaaniariba and the slides keep ending at the same moment as before.
+	 */
+	public static function maybe_upgrade() {
+		if ( (int) get_option( 'wonom_slider_data_version', 0 ) >= self::DATA_VERSION ) {
+			return;
+		}
+		update_option( 'wonom_slider_data_version', self::DATA_VERSION, true );
+		$raw = get_option( self::OPTION_SLIDES, array() );
+		if ( ! is_array( $raw ) ) {
+			return;
+		}
+		$changed = false;
+		foreach ( $raw as $i => $slide ) {
+			if ( is_array( $slide ) && ! empty( $slide['end'] ) ) {
+				$new = self::normalize_end( $slide['end'] );
+				if ( $new !== $slide['end'] ) {
+					$raw[ $i ]['end'] = $new;
+					$changed          = true;
+				}
+			}
+		}
+		if ( $changed ) {
+			update_option( self::OPTION_SLIDES, $raw, false );
+		}
+	}
+
+	/**
+	 * Parse the quiet times: one range per line, "HH:MM-HH:MM" (daily, may pass midnight) or
+	 * ":MM-:MM" (every hour). Returns [ hourly(bool), from_seconds, to_seconds ][].
+	 *
+	 * @param string $text Lines.
+	 * @return array[]
+	 */
+	public static function quiet_ranges( $text ) {
+		$out = array();
+		foreach ( preg_split( '/\R/', (string) $text ) as $line ) {
+			$line = preg_replace( '/\s+/', '', $line );
+			if ( preg_match( '/^:([0-5]\d)[-–]:([0-5]\d)$/u', $line, $m ) ) {
+				$a = (int) $m[1] * 60;
+				$b = (int) $m[2] * 60;
+				if ( $a !== $b ) {
+					$out[] = array( true, $a, $b );
+				}
+			} elseif ( preg_match( '/^([01]?\d|2[0-3]):([0-5]\d)[-–]([01]?\d|2[0-3]):([0-5]\d)$/u', $line, $m ) ) {
+				$a = (int) $m[1] * 3600 + (int) $m[2] * 60;
+				$b = (int) $m[3] * 3600 + (int) $m[4] * 60;
+				if ( $a !== $b ) {
+					$out[] = array( false, $a, $b );
+				}
+			}
+		}
+		return array_slice( $out, 0, 20 );
+	}
+
+	/** A parsed quiet range back as text. */
+	public static function quiet_line( $r ) {
+		$fmt = function ( $s, $hourly ) {
+			return $hourly ? sprintf( ':%02d', $s / 60 ) : sprintf( '%02d:%02d', floor( $s / 3600 ), ( $s % 3600 ) / 60 );
+		};
+		return $fmt( $r[1], $r[0] ) . '-' . $fmt( $r[2], $r[0] );
 	}
 
 	/**

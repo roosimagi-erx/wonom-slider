@@ -199,6 +199,9 @@
 			purgeUrlsHint:     __( 'One address or path per line, e.g. /campaign/ – for pages that show the slider through a template.', 'wonom-slider' ),
 			/* translators: %s: time */
 			purgePending:      __( 'Purge scheduled for %s (30 s after the last save).', 'wonom-slider' ),
+			purgePendingQuiet: __( 'Purge postponed to %s: the save fell into a quiet time.', 'wonom-slider' ),
+			quietTimes:        __( 'Quiet times (no purge)', 'wonom-slider' ),
+			quietTimesHint:    __( 'One range per line in site time, e.g. 08:55-09:35, or :28-:33 for every hour. A purge that falls into one waits until it is over. Leave empty to purge at any time.', 'wonom-slider' ),
 			/* translators: 1: date and time, 2: cache names */
 			purgeLast:         __( 'Last purge %1$s: %2$s', 'wonom-slider' ),
 			cfTestHost:        __( 'This is a test site: Cloudflare is never purged from here (the zone is shared with the live shop). Leave the Cloudflare token empty here.', 'wonom-slider' ),
@@ -301,6 +304,8 @@
 			button2Url:        __( 'Second button link', 'wonom-slider' ),
 			badge:             __( 'Badge (e.g. −20 %)', 'wonom-slider' ),
 			translateFrom:     __( 'Translate from %s', 'wonom-slider' ),
+			langMissing:       __( '%s text is missing.', 'wonom-slider' ),
+			langSameAs:        __( '%1$s text is the same as on slide "%2$s" – check that it belongs to this slide.', 'wonom-slider' ),
 			translating:       __( 'Translating…', 'wonom-slider' ),
 			translated:        __( 'Translated with %s – please review.', 'wonom-slider' ),
 			translateFailed:   __( 'Translation failed', 'wonom-slider' ),
@@ -340,6 +345,7 @@
 			preset7:           __( '+7 days', 'wonom-slider' ),
 			preset14:          __( '+14 days', 'wonom-slider' ),
 			presetEom:         __( 'End of month', 'wonom-slider' ),
+			endHint:           __( 'Shown until this moment; the moment itself is no longer included. For a slide that runs to the end of a day, set the next date at 00:00.', 'wonom-slider' ),
 			clear:             __( 'Clear', 'wonom-slider' ),
 			openCalendar:      __( 'Open calendar', 'wonom-slider' ),
 			prevMonth:         __( 'Previous month', 'wonom-slider' ),

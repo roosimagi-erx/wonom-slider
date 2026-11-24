@@ -73,6 +73,30 @@
 		if ( s.bg_mode === 'collage' && Array.isArray( s.collage ) && s.collage.length ) { return true; }
 		return !! ( s.image_url || s.heading || s.text || s.eyebrow || s.button_text );
 	}
+	/**
+	 * Translation check for slides with their own texts: a language whose heading and text are
+	 * both empty, or whose heading/text is word for word the same as another slide's while the
+	 * default-language texts differ (left over from copying a slide). One message per slide.
+	 */
+	function langIssue( s ) {
+		if ( state.languages.length < 2 || ( s.source && s.source !== 'own' ) || ! ( s.heading || s.text ) ) { return ''; }
+		var out = '';
+		state.languages.slice( 1 ).some( function ( l ) {
+			var tr = ( s.i18n && s.i18n[ l.slug ] ) || {};
+			if ( ! tr.heading && ! tr.text ) { out = sprintf( I.langMissing, l.name ); return true; }
+			return [ 'heading', 'text' ].some( function ( k ) {
+				var v = ( tr[ k ] || '' ).trim();
+				if ( ! v ) { return false; }
+				var other = state.slides.filter( function ( o ) {
+					var ot = ( o.i18n && o.i18n[ l.slug ] ) || {};
+					return o !== s && ( ot[ k ] || '' ).trim() === v && ( o[ k ] || '' ).trim() !== ( s[ k ] || '' ).trim();
+				} )[ 0 ];
+				if ( other ) { out = sprintf( I.langSameAs, l.name, other.name || other.heading || I.untitled ); return true; }
+				return false;
+			} );
+		} );
+		return out;
+	}
 	function slideStatus( s ) {
 		if ( s.source === 'auto' && s.campaign_none ) { return 'waiting'; }
 		if ( ! s.enabled ) { return 'disabled'; }
@@ -80,7 +104,7 @@
 		var now = siteNow();
 		var st = isoToDate( s.start ), en = isoToDate( s.end );
 		if ( st && st > now ) { return 'scheduled'; }
-		if ( en && en < now ) { return 'expired'; }
+		if ( en && en <= now ) { return 'expired'; }   // the end itself is no longer on air
 		return 'active';
 	}
 	function statusLabel( st ) {
@@ -90,7 +114,7 @@
 		var st = isoToDate( s.start ), en = isoToDate( s.end ), now = siteNow();
 		if ( ! st && ! en ) { return I.always; }
 		if ( st && en && en < st ) { return I.scheduleInvalid; }
-		if ( en && en < now ) { return sprintf( I.endedAt, toDisplay( s.end ) ); }
+		if ( en && en <= now ) { return sprintf( I.endedAt, toDisplay( s.end ) ); }
 		if ( st && st > now ) { return en ? sprintf( I.startsEnds, toDisplay( s.start ), toDisplay( s.end ) ) : sprintf( I.startsAt, toDisplay( s.start ) ); }
 		return en ? sprintf( I.liveUntil, toDisplay( s.end ) ) : I.liveNow;
 	}
@@ -215,11 +239,16 @@
 	// The purge runs 30 s after the last save via WP-Cron. Where WP-Cron is switched off and not driven
 	// by the server, the open editor asks for it when it is due (the server purges only if it is due).
 	var purgeDueTimer = null;
-	function schedulePurgeDue() {
+	function schedulePurgeDue( wait ) {
 		clearTimeout( purgeDueTimer );
 		purgeDueTimer = setTimeout( function () {
-			api( '/purge-due', 'POST', {} ).then( function ( st ) { if ( st ) { state.cache = st; } } ).catch( function () { /* cron or the next admin page load does it */ } );
-		}, 33000 );
+			api( '/purge-due', 'POST', {} ).then( function ( st ) {
+				if ( ! st ) { return; }
+				state.cache = st;
+				// Postponed (quiet time): ask again when it is due, as long as the editor stays open.
+				if ( st.pending_in > 0 && st.pending_in < 7200 ) { schedulePurgeDue( ( st.pending_in + 3 ) * 1000 ); }
+			} ).catch( function () { /* cron or the next admin page load does it */ } );
+		}, wait || 33000 );
 	}
 
 	// PHP encodes empty associative arrays as [] – make sure map-like fields are real objects.
@@ -401,7 +430,8 @@
 		if ( s.source === 'auto' ) { h += ' <span class="wonom-tag wonom-tag--linked" title="' + esc( s.campaign_title ? sprintf( I.autoUsing, s.campaign_title ) : I.autoNone ) + '"><span class="dashicons dashicons-update"></span> ' + esc( I.sourceAuto ) + '</span>'; }
 		else if ( s.source === 'campaign' && s.campaign_id ) { h += ' <span class="wonom-tag wonom-tag--linked" title="' + esc( sprintf( I.linkedFromCampaign, s.campaign_title || s.campaign_id ) ) + '"><span class="dashicons dashicons-admin-links"></span> ' + esc( I.gCampaigns ) + '</span>'; }
 		h += '</div>';
-		h += '<div class="wonom-slide-sub"><span class="wonom-pill wonom-pill--' + st + ' js-status">' + esc( statusLabel( st ) ) + '</span> <span class="js-sched">' + esc( scheduleSummary( s ) ) + '</span></div>';
+		var li = langIssue( s );
+		h += '<div class="wonom-slide-sub"><span class="wonom-pill wonom-pill--' + st + ' js-status">' + esc( statusLabel( st ) ) + '</span> <span class="js-sched">' + esc( scheduleSummary( s ) ) + '</span>' + ( li ? ' <span class="wonom-warn">⚠ ' + esc( li ) + '</span>' : '' ) + '</div>';
 		h += '</div>';
 		h += '<div class="wonom-slide-actions">';
 		h += '<label class="wonom-toggle" title="' + esc( I.enabled ) + '"><input type="checkbox" data-field="enabled"' + ( s.enabled ? ' checked' : '' ) + '><span></span></label>';
@@ -562,6 +592,8 @@
 				h += '<button type="button" class="button" data-action="translate" data-lang="' + esc( cur ) + '"><span class="dashicons dashicons-translation"></span> ' + esc( sprintf( I.translateFrom, langName( defaultLang() ) ) ) + '</button>';
 			}
 			h += '</div>';
+			var issue = langIssue( s );
+			if ( issue ) { h += '<p class="wonom-hint wonom-warn">⚠ ' + esc( issue ) + '</p>'; }
 		}
 		var L = cur === defaultLang() ? '' : cur;
 
@@ -727,7 +759,7 @@
 			h += '<p class="wonom-hint">' + esc( I.scheduleIntro ) + ' ' + esc( sprintf( I.scheduleTz, state.timezone || '' ) ) + '</p>';
 			h += '<div class="wonom-grid wonom-grid--2">';
 			h += dateField( s, 'start', I.start, [ [ 'now', I.presetNow ], [ 'tomorrow', I.presetTomorrow ], [ 'monday', I.presetMonday ] ] );
-			h += dateField( s, 'end', I.end, [ [ 'p7', I.preset7 ], [ 'p14', I.preset14 ], [ 'eom', I.presetEom ] ] );
+			h += dateField( s, 'end', I.end, [ [ 'p7', I.preset7 ], [ 'p14', I.preset14 ], [ 'eom', I.presetEom ] ], I.endHint );
 			h += '</div>';
 		}
 		var invalid = isoToDate( s.start ) && isoToDate( s.end ) && isoToDate( s.end ) < isoToDate( s.start );
@@ -746,14 +778,14 @@
 		return h;
 	}
 
-	function dateField( s, key, label, presets ) {
+	function dateField( s, key, label, presets, hint ) {
 		var h = '<div class="wonom-field"><label>' + esc( label ) + '</label>';
 		h += '<span class="wonom-dt"><input type="text" class="wonom-date" data-date="' + key + '" value="' + esc( toDisplay( s[ key ] ) ) + '" placeholder="pp.kk.aaaa hh:mm" autocomplete="off">';
 		h += '<button type="button" class="wonom-dtbtn" data-action="cal" data-date="' + key + '" aria-label="' + esc( I.openCalendar ) + '"><span class="dashicons dashicons-calendar-alt"></span></button></span>';
 		h += '<span class="wonom-presets">';
 		presets.forEach( function ( p ) { h += '<button type="button" class="button-link" data-action="preset" data-date="' + key + '" data-preset="' + p[ 0 ] + '">' + esc( p[ 1 ] ) + '</button>'; } );
 		h += '<button type="button" class="button-link" data-action="preset" data-date="' + key + '" data-preset="clear">' + esc( I.clear ) + '</button>';
-		h += '</span></div>';
+		h += '</span>' + ( hint ? '<span class="wonom-hint">' + esc( hint ) + '</span>' : '' ) + '</div>';
 		return h;
 	}
 
@@ -1520,8 +1552,8 @@
 			sched.forEach( function ( s, k ) {
 				var st = isoToDate( s.start ), en = isoToDate( s.end );
 				var a = st ? st.getTime() : -Infinity, b = en ? en.getTime() : Infinity;
-				if ( a >= dayEnd || b < dayStart ) { return; }
-				var dim = ( en && en < now ) || ! s.enabled;
+				if ( a >= dayEnd || b <= dayStart ) { return; }   // a slide ending at 00:00 is not in that day
+				var dim = ( en && en <= now ) || ! s.enabled;
 				h += '<a href="#slides" class="wonom-cal-bar' + ( dim ? ' is-dim' : '' ) + ( s.type === 'campaign' ? ' is-campaign' : '' ) + '" style="--bar:' + colors[ k % colors.length ] + '" data-action="goto" data-id="' + esc( s.id ) + '" title="' + esc( s.name || s.heading || I.untitled ) + '">' + esc( s.name || s.heading || I.untitled ) + '</a>';
 			} );
 			h += '</div>';
@@ -1656,7 +1688,8 @@
 		cacheInner += '<div class="wonom-field"><label>' + esc( I.purgePages ) + '</label><ul class="wonom-purge-urls">' + ( C.urls || [] ).map( function ( u ) { return '<li><code>' + esc( u ) + '</code></li>'; } ).join( '' ) + '</ul>'
 			+ '<p class="wonom-hint">' + esc( I.purgePagesHint ) + ' <button type="button" class="button-link" data-action="pages-scan">' + esc( I.pagesScan ) + '</button></p></div>';
 		cacheInner += field( I.purgeUrlsExtra, '<textarea rows="3" data-adv="purge_urls" placeholder="/kampaania/&#10;https://…">' + esc( A.purge_urls || '' ) + '</textarea>', esc( I.purgeUrlsHint ) );
-		if ( C.pending ) { cacheInner += '<p class="wonom-hint">' + esc( sprintf( I.purgePending, C.pending ) ) + '</p>'; }
+		cacheInner += field( I.quietTimes, '<textarea rows="3" data-adv="quiet_times" placeholder=":28-:33&#10;08:55-09:35">' + esc( A.quiet_times || '' ) + '</textarea>', esc( I.quietTimesHint ) );
+		if ( C.pending ) { cacheInner += '<p class="wonom-hint">' + esc( sprintf( C.pending_quiet ? I.purgePendingQuiet : I.purgePending, C.pending ) ) + '</p>'; }
 		if ( C.last ) { cacheInner += '<p class="wonom-hint">' + esc( sprintf( I.purgeLast, C.last.time, ( C.last.done || [] ).join( ', ' ) || '–' ) ) + '</p>'; }
 		if ( C.live_host === false ) { cacheInner += '<p class="wonom-hint wonom-warn">' + esc( I.cfTestHost ) + '</p>'; }
 		cacheInner += '<div class="wonom-grid wonom-grid--2">' + field( I.cfZone, '<input type="text" data-adv="cf_zone" value="' + esc( A.cf_zone || '' ) + '" autocomplete="off">' ) + field( I.cfToken, '<input type="text" data-adv="cf_token" value="' + esc( A.cf_token || '' ) + '" autocomplete="off">', esc( I.cfHint ) ) + '</div>';
@@ -2179,9 +2212,9 @@
 			case 'now': d = now; break;
 			case 'tomorrow': d = new Date( now ); d.setDate( d.getDate() + 1 ); d.setHours( 0, 0, 0, 0 ); break;
 			case 'monday': d = new Date( now ); d.setDate( d.getDate() + ( ( 8 - d.getDay() ) % 7 || 7 ) ); d.setHours( 0, 0, 0, 0 ); break;
-			case 'p7': d = new Date( base ); d.setDate( d.getDate() + 7 ); d.setHours( 23, 59, 0, 0 ); break;
-			case 'p14': d = new Date( base ); d.setDate( d.getDate() + 14 ); d.setHours( 23, 59, 0, 0 ); break;
-			case 'eom': d = new Date( base.getFullYear(), base.getMonth() + 1, 0, 23, 59, 0, 0 ); break;
+			case 'p7': d = new Date( base ); d.setDate( d.getDate() + 8 ); d.setHours( 0, 0, 0, 0 ); break;
+			case 'p14': d = new Date( base ); d.setDate( d.getDate() + 15 ); d.setHours( 0, 0, 0, 0 ); break;
+			case 'eom': d = new Date( base.getFullYear(), base.getMonth() + 1, 1, 0, 0, 0, 0 ); break;   // ends as the next month begins
 		}
 		s[ key ] = d ? dateToIso( d ) : '';
 		markDirty( 'slides' ); render();
@@ -2200,7 +2233,7 @@
 		closePopup();
 		var wrap = anchor.closest( '.wonom-dt' );
 		var now = siteNow();
-		var cur = parseIso( s[ key ] ) || { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate(), h: key === 'end' ? 23 : 0, mi: key === 'end' ? 59 : 0 };
+		var cur = parseIso( s[ key ] ) || { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate(), h: 0, mi: 0 };
 		var view = { y: cur.y, m: cur.m };
 		popup = document.createElement( 'div' );
 		popup.className = 'wonom-dtpop';

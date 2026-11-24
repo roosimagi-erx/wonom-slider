@@ -31,6 +31,8 @@ Slider Revolutioni asendamiseks: eemalda Elementoris senine SR-vidin / lühikood
 
 **Kampaaniabänner:** *Lisa kampaaniaslaid*. See pannakse järjekorras esimeseks ja saab vaikimisi 14-päevase ajakava.
 Ajakava plokis määra täpne algus ja lõpp kalendrist või kiirvalikutega (Kohe, Homme, +7 päeva, Kuu lõpp).
+Algus kuulub slaidi sisse, lõpp mitte (sama reegel mis Kampaaniaribas): päeva lõpuni kestva slaidi lõpuks pane
+järgmine kuupäev kell 00:00. Seadetes „Vaiksed ajad“ on kellaajad, mil slaideriga lehtede tühjendus ootab.
 Slaid ilmub ja kaob automaatselt; tavabänner jääb kogu aeg alles. Vaade *Kalender* näitab kõiki ajastatud slaide kuu peal.
 
 **Inglise tekstid:** slaidi *Tekstid ja nupp* plokis on keelevahelehed (ET / EN). Tühi väli võtab eesti teksti.
@@ -76,7 +78,8 @@ languages/wonom-slider-et.l10n.php – eesti tõlge (WP 6.5+ PHP-formaat)
 
 Haagid: `wonom_slider_slides` (filter: slaidid enne renderdamist), `wonom_slider_html`, `wonom_slider_languages`,
 `wonom_slider_current_language`, `wonom_slider_translate` (oma tõlketeenus), `wonom_slider_flush_caches`, `wonom_slider_saved`,
-`wonom_slider_tick_delay` (filter: mitu sekundit pärast ajastatud vahetust tehakse slaideriga lehtede varutühjendus).
+`wonom_slider_tick_delay` (filter: mitu sekundit pärast ajastatud vahetust tehakse slaideriga lehtede varutühjendus),
+`wonom_slider_quiet_ranges` (filter: vaiksed ajad, mil tühjendust ei tehta; vaikimisi seadetest „Vaiksed ajad“).
 
 JS-sündmus: `wonom-slider:change` (`detail.index`, `detail.slide`). `window.WonomSlider.init(scope)` initsialiseerib dünaamiliselt lisatud slaiderid.
 

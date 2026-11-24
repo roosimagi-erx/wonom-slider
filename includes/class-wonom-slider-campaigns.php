@@ -75,10 +75,10 @@ class Wonom_Slider_Campaigns {
 			}
 			$s = (int) get_post_meta( $id, '_wkr_start_utc', true );
 			$e = (int) get_post_meta( $id, '_wkr_end_utc', true );
-			if ( ! $s || ! $e || $e < $s ) {
+			if ( ! $s || ! $e || $e <= $s ) {
 				continue;
 			}
-			if ( $s <= $now && $now <= $e ) {
+			if ( $s <= $now && $now < $e ) { // end exclusive, as in Kampaaniariba
 				if ( null === $live || $s > $live[1] ) {
 					$live = array( $id, $s );
 				}
@@ -122,7 +122,7 @@ class Wonom_Slider_Campaigns {
 			}
 			$s = (int) get_post_meta( $id, '_wkr_start_utc', true );
 			$e = (int) get_post_meta( $id, '_wkr_end_utc', true );
-			if ( ! $s || ! $e || $e < $s || $e < $now || $s > (int) $horizon ) {
+			if ( ! $s || ! $e || $e <= $s || $e <= $now || $s > (int) $horizon ) {
 				continue;
 			}
 			$out[ (int) $id ] = $s;
@@ -167,7 +167,7 @@ class Wonom_Slider_Campaigns {
 		if ( $now < $start ) {
 			return 'upcoming';
 		}
-		if ( $now > $end ) {
+		if ( $now >= $end ) {
 			return 'ended';
 		}
 		return 'live';

@@ -44,8 +44,11 @@ tühja CHANGELOG-i sektsiooniga, olemasoleva tagi või väljalaskega, mitte-`mai
 
 - **Kõigepealt testsait** test.emmaandtheo.ee, siis live. WordPressis (test ja live) paigaldab ja salvestab
   ainult kasutaja; Claude ei muuda WordPressis midagi, kui seda eraldi ei paluta.
-- Paigaldus käib nii: deaktiveeri → Lisa uus → laadi ZIP üles → „Asenda praegune“ → aktiveeri. Pärast seda
-  tuleb slaiderit korra salvestada, et ajastatud vahetus uuesti ajastuks.
+- Paigaldus: eelistatult Pluginad-lehe nupp „Uuenda“ (plugin tühjendab ja laeb slaideriga lehed ise ~30 s pärast).
+  ZIP-iga: deaktiveeri → Lisa uus → laadi ZIP üles → „Asenda praegune“ → aktiveeri; alates 1.11.0 tühjendab
+  plugin lehed ka pärast aktiveerimist ise (1.10.0 ja vanemaga tuli slaiderit korra salvestada).
+- Kellaajad: algus kuulub sisse, lõpp mitte (sama mis Kampaaniaribas, alates 1.11.0). Päeva lõpuni kestva
+  slaidi/kampaania lõpp = järgmine kuupäev 00:00.
 - Väljalase on avalik (hoidla on avalik) ja live-admin pakub uuendust kohe, seega ära avalda poolikut tööd.
 - Kohalikult pole PHP-d ega Node'i: enne väljalaset kontrolli sulgude tasakaalu (awk) ja vajadusel
   admin-JS-i testraamistikus (scratchpad `harness/serve.ps1`, port 8765).
