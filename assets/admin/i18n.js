@@ -39,6 +39,10 @@
 			// Stage (live preview with draggable text block).
 			stageTitle:        __( 'Preview – drag the text block to position it', 'wonom-slider' ),
 			stageHint:         __( 'Drag the text block anywhere. Arrow keys nudge by 1 % (Shift = 5 %). Drag the blue handle to change its width. Switch to Mobile to position it separately for phones.', 'wonom-slider' ),
+			stageClickHint:    __( 'Click a text to jump to its size.', 'wonom-slider' ),
+			dockToggle:        __( 'Preview follows scrolling', 'wonom-slider' ),
+			dockHint:          __( 'When you scroll down to the texts, a smaller preview stays at the top of the screen.', 'wonom-slider' ),
+			dockOff:           __( 'Stop pinning the preview', 'wonom-slider' ),
 			stageEmpty:        __( 'Add an image or some text to see the preview.', 'wonom-slider' ),
 			stageLoading:      __( 'Rendering…', 'wonom-slider' ),
 			posMode:           __( 'Text block position', 'wonom-slider' ),

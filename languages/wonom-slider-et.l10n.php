@@ -78,6 +78,10 @@ return array(
 		// Stage.
 		'Preview – drag the text block to position it' => 'Eelvaade – lohista tekstiplokk soovitud kohta',
 		'Drag the text block anywhere. Arrow keys nudge by 1 % (Shift = 5 %). Drag the blue handle to change its width. Switch to Mobile to position it separately for phones.' => 'Lohista tekstiplokk kuhu tahes. Nooleklahvid nihutavad 1 % (Shift = 5 %). Sinisest pidemest saab muuta laiust. Vali „Mobiil”, et paigutada plokk telefonile eraldi.',
+		'Click a text to jump to its size.' => 'Klõps tekstil viib selle suuruse väljale.',
+		'Preview follows scrolling'         => 'Eelvaade kerib kaasa',
+		'When you scroll down to the texts, a smaller preview stays at the top of the screen.' => 'Kui kerid tekstide juurde, jääb väiksem eelvaade ekraani ülaossa.',
+		'Stop pinning the preview'          => 'Ära hoia eelvaadet üleval',
 		'Add an image or some text to see the preview.' => 'Lisa pilt või tekst, et eelvaadet näha.',
 		'Rendering…'                         => 'Joonistan…',
 		'Text block position'                => 'Tekstiploki asukoht',

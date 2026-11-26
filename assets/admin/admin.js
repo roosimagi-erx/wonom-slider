@@ -516,7 +516,7 @@
 		[ [ 'desktop', I.desktop, 'desktop' ], [ 'mobile', I.mobile, 'smartphone' ] ].forEach( function ( d ) {
 			h += '<button type="button" data-action="stage-device" data-device="' + d[ 0 ] + '" aria-pressed="' + ( stage.device === d[ 0 ] ) + '"><span class="dashicons dashicons-' + d[ 2 ] + '"></span> ' + esc( d[ 1 ] ) + '</button>';
 		} );
-		h += '</div><span class="wonom-hint">' + esc( I.stageHint ) + ( s.bg_mode === 'collage' && s.collage && s.collage.length ? ' ' + esc( s.collage_fit === 'contain' ? I.stageCollageHintWhole : I.stageCollageHint ) : '' ) + '</span></div>';
+		h += '</div><button type="button" class="button wonom-dock-toggle" data-action="stage-dock" aria-pressed="' + dock.on + '" title="' + esc( I.dockHint ) + '"><span class="dashicons dashicons-sticky"></span> ' + esc( I.dockToggle ) + '</button><span class="wonom-hint">' + esc( I.stageHint ) + ' ' + esc( I.stageClickHint ) + ( s.bg_mode === 'collage' && s.collage && s.collage.length ? ' ' + esc( s.collage_fit === 'contain' ? I.stageCollageHintWhole : I.stageCollageHint ) : '' ) + '</span></div>';
 		h += '<div class="wonom-stage is-' + stage.device + '" data-stage><div class="wonom-stage-empty">' + esc( I.stageLoading ) + '</div></div>';
 		h += '</section>';
 
@@ -1092,6 +1092,9 @@
 		if ( ! host || ! s ) { stage.iframe = null; stage.slideId = null; return; }
 		stage.slideId = s.id;
 		host.className = 'wonom-stage is-' + stage.device;
+		// Keep the last height while it renders again, so the fields below do not jump.
+		if ( stage.lastH && stage.lastKey === s.id + '|' + stage.device ) { host.style.minHeight = stage.lastH + 'px'; }
+		updateDock();
 		scheduleStage( s, 250 );   // rapid clicks re-draw the editor many times – render once they settle
 	}
 
@@ -1141,8 +1144,11 @@
 			host.innerHTML = '';
 			host.appendChild( vp );
 			stage.iframe = iframe;
+			updateDock();   // puts the close button of the pinned preview back
 			iframe.addEventListener( 'load', function () {
+				host.style.minHeight = '';
 				fitStage( iframe );
+				updateDock();
 				attachStage( iframe.contentDocument, s );
 				[].forEach.call( iframe.contentDocument.images, function ( img ) { img.addEventListener( 'load', function () { fitStage( iframe ); } ); } );
 			} );
@@ -1161,9 +1167,133 @@
 			var d = iframe.contentDocument;
 			var sl = d.querySelector( '.wonom-slider' );
 			var sh = Math.ceil( sl ? sl.getBoundingClientRect().height : d.body.scrollHeight );
-			if ( iframe.parentNode && iframe.parentNode.classList.contains( 'is-scaled' ) ) { fitScaled( iframe, VIEWPORT.screen.w, sh ); }
-			else { iframe.style.height = sh + 'px'; }
+			var vp = iframe.parentNode, host = vp && vp.parentNode;
+			if ( vp && vp.classList.contains( 'is-scaled' ) ) {
+				fitScaled( iframe, VIEWPORT.screen.w, sh );   // docked: the narrower box scales it down
+			} else if ( host && host.classList && host.classList.contains( 'is-docked' ) ) {
+				// Docked phone preview: real size (the font sizes stay readable), cut to the area
+				// around the text block.
+				var box = Math.min( sh, Math.max( 160, Math.round( window.innerHeight * 0.36 ) ) );
+				var inner = d.querySelector( '.wonom-slide__inner' ), shift = 0;
+				if ( inner && box < sh ) {
+					var ir = inner.getBoundingClientRect(), sr = sl ? sl.getBoundingClientRect() : { top: 0 };
+					shift = Math.max( box - sh, Math.min( 0, Math.round( box / 2 - ( ir.top - sr.top + ir.height / 2 ) ) ) );
+				}
+				iframe.style.height = sh + 'px';
+				iframe.style.transform = shift ? 'translateY(' + shift + 'px)' : '';
+				vp.style.height = box + 'px';
+			} else {
+				iframe.style.height = sh + 'px';
+				iframe.style.transform = '';
+				if ( vp ) { vp.style.height = ''; }
+			}
+			if ( host && host.classList && ! host.classList.contains( 'is-docked' ) && host.offsetHeight ) { stage.lastH = host.offsetHeight; stage.lastKey = stage.slideId + '|' + stage.device; }
 		} catch ( e ) { /* ignore */ }
+	}
+
+	/* ---------- the stage follows scrolling (docked under the app bar) ---------- */
+
+	var dock = { on: true, raf: 0 };
+	try { dock.on = window.localStorage.getItem( 'wonom_slider_dock' ) !== '0'; } catch ( e ) { /* private mode */ }
+
+	function appbarBottom() {
+		var bar = document.querySelector( '.wonom-appbar' );
+		return bar ? Math.max( 0, Math.round( bar.getBoundingClientRect().bottom ) ) : 32;
+	}
+
+	/**
+	 * When the stage has scrolled up under the app bar, pin it there (smaller) while the rest of the
+	 * open slide's editor is still on screen; a spacer keeps the page from jumping. Not on low screens.
+	 */
+	function updateDock() {
+		var host = app.querySelector( '[data-stage]' );
+		if ( ! host ) { document.documentElement.style.scrollPaddingTop = ''; return; }
+		var sec = host.parentNode, editor = host.closest( '.wonom-editor' );
+		var spacer = sec.querySelector( '.wonom-stage-spacer' );
+		var docked = host.classList.contains( 'is-docked' );
+		var top = appbarBottom();
+		var ref = ( docked && spacer ? spacer : host ).getBoundingClientRect();
+		var want = dock.on && window.innerHeight >= 700 && !! editor && ref.top < top && editor.getBoundingClientRect().bottom > top + 320;
+		if ( want && ! docked ) {
+			spacer = document.createElement( 'div' );
+			spacer.className = 'wonom-stage-spacer';
+			spacer.style.height = host.offsetHeight + 'px';
+			sec.insertBefore( spacer, host );
+			host.classList.add( 'is-docked' );
+		} else if ( ! want && docked ) {
+			host.classList.remove( 'is-docked' );
+			host.style.top = host.style.left = host.style.width = '';
+			if ( spacer ) { spacer.remove(); }
+		}
+		var off = host.querySelector( '.wonom-dock-off' );
+		if ( host.classList.contains( 'is-docked' ) ) {
+			var r = sec.getBoundingClientRect();
+			host.style.top = top + 'px';
+			host.style.left = Math.round( r.left ) + 'px';
+			host.style.width = Math.round( r.width ) + 'px';
+			if ( ! off ) {
+				off = document.createElement( 'button' );
+				off.type = 'button';
+				off.className = 'wonom-dock-off';
+				off.setAttribute( 'data-action', 'stage-dock' );
+				off.setAttribute( 'title', I.dockOff );
+				off.setAttribute( 'aria-label', I.dockOff );
+				off.innerHTML = '<span class="dashicons dashicons-no-alt"></span>';
+				host.appendChild( off );
+			}
+		} else if ( off ) {
+			off.remove();
+		}
+		if ( docked !== host.classList.contains( 'is-docked' ) && stage.iframe ) { fitStage( stage.iframe ); }
+		// Fields that get focus (Tab, jumpToTypo) must not end up under the pinned preview.
+		document.documentElement.style.scrollPaddingTop = host.classList.contains( 'is-docked' ) ? ( top + host.offsetHeight + 12 ) + 'px' : '';
+	}
+	function queueDock() {
+		if ( dock.raf ) { return; }
+		dock.raf = window.requestAnimationFrame( function () { dock.raf = 0; updateDock(); } );
+	}
+	window.addEventListener( 'scroll', queueDock, { passive: true } );
+	window.addEventListener( 'resize', queueDock );
+
+	function toggleDock() {
+		dock.on = ! dock.on;
+		try { window.localStorage.setItem( 'wonom_slider_dock', dock.on ? '1' : '0' ); } catch ( e ) { /* private mode */ }
+		[].forEach.call( app.querySelectorAll( '.wonom-dock-toggle' ), function ( b ) { b.setAttribute( 'aria-pressed', String( dock.on ) ); } );
+		updateDock();
+	}
+
+	/**
+	 * A click on a text in the stage: scroll to its row and put the cursor in its size field
+	 * (the mobile size while the stage shows the phone). Buttons only scroll to their row.
+	 */
+	function jumpToTypo( target ) {
+		if ( ! target || ! target.closest ) { return; }
+		var map = [ [ '.wonom-slide__badge', 'badge_size' ], [ '.wonom-slide__eyebrow', 'eyebrow_size' ], [ '.wonom-slide__heading', 'heading_size' ], [ '.wonom-slide__text', 'text_size' ], [ '.wonom-slide__button--secondary', 'button2_text' ], [ '.wonom-slide__button', 'button_text' ] ];
+		var key = '';
+		map.some( function ( m ) { if ( target.closest( m[ 0 ] ) ) { key = m[ 1 ]; return true; } return false; } );
+		if ( ! key ) { return; }
+		var size = /_size$/.test( key );
+		if ( size && stage.device === 'mobile' ) { key += '_mobile'; }
+		var card = app.querySelector( '.wonom-slide-card.is-open' );
+		var el = card && card.querySelector( size ? '[data-typo="' + key + '"]' : '[data-field="' + key + '"]' );
+		if ( ! el ) { return; }
+		var row = el.closest( '.wonom-pair' ) || el.closest( '.wonom-field' ) || el;
+		var host = app.querySelector( '[data-stage]' );
+		var docked = host && host.classList.contains( 'is-docked' );
+		// Height of the pinned preview once it is docked (estimate if it is not docked yet).
+		var pinH = ! dock.on || window.innerHeight < 700 || ! host ? 0 : ( docked ? host.offsetHeight : Math.round( stage.device === 'mobile' ? Math.min( host.offsetHeight, window.innerHeight * 0.36 ) : host.offsetHeight * 0.55 ) + 20 );
+		function place( smooth ) {
+			var y = window.scrollY + row.getBoundingClientRect().top - appbarBottom() - pinH - 12;
+			window.scrollTo( { top: Math.max( 0, y ), behavior: smooth ? 'smooth' : 'auto' } );
+		}
+		place( true );
+		setTimeout( function () {
+			var h2 = app.querySelector( '[data-stage]' );
+			if ( h2 && h2.classList.contains( 'is-docked' ) ) { pinH = h2.offsetHeight; place( false ); }
+			if ( size ) { try { el.focus( { preventScroll: true } ); el.select(); } catch ( e ) { /* ignore */ } }
+			row.classList.remove( 'is-flash' ); void row.offsetWidth; row.classList.add( 'is-flash' );
+			setTimeout( function () { row.classList.remove( 'is-flash' ); }, 1600 );
+		}, 650 );
 	}
 
 	// Scaled previews follow the editor width.
@@ -1243,20 +1373,26 @@
 			return on ? 50 : Math.max( 0, Math.min( 100, v ) );
 		}
 
+		// A press that does not move is a click: it jumps to that text's size field (jumpToTypo).
+		// Only a real drag switches the block to free position and marks the slide changed.
 		var drag = null;
 		inner.addEventListener( 'pointerdown', function ( e ) {
 			if ( e.button !== 0 ) { return; }
 			var c = current();
 			var isHandle = e.target === handle;
-			if ( ( posKeys().mode === 'pos_mode' ? s.pos_mode : ( s.mobile_pos_mode || s.pos_mode ) ) !== 'free' || ( stage.device === 'mobile' && ! s.mobile_pos_mode ) ) {
-				applyFree( s, slideEl, c.cx, c.cy, c.w );
-			}
-			drag = { handle: isHandle, r: c.r, cx: c.cx, cy: c.cy, w: c.w, offX: e.clientX - ( c.r.left + c.cx / 100 * c.r.width ), offY: e.clientY - ( c.r.top + c.cy / 100 * c.r.height ) };
+			drag = { handle: isHandle, moved: false, x0: e.clientX, y0: e.clientY, target: e.target, r: c.r, cx: c.cx, cy: c.cy, w: c.w, offX: e.clientX - ( c.r.left + c.cx / 100 * c.r.width ), offY: e.clientY - ( c.r.top + c.cy / 100 * c.r.height ) };
 			inner.setPointerCapture( e.pointerId );
 			e.preventDefault();
 		} );
 		inner.addEventListener( 'pointermove', function ( e ) {
 			if ( ! drag ) { return; }
+			if ( ! drag.moved ) {
+				if ( Math.abs( e.clientX - drag.x0 ) < 4 && Math.abs( e.clientY - drag.y0 ) < 4 ) { return; }
+				drag.moved = true;
+				if ( ( posKeys().mode === 'pos_mode' ? s.pos_mode : ( s.mobile_pos_mode || s.pos_mode ) ) !== 'free' || ( stage.device === 'mobile' && ! s.mobile_pos_mode ) ) {
+					applyFree( s, slideEl, drag.cx, drag.cy, drag.w );
+				}
+			}
 			if ( drag.handle ) {
 				var cxPx = drag.r.left + drag.cx / 100 * drag.r.width;
 				var w = Math.max( 10, Math.min( 100, Math.abs( e.clientX - cxPx ) * 2 / drag.r.width * 100 ) );
@@ -1267,11 +1403,13 @@
 				applyFree( s, slideEl, nx, ny, drag.w );
 			}
 		} );
-		function end() {
+		function end( e ) {
 			if ( ! drag ) { return; }
+			var d = drag;
 			drag = null;
 			gv.classList.remove( 'is-on' ); gh.classList.remove( 'is-on' );
-			commit();
+			if ( d.moved ) { commit(); }
+			else if ( e && e.type === 'pointerup' && ! d.handle ) { jumpToTypo( d.target ); }
 		}
 		inner.addEventListener( 'pointerup', end );
 		inner.addEventListener( 'pointercancel', end );
@@ -1859,6 +1997,7 @@
 				navigator.clipboard && navigator.clipboard.writeText( btn.getAttribute( 'data-copy' ) ).then( function () { toast( I.copied, 'ok' ); } ); break;
 			case 'check-updates': checkUpdates( btn ); break;
 			case 'stage-device': stage.device = btn.getAttribute( 'data-device' ); render(); break;
+			case 'stage-dock': toggleDock(); break;
 			case 'typo-reset': s.typo = {}; markDirty( 'slides' ); render(); break;
 			case 'purge':
 				btn.disabled = true; var pl = btn.textContent; btn.textContent = I.purging;
