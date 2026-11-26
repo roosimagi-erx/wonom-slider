@@ -189,6 +189,9 @@ msgstr "Vali iga lahtri jaoks"
 msgid "Clear"
 msgstr "Tühjenda"
 
+msgid "Click a text to jump to its size."
+msgstr "Klõps tekstil viib selle suuruse väljale."
+
 msgid "Click an image to set its focal point – the spot that stays visible when the image is cropped. Desktop and mobile show different crops, so each has its own point: blue = desktop, purple = mobile. The switch below (same as on the preview) chooses which one you are setting."
 msgstr "Klõpsa pildil, et määrata fookuspunkt – koht, mis jääb kärpimisel nähtavaks. Arvutis ja mobiilis on kärbe erinev, seepärast on kummalgi oma punkt: sinine = arvuti, lilla = mobiil. Allolev lüliti (sama mis laval) valib, kumba sead."
 
@@ -849,6 +852,9 @@ msgstr "Esitus"
 msgid "Preview"
 msgstr "Eelvaade"
 
+msgid "Preview follows scrolling"
+msgstr "Eelvaade kerib kaasa"
+
 msgid "Preview shows the saved version. Save to refresh."
 msgstr "Eelvaade näitab salvestatud versiooni. Värskendamiseks salvesta."
 
@@ -1071,6 +1077,9 @@ msgstr "Algab %s"
 msgid "Status"
 msgstr "Olek"
 
+msgid "Stop pinning the preview"
+msgstr "Ära hoia eelvaadet üleval"
+
 msgid "Tablet"
 msgstr "Tahvel"
 
@@ -1247,6 +1256,9 @@ msgstr "Paksus"
 
 msgid "When a campaign gets “Show this campaign in the slider too” ticked (on the campaign edit screen), a linked slide is created from this template: images, position, typography and colours are copied; texts, link and schedule follow the campaign. Each campaign can also pick its own template."
 msgstr "Kui kampaanial on linnuke „Näita seda kampaaniat ka slaideris” (kampaania muutmise lehel), tehakse selle malli järgi seotud slaid: pildid, asukoht, tüpograafia ja värvid kopeeritakse; tekstid, link ja ajakava järgivad kampaaniat. Iga kampaania saab valida ka oma malli."
+
+msgid "When you scroll down to the texts, a smaller preview stays at the top of the screen."
+msgstr "Kui kerid tekstide juurde, jääb väiksem eelvaade ekraani ülaossa."
 
 msgid "Width"
 msgstr "Laius"

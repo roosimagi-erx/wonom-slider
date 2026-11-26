@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.11.0
+Stable tag: 1.11.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,17 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.11.1 - 2026-11-26 =
+### Eelvaade jääb tekstide muutmise ajal nähtavale
+Seni oli slaidi eelvaade redaktori ülaosas. Teksti suuruse muutmiseks tuli alla kerida ja tulemuse nägemiseks jälle üles. Nüüd näeb muudatust samas vaates.
+* **Eelvaade kerib kaasa.** Kui kerid tekstide ja kujunduse juurde, jääb väiksem eelvaade Wonom Slideri päise alla ekraani ülaossa. Suuruse, fondi või värvi muudatus on seal kohe näha. Kui kerid tagasi üles, läheb eelvaade oma kohale tagasi.
+* **Nupp „Eelvaade kerib kaasa“** eelvaate kohal lülitab selle sisse või välja. Kinnitatud eelvaate nurgas on ✕, mis lülitab selle samuti välja. Valik jääb meelde.
+* **Telefonivaates** näidatakse kinnitatud eelvaates telefoni slaidi päris suuruses, aga ainult tekstiploki ümbrust, et väljadele jääks ruumi.
+* **Madalal ekraanil** (alla 700 px kõrgusega aknas) eelvaade kaasa ei keri.
+* **Klõps eelvaate tekstil viib selle välja juurde.** Klõps pealkirjal, sildil, väikesel real või tekstil kerib redaktori selle rea juurde ja paneb kursori suuruse väljale, telefonivaates mobiili suuruse väljale. Suurust saab kohe nooleklahvidega muuta. Klõps nupul kerib nupu rea juurde.
+* Parandus: lihtne klõps eelvaates ei muuda enam tekstiploki paigutust „Vabaks“ ega märgi slaidi muudetuks. Seda teeb ainult päris lohistamine.
+* Parandus: kui eelvaade joonistatakse uuesti, hoiab see oma kõrgust, nii et all olevad väljad ei hüppa.
 
 = 1.11.0 - 2026-11-24 =
 ### Kellaajad nagu Kampaaniaribas: lõpp 00:00 tähendab südaööd
@@ -119,8 +130,5 @@ Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
 * Muudatus: admin-liidese tekstid tõlgitakse nüüd WordPressi standardse JS-tõlke (wp.i18n) kaudu; kaasas on .po-, .mo- ja JSON-tõlkefailid. Liidese välimus ja tekstid ei muutu.
 * Parandus: peidetud elemendid (atribuut hidden) jäävad admin-lehel alati peidetuks.
 * readme.txt: muudatuste logi genereeritakse nüüd CHANGELOG.md-st, „Tested up to: 7.1“.
-
-= 1.7.12 - 2026-11-10 =
-* Parandus: eelvaade, lava ja pisipildid kasutavad slaideri kuju, mis poes päriselt eetris on (esimene eetris olev pildiga slaid). Varem võttis lava kuju muudetavast slaidist endast ja eelvaade linnukesega „Näita ka ajastatud ja väljalülitatud slaide“ esimesest, ka aegunud slaidist, nii et need võisid poest erineda.
 
 Full history: CHANGELOG.md on GitHub.
