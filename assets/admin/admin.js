@@ -1169,11 +1169,20 @@
 			var sh = Math.ceil( sl ? sl.getBoundingClientRect().height : d.body.scrollHeight );
 			var vp = iframe.parentNode, host = vp && vp.parentNode;
 			if ( vp && vp.classList.contains( 'is-scaled' ) ) {
-				fitScaled( iframe, VIEWPORT.screen.w, sh );   // docked: the narrower box scales it down
+				// Docked: shrink only as far as needed to stay within dockMaxH() – a wide slide keeps its
+				// full width (readable text), a tall one gets narrower.
+				if ( host && host.classList && host.classList.contains( 'is-docked' ) ) {
+					var full = vp.parentNode.clientWidth - 52;
+					var h0 = sh * Math.min( 1, full / VIEWPORT.screen.w );
+					vp.style.maxWidth = Math.floor( h0 > dockMaxH() ? full * dockMaxH() / h0 : full ) + 'px';
+				} else {
+					vp.style.maxWidth = '';
+				}
+				fitScaled( iframe, VIEWPORT.screen.w, sh );
 			} else if ( host && host.classList && host.classList.contains( 'is-docked' ) ) {
 				// Docked phone preview: real size (the font sizes stay readable), cut to the area
 				// around the text block.
-				var box = Math.min( sh, Math.max( 160, Math.round( window.innerHeight * 0.36 ) ) );
+				var box = Math.min( sh, dockMaxH() );
 				var inner = d.querySelector( '.wonom-slide__inner' ), shift = 0;
 				if ( inner && box < sh ) {
 					var ir = inner.getBoundingClientRect(), sr = sl ? sl.getBoundingClientRect() : { top: 0 };
@@ -1195,6 +1204,9 @@
 
 	var dock = { on: true, raf: 0 };
 	try { dock.on = window.localStorage.getItem( 'wonom_slider_dock' ) !== '0'; } catch ( e ) { /* private mode */ }
+
+	/** Largest height of the pinned preview picture: about a third of the window. */
+	function dockMaxH() { return Math.max( 180, Math.round( window.innerHeight * 0.32 ) ); }
 
 	function appbarBottom() {
 		var bar = document.querySelector( '.wonom-appbar' );
@@ -1281,19 +1293,27 @@
 		var host = app.querySelector( '[data-stage]' );
 		var docked = host && host.classList.contains( 'is-docked' );
 		// Height of the pinned preview once it is docked (estimate if it is not docked yet).
-		var pinH = ! dock.on || window.innerHeight < 700 || ! host ? 0 : ( docked ? host.offsetHeight : Math.round( stage.device === 'mobile' ? Math.min( host.offsetHeight, window.innerHeight * 0.36 ) : host.offsetHeight * 0.55 ) + 20 );
+		var pinH = ! dock.on || window.innerHeight < 700 || ! host ? 0 : ( docked ? host.offsetHeight : Math.min( host.offsetHeight, dockMaxH() + 16 ) );
 		function place( smooth ) {
 			var y = window.scrollY + row.getBoundingClientRect().top - appbarBottom() - pinH - 12;
 			window.scrollTo( { top: Math.max( 0, y ), behavior: smooth ? 'smooth' : 'auto' } );
 		}
-		place( true );
-		setTimeout( function () {
+		var done = false;
+		function finish() {
+			if ( done ) { return; }
+			done = true;
+			window.removeEventListener( 'scrollend', finish );
+			updateDock();
+			// Now that the preview is pinned its real height is known: correct the position once.
 			var h2 = app.querySelector( '[data-stage]' );
-			if ( h2 && h2.classList.contains( 'is-docked' ) ) { pinH = h2.offsetHeight; place( false ); }
+			if ( h2 && h2.classList.contains( 'is-docked' ) && Math.abs( h2.offsetHeight - pinH ) > 4 ) { pinH = h2.offsetHeight; place( false ); }
 			if ( size ) { try { el.focus( { preventScroll: true } ); el.select(); } catch ( e ) { /* ignore */ } }
 			row.classList.remove( 'is-flash' ); void row.offsetWidth; row.classList.add( 'is-flash' );
 			setTimeout( function () { row.classList.remove( 'is-flash' ); }, 1600 );
-		}, 650 );
+		}
+		window.addEventListener( 'scrollend', finish );   // where supported; the timer is the fallback
+		setTimeout( finish, 1200 );
+		place( true );
 	}
 
 	// Scaled previews follow the editor width.

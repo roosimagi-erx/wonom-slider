@@ -310,7 +310,7 @@ body.wonom-app .wonom-look .wonom-field .wonom-color-hex { width: 76px; font-siz
 .wonom-stage-empty { align-self: center; font-size: 13px; color: var(--w-muted); padding: 30px; }
 /* Stage pinned under the app bar while the fields below are edited (updateDock). */
 .wonom-stage.is-docked { position: fixed; z-index: 45; box-sizing: border-box; margin: 0; padding: 8px 44px 8px 8px; min-height: 0; border-radius: 0 0 var(--w-radius-sm) var(--w-radius-sm); box-shadow: 0 10px 24px -12px rgba(16,24,40,.45); }
-.wonom-stage.is-docked .wonom-vp.is-scaled { max-width: 55%; margin: 0 auto; }
+.wonom-stage.is-docked .wonom-vp.is-scaled { margin: 0 auto; }
 .wonom-stage.is-docked:not(.is-mobile) { justify-content: center; }
 .wonom-stage.is-docked.is-mobile .wonom-vp { overflow: hidden; }
 .wonom-stage.is-docked.is-mobile .wonom-stage-frame { flex: none; }

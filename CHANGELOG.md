@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.2 - 2026-11-26
+
+- Parandus: kaasa keriv eelvaade jäi laial ekraanil ja laia slaidiga liiga väikeseks ning tekst oli raskesti loetav. Nüüd kahaneb eelvaade ainult niipalju, et selle kõrgus jääks umbes kolmandikuni ekraani kõrgusest. Lai slaid jääb täislaiusesse.
+- Parandus: kui klõpsad eelvaates tekstil ja välja juurde tuleb kaugele kerida, jõuab rida nüüd alati täpselt eelvaate alla.
+
 ## 1.11.1 - 2026-11-26
 
 ### Eelvaade jääb tekstide muutmise ajal nähtavale
