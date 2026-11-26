@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.11.1
+Stable tag: 1.11.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,10 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.11.2 - 2026-11-26 =
+* Parandus: kaasa keriv eelvaade jäi laial ekraanil ja laia slaidiga liiga väikeseks ning tekst oli raskesti loetav. Nüüd kahaneb eelvaade ainult niipalju, et selle kõrgus jääks umbes kolmandikuni ekraani kõrgusest. Lai slaid jääb täislaiusesse.
+* Parandus: kui klõpsad eelvaates tekstil ja välja juurde tuleb kaugele kerida, jõuab rida nüüd alati täpselt eelvaate alla.
 
 = 1.11.1 - 2026-11-26 =
 ### Eelvaade jääb tekstide muutmise ajal nähtavale
@@ -122,13 +126,5 @@ Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
 
 = 1.8.1 - 2026-11-18 =
 * Parandus: slaidide lehe ülemine eelvaade ei värise enam. Eelvaade joonistati suures ekraani laiuses ja vähendati CSS-i „transform“ abil, mistõttu fotod ja tekstid värelesid slaidide vahetumise ajal, eriti suurel monitoril ja vähendatud brauseri suumiga. Nüüd vähendab brauser lehe otse (CSS zoom) ja eelvaade on terav ja rahulik; mõõdud ja kärbe on samad mis poes.
-
-= 1.8.0 - 2026-11-18 =
-* Parandus: nupp „Kontrolli uuendusi kohe“ ei pane enam kõiki pluginaid uuesti kontrollima. Varem kustutati WordPressi kogu uuenduste nimekiri ja käivitati kõigi pluginate kontroll (ka wordpress.org-i päring), mis võib suures poes aeguda (HTTP 524). Nüüd värskendatakse ainult Wonom Slideri enda kirjet.
-* Parandus: plugina kustutamisel eemaldatakse alati tehnilised seaded, sh GitHubi, DeepL-i ja Cloudflare'i võtmed, ajutised andmed ja ajastatud sündmused. Slaidid, slaideri seaded ja kampaaniate seosed kustutatakse nagu enne ainult siis, kui „Kustuta andmed eemaldamisel“ on sees.
-* Uus: Seaded → Lehe vahemälu näitab, millal WP-Cron viimati päriselt käis, ja hoiatab, kui see on üle tunni seisnud. Kui ajastatud vahemälu tühjendus on cron'i seisaku tõttu hilinenud, tehakse see ära järgmisel admin-lehe avamisel.
-* Muudatus: admin-liidese tekstid tõlgitakse nüüd WordPressi standardse JS-tõlke (wp.i18n) kaudu; kaasas on .po-, .mo- ja JSON-tõlkefailid. Liidese välimus ja tekstid ei muutu.
-* Parandus: peidetud elemendid (atribuut hidden) jäävad admin-lehel alati peidetuks.
-* readme.txt: muudatuste logi genereeritakse nüüd CHANGELOG.md-st, „Tested up to: 7.1“.
 
 Full history: CHANGELOG.md on GitHub.
