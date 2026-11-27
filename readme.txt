@@ -4,7 +4,7 @@ Tags: slider, hero, banner, woocommerce, elementor, campaign
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.11.2
+Stable tag: 1.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,13 @@ Lightweight, easy-to-manage hero slider for WooCommerce home pages. Multiple sli
 * Automatic updates from GitHub Releases.
 
 == Changelog ==
+
+= 1.12.0 - 2026-11-27 =
+### Tulevaste slaidide tekst ei ole enam lehel loetav
+Alates 1.10.0-st pannakse lähema 14 päeva jooksul algav slaid lehele ette peidetuna, et see ilmuks täpselt alguse hetkel. Peidetud slaidi tekst oli aga lehe HTML-is tavalise tekstina. Roomajad (Google, vestlusroboti lugeja jt) lugesid seda ja võisid tulevast pakkumist (näiteks homset sooduskoodi) pidada praegu kehtivaks.
+* **Tulevane slaid on lehel kodeeritud kujul.** Lehel on ainult tühi peidetud koht slaidi algus- ja lõpuajaga, slaidi sisu on kodeeritud andmetena. Brauser loob slaidi umbes kaks minutit enne algust, et pildid jõuaksid laadida, ja näitab seda täpselt alguse hetkel. Kui leht tuli vahemälust ja algus on juba möödas, luuakse slaid kohe lehe avamisel.
+* **Ajastatud slaididel on `data-nosnippet`.** Google ei kasuta algus- või lõpuajaga slaidi teksti otsingutulemuse lõigus, sest pakkumine võib selleks ajaks läbi olla. Praegu kehtiv slaid on lehel endiselt tavalise tekstina.
+* Külastaja jaoks ei muutu midagi: vahetus toimub samamoodi täpselt õigel hetkel ja ilma vahemälu tühjendamata.
 
 = 1.11.2 - 2026-11-26 =
 * Parandus: kaasa keriv eelvaade jäi laial ekraanil ja laia slaidiga liiga väikeseks ning tekst oli raskesti loetav. Nüüd kahaneb eelvaade ainult niipalju, et selle kõrgus jääks umbes kolmandikuni ekraani kõrgusest. Lai slaid jääb täislaiusesse.
@@ -123,8 +130,5 @@ Serveri koormuse vähendamine pärast 19.11 serveririket (nõuded N1–N7).
 
 = 1.8.2 - 2026-11-18 =
 * Parandus: kui brauseri akna suurus või suum muutus, läks slaidide lehe ülemine eelvaade liiga laiaks – slaider nihkus paremale, osa jäi kasti taha peitu ja leht hakkas külgsuunas kerima. Nüüd täidab eelvaade alati kasti ja arvutab vähenduse uuesti.
-
-= 1.8.1 - 2026-11-18 =
-* Parandus: slaidide lehe ülemine eelvaade ei värise enam. Eelvaade joonistati suures ekraani laiuses ja vähendati CSS-i „transform“ abil, mistõttu fotod ja tekstid värelesid slaidide vahetumise ajal, eriti suurel monitoril ja vähendatud brauseri suumiga. Nüüd vähendab brauser lehe otse (CSS zoom) ja eelvaade on terav ja rahulik; mõõdud ja kärbe on samad mis poes.
 
 Full history: CHANGELOG.md on GitHub.
