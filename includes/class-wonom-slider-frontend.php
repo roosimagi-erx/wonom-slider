@@ -246,7 +246,8 @@ class Wonom_Slider_Frontend {
 						// visible set changes the script needs the shape of the new first one.
 						$slide['_ratio'] = implode( '|', self::ratio_pair( $settings, $slide ) );
 					}
-					echo self::render_slide( $slide, $is_live ? $pos : -1, $count, $settings ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					$slide_html = self::render_slide( $slide, $is_live ? $pos : -1, $count, $settings );
+					echo $is_live ? $slide_html : self::seal( $slide, $slide_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					$pos += $is_live ? 1 : 0;
 				}
 				?>
@@ -302,6 +303,8 @@ class Wonom_Slider_Frontend {
 				$timing .= ' data-ws-' . $name . '="' . esc_attr( $slide[ $key ] ) . '"';
 			}
 		}
+		// A timed slide is never used as a search snippet (it may be over by the time it is shown).
+		$timing .= ( ! empty( $slide['_start'] ) || ! empty( $slide['_end'] ) ) ? ' data-nosnippet' : '';
 		$timing .= $upcoming ? ' hidden' : '';
 		$has_link = ! empty( $slide['link_whole_slide'] ) && ! empty( $slide['button_url'] );
 		$target   = ! empty( $slide['button_new_tab'] ) ? ' target="_blank" rel="noopener"' : '';
@@ -719,6 +722,28 @@ class Wonom_Slider_Frontend {
 	}
 
 	/**
+	 * An upcoming slide goes into the page as encoded data, not as readable text: crawlers and chat
+	 * bots that read the HTML must not offer a future campaign as a current one. Only the timing is
+	 * readable. The browser decodes the slide shortly before its start (slider.js), or at once on a
+	 * cached page that is older than the start (timing_script()).
+	 *
+	 * @param array  $slide Slide with _start/_end/_group/_ratio.
+	 * @param string $html  Its markup from render_slide().
+	 * @return string
+	 */
+	private static function seal( $slide, $html ) {
+		$attrs = '';
+		foreach ( array( '_start' => 'start', '_end' => 'end', '_group' => 'group', '_ratio' => 'ratio' ) as $key => $name ) {
+			if ( ! empty( $slide[ $key ] ) ) {
+				$attrs .= ' data-ws-' . $name . '="' . esc_attr( $slide[ $key ] ) . '"';
+			}
+		}
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- hides the text of a future slide, see above.
+		$data = base64_encode( trim( $html ) );
+		return '<div class="wonom-slide wonom-slide--sealed" hidden aria-hidden="true" data-nosnippet' . $attrs . ' data-ws-seal="' . esc_attr( $data ) . '"></div>';
+	}
+
+	/**
 	 * Tiny inline script right after a slider that has timed slides. A cached page may be older
 	 * than a start or end: before anything is painted it hides what is over, shows what has
 	 * started and loads the image of the slide that is first now. slider.js does the same and
@@ -728,8 +753,10 @@ class Wonom_Slider_Frontend {
 		$js = '(function(){try{var r=document.getElementById(' . wp_json_encode( $uid ) . ');if(!r)return;'
 			. 'var n=Math.max(Date.now()/1000,+r.getAttribute("data-ws-now")||0),a=[].slice.call(r.querySelectorAll(".wonom-slide")),b={},v=[];'
 			. 'function g(e,k){return +e.getAttribute("data-ws-"+k)||0}'
+			// Sealed slide (see seal()): decode it and put the real markup in its place.
+			. 'function u(e){var d=e.getAttribute("data-ws-seal");if(!d)return e;var s=atob(d);try{s=new TextDecoder().decode(Uint8Array.from(s,function(c){return c.charCodeAt(0)}))}catch(x){s=decodeURIComponent(escape(s))}var t=document.createElement("template");t.innerHTML=s;var z=t.content.firstElementChild;if(!z)return e;e.parentNode.replaceChild(z,e);return z}'
 			. 'a.forEach(function(e){var s=g(e,"start"),x=g(e,"end"),q=e.getAttribute("data-ws-group");e._on=(!s||n>=s)&&(!x||n<x);if(e._on&&q&&(!b[q]||s>g(b[q],"start")))b[q]=e});'
-			. 'a.forEach(function(e){var q=e.getAttribute("data-ws-group");if(e._on&&q&&b[q]!==e)e._on=false;if(e._on){v.push(e);e.removeAttribute("hidden")}else{e.setAttribute("hidden","");e.classList.remove("is-active");e.setAttribute("aria-hidden","true")}});'
+			. 'a.forEach(function(e){var q=e.getAttribute("data-ws-group");if(e._on&&q&&b[q]!==e)e._on=false;if(e._on){e=u(e);v.push(e);e.removeAttribute("hidden")}else{e.setAttribute("hidden","");e.classList.remove("is-active");e.setAttribute("aria-hidden","true")}});'
 			. 'if(!v.length){r.setAttribute("hidden","");return}r.removeAttribute("hidden");'
 			. 'var f=v[0],o="";v.some(function(e){o=e.getAttribute("data-ws-ratio");return !!o});'
 			. 'if(o){o=o.split("|");r.style.setProperty("--ws-ratio",o[0]);r.style.setProperty("--ws-ratio-mobile",o[1]||o[0])}'

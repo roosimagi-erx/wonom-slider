@@ -73,6 +73,32 @@
 		} );
 	}
 
+	/**
+	 * An upcoming slide arrives sealed: an empty placeholder with its timing and the markup as
+	 * base64 (so crawlers do not read a future offer as a current one). Decode it and put the real
+	 * slide in its place; returns the element that is in the page now.
+	 */
+	function unseal( el ) {
+		var data = el && el.getAttribute( 'data-ws-seal' );
+		if ( ! data || ! el.parentNode ) { return el; }
+		try {
+			var s = window.atob( data );
+			try {
+				s = new window.TextDecoder().decode( Uint8Array.from( s, function ( c ) { return c.charCodeAt( 0 ); } ) );
+			} catch ( e ) {
+				s = decodeURIComponent( escape( s ) );
+			}
+			var tpl = document.createElement( 'template' );
+			tpl.innerHTML = s;
+			var real = tpl.content.firstElementChild;
+			if ( ! real ) { return el; }
+			el.parentNode.replaceChild( real, el );
+			return real;
+		} catch ( e ) {
+			return el;
+		}
+	}
+
 	function Slider( root ) {
 		if ( root.__wonom ) {
 			return root.__wonom;
@@ -163,7 +189,7 @@
 		} );
 		this.timed.forEach( function ( t ) {
 			if ( t.on && t.group && best[ t.group ] !== t ) { t.on = false; }
-			if ( t.on ) { vis.push( t.el ); }
+			if ( t.on ) { vis.push( self.open( t ) ); }
 		} );
 
 		var same = vis.length === this.slides.length && vis.every( function ( el, i ) { return el === self.slides[ i ]; } );
@@ -209,6 +235,17 @@
 		return true;
 	};
 
+	/** Decode a sealed timed slide (see unseal) and keep the lists pointing at the real element. */
+	Slider.prototype.open = function ( t ) {
+		var old = t.el, el = unseal( old );
+		if ( el !== old ) {
+			t.el = el;
+			var i = this.all.indexOf( old );
+			if ( i >= 0 ) { this.all[ i ] = el; }
+		}
+		return el;
+	};
+
 	/** One dot per visible slide. */
 	Slider.prototype.buildDots = function () {
 		var wrap = this.dotsWrap;
@@ -243,7 +280,7 @@
 			[ t.start ? t.start - 120 : 0, t.start, t.end ].forEach( function ( p ) {
 				if ( p > n && ( ! next || p < next ) ) { next = p; }
 			} );
-			if ( t.start > n && t.start - n <= 125 ) { hydrate( t.el, true ); }
+			if ( t.start > n && t.start - n <= 125 ) { hydrate( self.open( t ), true ); }   // decode + fetch images 2 min ahead
 		} );
 		if ( ! next ) { return; }
 		this.clockTimer = setTimeout( function () {
